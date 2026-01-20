@@ -11,6 +11,7 @@ import Contact from './pages/Contact';
 import HireTalent from './pages/HireTalent';
 import FindAJob from './pages/FindAJob';
 import ForEmployer from './pages/ForEmployer';
+import Terms from './pages/Terms';
 
 // Scroll to top on route change
 const ScrollToTop = () => {
@@ -36,6 +37,7 @@ const App: React.FC = () => {
           <Route path="/hire-talent" element={<HireTalent />} />
           <Route path="/find-a-job" element={<FindAJob />} />
           <Route path="/for-employer" element={<ForEmployer />} />
+          <Route path="/terms" element={<Terms />} />
         </Routes>
       </Layout>
     </Router>

@@ -254,7 +254,7 @@ const Footer = () => (
         <p>© {new Date().getFullYear()} {COMPANY_NAME}. All rights reserved.</p>
         <div className="flex space-x-8">
           <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
-          <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
+          <Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
         </div>
       </div>
     </div>
