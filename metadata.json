@@ -1,0 +1,8 @@
+{
+  "name": "Promarch Consulting",
+  "description": "A high-performance, SEO-optimized recruitment agency website for Promarch Consulting, specializing in care, logistics, warehouse, and hospitality sectors in the UK.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
