@@ -1,4 +1,4 @@
-import { NavItem, Service, Testimonial, BlogPost } from './types';
+import { NavItem, Service, Testimonial, BlogPost } from './types.ts';
 
 export const COMPANY_NAME = "Promarch Consulting";
 export const COMPANY_EMAIL = "info@promarchconsulting.co.uk";

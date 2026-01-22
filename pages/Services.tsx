@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ShieldCheck, Zap, Briefcase, FileSearch } from 'lucide-react';
-import { SERVICES } from '../constants';
+import { SERVICES } from '../constants.tsx';
 
 const Services: React.FC = () => {
   return (

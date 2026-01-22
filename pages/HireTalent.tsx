@@ -11,7 +11,7 @@ import {
   Clock,
   ArrowRight
 } from 'lucide-react';
-import { SERVICES } from '../constants';
+import { SERVICES } from '../constants.tsx';
 
 const HireTalent: React.FC = () => {
   const [formData, setFormData] = useState({

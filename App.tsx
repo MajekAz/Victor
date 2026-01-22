@@ -1,16 +1,16 @@
 import React from 'react';
 import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import { Layout } from './components/Layout';
-import Home from './pages/Home';
-import About from './pages/About';
-import Services from './pages/Services';
-import Blog from './pages/Blog';
-import Post from './pages/Post';
-import Contact from './pages/Contact';
-import HireTalent from './pages/HireTalent';
-import FindAJob from './pages/FindAJob';
-import ForEmployer from './pages/ForEmployer';
-import Terms from './pages/Terms';
+import { Layout } from './components/Layout.tsx';
+import Home from './pages/Home.tsx';
+import About from './pages/About.tsx';
+import Services from './pages/Services.tsx';
+import Blog from './pages/Blog.tsx';
+import Post from './pages/Post.tsx';
+import Contact from './pages/Contact.tsx';
+import HireTalent from './pages/HireTalent.tsx';
+import FindAJob from './pages/FindAJob.tsx';
+import ForEmployer from './pages/ForEmployer.tsx';
+import Terms from './pages/Terms.tsx';
 
 // Scroll to top on route change
 const ScrollToTop = () => {

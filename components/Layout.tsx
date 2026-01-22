@@ -5,8 +5,8 @@ import {
   Linkedin, Facebook, Twitter, 
   ChevronRight, Clock, Globe 
 } from 'lucide-react';
-import { NAV_LINKS, COMPANY_NAME, COMPANY_EMAIL, COMPANY_PHONE, COMPANY_ADDRESS, COLORS } from '../constants';
-import { Logo } from './Logo';
+import { NAV_LINKS, COMPANY_NAME, COMPANY_EMAIL, COMPANY_PHONE, COMPANY_ADDRESS, COLORS } from '../constants.tsx';
+import { Logo } from './Logo.tsx';
 
 const TopBar = () => (
   <div className="hidden lg:block bg-[#0f172a] text-white py-2 border-b border-slate-800">

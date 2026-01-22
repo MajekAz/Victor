@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, ArrowRight, Tag } from 'lucide-react';
-import { BLOG_POSTS, COLORS } from '../constants';
+import { BLOG_POSTS, COLORS } from '../constants.tsx';
 
 const Blog: React.FC = () => {
   // Use the first post as the featured post for the hero area

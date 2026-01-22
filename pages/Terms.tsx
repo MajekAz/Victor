@@ -1,6 +1,6 @@
 import React from 'react';
 import { Shield, FileText, Scale, Info, CheckCircle, AlertCircle } from 'lucide-react';
-import { COLORS, COMPANY_NAME } from '../constants';
+import { COLORS, COMPANY_NAME } from '../constants.tsx';
 
 const Terms: React.FC = () => {
   const sections = [

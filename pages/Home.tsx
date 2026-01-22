@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, CheckCircle, Users, Zap } from 'lucide-react';
-import { SERVICES, TESTIMONIALS, COLORS } from '../constants';
+import { SERVICES, TESTIMONIALS, COLORS } from '../constants.tsx';
 
 const Home: React.FC = () => {
   return (

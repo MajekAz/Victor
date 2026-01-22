@@ -1,6 +1,6 @@
 import React from 'react';
 import { Target, Users, ShieldCheck, Globe, Award, Heart } from 'lucide-react';
-import { COMPANY_NAME } from '../constants';
+import { COMPANY_NAME } from '../constants.tsx';
 
 const About: React.FC = () => {
   return (

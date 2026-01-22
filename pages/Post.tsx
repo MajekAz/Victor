@@ -1,7 +1,7 @@
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Calendar, Tag, ArrowLeft, Share2, MessageCircle, User, ChevronRight } from 'lucide-react';
-import { BLOG_POSTS, COLORS } from '../constants';
+import { BLOG_POSTS, COLORS } from '../constants.tsx';
 
 const Post: React.FC = () => {
   const { id } = useParams<{ id: string }>();
