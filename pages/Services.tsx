@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ShieldCheck, Zap, Briefcase, FileSearch } from 'lucide-react';

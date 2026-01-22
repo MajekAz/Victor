@@ -1,4 +1,3 @@
-
 import { NavItem, Service, Testimonial, BlogPost } from './types';
 
 export const COMPANY_NAME = "Promarch Consulting";

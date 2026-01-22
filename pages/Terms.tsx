@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Shield, FileText, Scale, Info, CheckCircle, AlertCircle } from 'lucide-react';
 import { COLORS, COMPANY_NAME } from '../constants';
