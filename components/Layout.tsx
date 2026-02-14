@@ -117,15 +117,15 @@ const Navbar = () => {
 
         {/* Mobile Fullscreen Menu */}
         <div 
-          className={`fixed inset-0 bg-white transition-all duration-500 md:hidden ${
+          className={`fixed inset-0 bg-slate-900 transition-all duration-500 md:hidden ${
             isOpen ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-full'
           }`}
           style={{ zIndex: 100 }}
         >
           <div className="flex flex-col h-full p-6">
             <div className="flex justify-between items-center mb-8">
-              <Logo className="h-8" isDark={false} />
-              <button onClick={() => setIsOpen(false)} className="text-slate-900 p-2 bg-slate-100 rounded-full hover:bg-slate-200 transition-colors">
+              <Logo className="h-8" isDark={true} />
+              <button onClick={() => setIsOpen(false)} className="text-white p-2 bg-slate-800 rounded-full hover:bg-slate-700 transition-colors">
                 <X size={24} />
               </button>
             </div>
@@ -137,33 +137,33 @@ const Navbar = () => {
                   to={link.href}
                   onClick={() => setIsOpen(false)}
                   className={`text-2xl font-black flex items-center justify-between group py-2 transition-all ${
-                    location.pathname === link.href ? 'pl-4 border-l-4' : 'text-slate-800 hover:text-blue-600 hover:pl-2'
+                    location.pathname === link.href ? 'pl-4 border-l-4' : 'text-slate-300 hover:text-white hover:pl-2'
                   }`}
-                  style={location.pathname === link.href ? { color: COLORS.primary, borderColor: COLORS.primary } : {}}
+                  style={location.pathname === link.href ? { color: COLORS.secondary, borderColor: COLORS.secondary } : {}}
                 >
                   {link.label}
-                  <ChevronRight size={20} className={location.pathname === link.href ? 'text-blue-600' : 'text-slate-300'} />
+                  <ChevronRight size={20} className={location.pathname === link.href ? 'text-sky-400' : 'text-slate-600'} />
                 </Link>
               ))}
               {/* Admin Link Mobile */}
                <Link
                   to="/admin"
                   onClick={() => setIsOpen(false)}
-                  className="text-2xl font-black flex items-center justify-between group py-2 text-slate-400 hover:text-blue-600 hover:pl-2 transition-all"
+                  className="text-2xl font-black flex items-center justify-between group py-2 text-slate-500 hover:text-white hover:pl-2 transition-all"
                 >
                   Admin Dashboard
-                  <Shield size={20} className="text-slate-300" />
+                  <Shield size={20} className="text-slate-600 group-hover:text-slate-400" />
                 </Link>
             </div>
 
-            <div className="mt-auto pt-8 border-t border-slate-100">
+            <div className="mt-auto pt-8 border-t border-slate-800">
               <div className="flex flex-col space-y-4 mb-6">
-                <div className="flex items-center space-x-3 text-slate-600">
-                  <Phone size={18} className="text-blue-600" />
+                <div className="flex items-center space-x-3 text-slate-400">
+                  <Phone size={18} className="text-sky-500" />
                   <span className="font-bold">{COMPANY_PHONE}</span>
                 </div>
-                <div className="flex items-center space-x-3 text-slate-600">
-                  <Mail size={18} className="text-blue-600" />
+                <div className="flex items-center space-x-3 text-slate-400">
+                  <Mail size={18} className="text-sky-500" />
                   <span className="text-sm">{COMPANY_EMAIL}</span>
                 </div>
               </div>
