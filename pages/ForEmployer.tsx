@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ShieldCheck, Zap, TrendingUp, Users, Building2, Globe, Clock, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -19,15 +18,15 @@ const ForEmployer: React.FC = () => {
         <div className="relative z-10 max-w-7xl mx-auto px-4">
           <div className="max-w-3xl">
             <span className="text-blue-500 font-black tracking-widest uppercase mb-4 block">Workforce Solutions</span>
-            <h1 className="text-5xl md:text-8xl font-black text-white leading-tight mb-8">Reliable Talent. <br /><span className="text-blue-500">Zero Headache.</span></h1>
-            <p className="text-xl text-slate-300 mb-10 leading-relaxed">
+            <h1 className="text-4xl md:text-8xl font-black text-white leading-tight mb-8">Reliable Talent. <br /><span className="text-blue-500">Zero Headache.</span></h1>
+            <p className="text-lg md:text-xl text-slate-300 mb-10 leading-relaxed">
               From last-minute warehouse staffing to permanent care home management, Promarch Consulting provides the compliant workforce you need to scale.
             </p>
             <div className="flex flex-wrap gap-4">
-              <Link to="/hire-talent" className="bg-blue-600 text-white px-10 py-4 rounded-xl font-black text-lg hover:bg-blue-700 transition-all shadow-xl shadow-blue-900/40">
+              <Link to="/hire-talent" className="bg-blue-600 text-white px-6 py-3 md:px-10 md:py-4 rounded-xl font-black text-base md:text-lg hover:bg-blue-700 transition-all shadow-xl shadow-blue-900/40">
                 Request Staff Call
               </Link>
-              <a href="#sectors" className="bg-white/10 backdrop-blur-md border border-white/20 text-white px-10 py-4 rounded-xl font-black text-lg hover:bg-white/20 transition-all">
+              <a href="#sectors" className="bg-white/10 backdrop-blur-md border border-white/20 text-white px-6 py-3 md:px-10 md:py-4 rounded-xl font-black text-base md:text-lg hover:bg-white/20 transition-all">
                 Our Sectors
               </a>
             </div>
@@ -74,7 +73,7 @@ const ForEmployer: React.FC = () => {
       <section id="sectors" className="py-24 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-20">
-            <h2 className="text-4xl font-black mb-4">Sectors We Empower</h2>
+            <h2 className="text-3xl md:text-4xl font-black mb-4">Sectors We Empower</h2>
             <p className="text-slate-500">Deep expertise in the UK's most essential workforce sectors.</p>
           </div>
           
@@ -121,28 +120,28 @@ const ForEmployer: React.FC = () => {
             <div className="bg-blue-600/20 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6">
               <Users className="text-blue-500" />
             </div>
-            <h4 className="text-4xl font-black mb-2">15,000+</h4>
+            <h4 className="text-3xl md:text-4xl font-black mb-2">15,000+</h4>
             <p className="text-slate-400 font-bold uppercase text-xs tracking-widest">Available Temps</p>
           </div>
           <div>
             <div className="bg-purple-600/20 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6">
               <Building2 className="text-purple-500" />
             </div>
-            <h4 className="text-4xl font-black mb-2">250+</h4>
+            <h4 className="text-3xl md:text-4xl font-black mb-2">250+</h4>
             <p className="text-slate-400 font-bold uppercase text-xs tracking-widest">Active Clients</p>
           </div>
           <div>
             <div className="bg-emerald-600/20 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6">
               <Clock className="text-emerald-500" />
             </div>
-            <h4 className="text-4xl font-black mb-2">2 hrs</h4>
+            <h4 className="text-3xl md:text-4xl font-black mb-2">2 hrs</h4>
             <p className="text-slate-400 font-bold uppercase text-xs tracking-widest">Avg Response Time</p>
           </div>
           <div>
             <div className="bg-blue-600/20 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6">
               <Globe className="text-blue-500" />
             </div>
-            <h4 className="text-4xl font-black mb-2">London</h4>
+            <h4 className="text-3xl md:text-4xl font-black mb-2">London</h4>
             <p className="text-slate-400 font-bold uppercase text-xs tracking-widest">HQ Location</p>
           </div>
         </div>
@@ -165,7 +164,7 @@ const ForEmployer: React.FC = () => {
                 <option>Logistics</option>
                 <option>Hospitality</option>
               </select>
-              <button className="md:col-span-2 bg-blue-600 text-white py-5 rounded-2xl font-black text-xl hover:bg-blue-700 transition-all shadow-xl shadow-blue-900/20">
+              <button className="md:col-span-2 bg-blue-600 text-white py-3 md:py-5 rounded-2xl font-black text-lg md:text-xl hover:bg-blue-700 transition-all shadow-xl shadow-blue-900/20">
                 Connect with an Expert
               </button>
             </form>

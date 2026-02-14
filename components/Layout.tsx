@@ -72,7 +72,7 @@ const Navbar = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center">
             <Link to="/" className="flex items-center" aria-label="Promarch Consulting Home">
-              <Logo className="h-10 md:h-12" isDark={!scrolled} />
+              <Logo className="h-8 md:h-12" isDark={!scrolled} />
             </Link>
 
             {/* Desktop Menu */}
@@ -95,7 +95,7 @@ const Navbar = () => {
               ))}
               <Link 
                 to="/hire-talent" 
-                className={`px-6 py-2.5 rounded-xl text-sm font-black transition-all transform hover:-translate-y-0.5 shadow-lg flex items-center gap-2 ${
+                className={`px-4 py-2 md:px-6 md:py-2.5 rounded-xl text-sm font-black transition-all transform hover:-translate-y-0.5 shadow-lg flex items-center gap-2 ${
                   scrolled ? 'text-white' : 'bg-white text-slate-900 hover:bg-slate-50'
                 }`}
                 style={scrolled ? { backgroundColor: COLORS.primary } : {}}
@@ -106,7 +106,7 @@ const Navbar = () => {
 
             {/* Mobile Toggle */}
             <button 
-              className={`md:hidden p-2.5 rounded-xl transition-colors ${scrolled ? 'bg-slate-100 text-slate-900' : 'bg-white/10 text-white'}`}
+              className={`md:hidden p-2 rounded-xl transition-colors ${scrolled ? 'bg-slate-100 text-slate-900' : 'bg-white/10 text-white'}`}
               onClick={() => setIsOpen(!isOpen)}
               aria-label={isOpen ? "Close menu" : "Open menu"}
             >
@@ -122,33 +122,33 @@ const Navbar = () => {
           }`}
           style={{ zIndex: 100 }}
         >
-          <div className="flex flex-col h-full p-8">
-            <div className="flex justify-between items-center mb-12">
-              <Logo className="h-10" isDark={false} />
+          <div className="flex flex-col h-full p-6">
+            <div className="flex justify-between items-center mb-8">
+              <Logo className="h-8" isDark={false} />
               <button onClick={() => setIsOpen(false)} className="text-slate-900 p-2 bg-slate-100 rounded-full hover:bg-slate-200 transition-colors">
-                <X size={28} />
+                <X size={24} />
               </button>
             </div>
 
-            <div className="flex flex-col space-y-4">
+            <div className="flex flex-col space-y-2">
               {NAV_LINKS.map((link) => (
                 <Link
                   key={link.href}
                   to={link.href}
                   onClick={() => setIsOpen(false)}
-                  className={`text-4xl font-black flex items-center justify-between group py-2 transition-all ${
+                  className={`text-2xl font-black flex items-center justify-between group py-2 transition-all ${
                     location.pathname === link.href ? 'pl-4 border-l-4' : 'text-slate-800 hover:text-blue-600 hover:pl-2'
                   }`}
                   style={location.pathname === link.href ? { color: COLORS.primary, borderColor: COLORS.primary } : {}}
                 >
                   {link.label}
-                  <ChevronRight size={24} className={location.pathname === link.href ? 'text-blue-600' : 'text-slate-300'} />
+                  <ChevronRight size={20} className={location.pathname === link.href ? 'text-blue-600' : 'text-slate-300'} />
                 </Link>
               ))}
             </div>
 
-            <div className="mt-auto pt-12 border-t border-slate-100">
-              <div className="flex flex-col space-y-4 mb-10">
+            <div className="mt-auto pt-8 border-t border-slate-100">
+              <div className="flex flex-col space-y-4 mb-6">
                 <div className="flex items-center space-x-3 text-slate-600">
                   <Phone size={18} className="text-blue-600" />
                   <span className="font-bold">{COMPANY_PHONE}</span>
@@ -161,7 +161,7 @@ const Navbar = () => {
               
               <Link 
                 to="/hire-talent"
-                className="block w-full text-white text-center py-5 rounded-2xl font-black text-xl shadow-xl transition-transform active:scale-95 bg-[#00459c] hover:bg-[#003580]"
+                className="block w-full text-white text-center py-3 rounded-xl font-black text-lg shadow-xl transition-transform active:scale-95 bg-[#00459c] hover:bg-[#003580]"
                 onClick={() => setIsOpen(false)}
               >
                 Hire Talent
@@ -175,11 +175,11 @@ const Navbar = () => {
 };
 
 const Footer = () => (
-  <footer className="bg-slate-900 text-slate-300 pt-20 pb-10">
+  <footer className="bg-slate-900 text-slate-300 pt-16 pb-10">
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
         <div className="space-y-8">
-          <Logo className="h-12" isDark={true} />
+          <Logo className="h-10" isDark={true} />
           <p className="text-sm leading-relaxed text-slate-400">
             A premier UK recruitment agency specialized in connecting exceptional talent with reliable employers in care, logistics, and cleaning sectors.
           </p>

@@ -46,17 +46,17 @@ const HireTalent: React.FC = () => {
             <span className="inline-block bg-blue-600 px-4 py-1 rounded-lg text-white font-bold text-sm mb-6 uppercase tracking-widest">
               For Employers & HR Teams
             </span>
-            <h1 className="text-5xl md:text-7xl font-black text-white leading-tight mb-8">
+            <h1 className="text-4xl md:text-7xl font-black text-white leading-tight mb-8">
               Build Your <span className="text-blue-500">A-Team</span> Today.
             </h1>
-            <p className="text-xl text-slate-300 mb-10 leading-relaxed">
+            <p className="text-lg md:text-xl text-slate-300 mb-10 leading-relaxed">
               Stop settling for average. Promarch Consulting delivers pre-vetted, reliable, and highly skilled staff across the UK's most critical sectors.
             </p>
             <div className="flex space-x-4">
-              <Link to="/contact" className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-xl font-black text-lg transition-all shadow-xl shadow-blue-900/20 text-center">
+              <Link to="/contact" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 md:px-8 md:py-4 rounded-xl font-black text-base md:text-lg transition-all shadow-xl shadow-blue-900/20 text-center">
                 Request Staff Now
               </Link>
-              <Link to="/about" className="bg-white/10 hover:bg-white/20 backdrop-blur-md text-white border border-white/20 px-8 py-4 rounded-xl font-black text-lg transition-all text-center">
+              <Link to="/about" className="bg-white/10 hover:bg-white/20 backdrop-blur-md text-white border border-white/20 px-6 py-3 md:px-8 md:py-4 rounded-xl font-black text-base md:text-lg transition-all text-center">
                 Why Us?
               </Link>
             </div>
@@ -101,7 +101,7 @@ const HireTalent: React.FC = () => {
       <section className="py-24 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-black mb-4">Choose Your Sector</h2>
+            <h2 className="text-3xl md:text-4xl font-black mb-4">Choose Your Sector</h2>
             <p className="text-slate-600">Specialized teams for specialized needs.</p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -128,7 +128,7 @@ const HireTalent: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex flex-col lg:flex-row gap-16 items-center">
             <div className="lg:w-1/2">
-              <h2 className="text-4xl font-black mb-8">Rigorous Vetting as Standard</h2>
+              <h2 className="text-3xl md:text-4xl font-black mb-8">Rigorous Vetting as Standard</h2>
               <p className="text-lg text-slate-600 mb-10">
                 We don't just send CVs; we send solutions. Every candidate in our database has undergone a strict multi-stage verification process.
               </p>
@@ -251,7 +251,7 @@ const HireTalent: React.FC = () => {
                     placeholder="E.g. We need 10 warehouse operatives for a 3-month contract..."
                   ></textarea>
                 </div>
-                <button type="submit" className="w-full bg-slate-900 text-white py-5 rounded-2xl font-black text-xl hover:bg-slate-800 transition-all shadow-xl">
+                <button type="submit" className="w-full bg-slate-900 text-white py-3 md:py-5 rounded-2xl font-black text-lg md:text-xl hover:bg-slate-800 transition-all shadow-xl">
                   Submit Requirement
                 </button>
               </form>

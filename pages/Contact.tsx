@@ -28,8 +28,8 @@ const Contact: React.FC = () => {
           <div className="absolute inset-0 bg-slate-900/70 backdrop-blur-[2px]"></div>
         </div>
         <div className="relative z-10 max-w-7xl mx-auto px-4 text-center text-white">
-          <h1 className="text-5xl md:text-7xl font-black mb-8">Get In Touch</h1>
-          <p className="text-xl md:text-2xl text-slate-300 max-w-3xl mx-auto leading-relaxed">
+          <h1 className="text-4xl md:text-7xl font-black mb-8">Get In Touch</h1>
+          <p className="text-lg md:text-2xl text-slate-300 max-w-3xl mx-auto leading-relaxed">
             Whether you're looking for work or seeking to hire, we're here to help you succeed.
           </p>
         </div>
@@ -78,7 +78,7 @@ const Contact: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4">
           <div className="bg-white rounded-[40px] shadow-2xl overflow-hidden grid lg:grid-cols-2 border border-slate-100">
             <div className="p-12 lg:p-20 bg-slate-900 text-white">
-              <h2 className="text-4xl font-black mb-8 leading-tight">Send us a message directly.</h2>
+              <h2 className="text-3xl md:text-4xl font-black mb-8 leading-tight">Send us a message directly.</h2>
               <p className="text-slate-400 text-lg mb-12">
                 Have a specific requirement? Fill out the form and our specialized sector lead will contact you.
               </p>
@@ -150,7 +150,7 @@ const Contact: React.FC = () => {
                 </div>
                 <button 
                   type="submit"
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-xl shadow-lg transition-all flex items-center justify-center space-x-2"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-3 md:py-4 rounded-xl shadow-lg transition-all flex items-center justify-center space-x-2"
                 >
                   <span>Send Message</span>
                   <Send size={18} />

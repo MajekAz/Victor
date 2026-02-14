@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Search, MapPin, Briefcase, DollarSign, Clock, ArrowRight, CheckCircle, Upload } from 'lucide-react';
 
@@ -19,8 +18,8 @@ const FindAJob: React.FC = () => {
       <section className="bg-slate-900 pt-32 pb-24 text-white">
         <div className="max-w-7xl mx-auto px-4">
           <div className="max-w-3xl mb-12">
-            <h1 className="text-5xl md:text-7xl font-black mb-6">Your Next <span className="text-blue-500">Career Move</span> Starts Here.</h1>
-            <p className="text-xl text-slate-400">Discover hundreds of local opportunities in Care, Logistics, and more.</p>
+            <h1 className="text-4xl md:text-7xl font-black mb-6">Your Next <span className="text-blue-500">Career Move</span> Starts Here.</h1>
+            <p className="text-lg md:text-xl text-slate-400">Discover hundreds of local opportunities in Care, Logistics, and more.</p>
           </div>
           
           <div className="bg-white p-4 rounded-3xl shadow-2xl flex flex-col md:flex-row gap-4">
@@ -29,7 +28,7 @@ const FindAJob: React.FC = () => {
               <input 
                 type="text" 
                 placeholder="Job title or keywords..." 
-                className="w-full pl-14 pr-6 py-4 bg-slate-50 border-none rounded-2xl text-slate-900 focus:ring-2 focus:ring-blue-600"
+                className="w-full pl-14 pr-6 py-3 md:py-4 bg-slate-50 border-none rounded-2xl text-slate-900 focus:ring-2 focus:ring-blue-600"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -39,10 +38,10 @@ const FindAJob: React.FC = () => {
               <input 
                 type="text" 
                 placeholder="Location..." 
-                className="w-full pl-14 pr-6 py-4 bg-slate-50 border-none rounded-2xl text-slate-900 focus:ring-2 focus:ring-blue-600"
+                className="w-full pl-14 pr-6 py-3 md:py-4 bg-slate-50 border-none rounded-2xl text-slate-900 focus:ring-2 focus:ring-blue-600"
               />
             </div>
-            <button className="bg-blue-600 text-white px-10 py-4 rounded-2xl font-black text-lg hover:bg-blue-700 transition-all">
+            <button className="bg-blue-600 text-white px-6 py-3 md:px-10 md:py-4 rounded-2xl font-black text-base md:text-lg hover:bg-blue-700 transition-all">
               Find Jobs
             </button>
           </div>
@@ -104,7 +103,7 @@ const FindAJob: React.FC = () => {
                       <span className="flex items-center"><Briefcase size={16} className="mr-1.5 text-blue-500" /> {job.type}</span>
                     </div>
                   </div>
-                  <button className="bg-slate-900 text-white px-8 py-3 rounded-xl font-bold hover:bg-blue-600 transition-all whitespace-nowrap">
+                  <button className="bg-slate-900 text-white px-5 py-3 md:px-8 md:py-3 rounded-xl font-bold hover:bg-blue-600 transition-all whitespace-nowrap">
                     Apply Now
                   </button>
                 </div>
@@ -128,7 +127,7 @@ const FindAJob: React.FC = () => {
             
             <div className="grid lg:grid-cols-2 gap-16 relative z-10">
               <div>
-                <h2 className="text-4xl font-black mb-8">Can't Find Your Role?</h2>
+                <h2 className="text-3xl md:text-4xl font-black mb-8">Can't Find Your Role?</h2>
                 <p className="text-blue-100 text-lg mb-10">Register your interest and we'll match you with roles that haven't hit the boards yet.</p>
                 
                 <ul className="space-y-6">
@@ -160,7 +159,7 @@ const FindAJob: React.FC = () => {
                   <Upload className="mx-auto mb-2 text-slate-400" />
                   <p className="text-sm font-bold text-slate-500">Upload CV (PDF/Word)</p>
                 </div>
-                <button className="w-full bg-slate-900 text-white py-4 rounded-xl font-black hover:bg-slate-800 transition-all">
+                <button className="w-full bg-slate-900 text-white py-3 md:py-4 rounded-xl font-black hover:bg-slate-800 transition-all">
                   Get Matched
                 </button>
               </form>

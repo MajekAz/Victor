@@ -32,23 +32,23 @@ const Home: React.FC = () => {
             >
               Recruitment Specialists - London, UK
             </span>
-            <h1 className="text-5xl md:text-8xl font-[900] leading-tight mb-8">
+            <h1 className="text-4xl md:text-8xl font-[900] leading-tight mb-8">
               Connecting <span style={{ color: COLORS.secondary }}>Talent</span> <br className="hidden md:block" /> with Opportunity.
             </h1>
-            <p className="text-xl md:text-2xl text-slate-200 mb-10 leading-relaxed max-w-2xl mx-auto">
+            <p className="text-lg md:text-2xl text-slate-200 mb-10 leading-relaxed max-w-2xl mx-auto">
               We help candidates find reliable jobs and connect employers with the best talent in the Care, Warehouse, Logistics, and Hospitality sectors.
             </p>
             <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 justify-center">
               <Link 
                 to="/find-a-job" 
-                className="text-white px-10 py-4 rounded-xl font-black text-lg transition-all flex items-center justify-center shadow-2xl hover:opacity-90"
+                className="text-white px-6 py-3 md:px-10 md:py-4 rounded-xl font-black text-base md:text-lg transition-all flex items-center justify-center shadow-2xl hover:opacity-90"
                 style={{ backgroundColor: COLORS.primary }}
               >
                 Find a Job <ArrowRight className="ml-2" size={20} />
               </Link>
               <Link 
                 to="/for-employer" 
-                className="text-slate-900 px-10 py-4 rounded-xl font-black text-lg transition-all shadow-lg border border-white/20 hover:opacity-90 flex items-center justify-center" 
+                className="text-slate-900 px-6 py-3 md:px-10 md:py-4 rounded-xl font-black text-base md:text-lg transition-all shadow-lg border border-white/20 hover:opacity-90 flex items-center justify-center" 
                 style={{ backgroundColor: COLORS.secondary }}
               >
                 For Employers
@@ -63,19 +63,19 @@ const Home: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
             <div>
-              <div className="text-4xl font-black mb-2" style={{ color: COLORS.primary }}>500+</div>
+              <div className="text-3xl md:text-4xl font-black mb-2" style={{ color: COLORS.primary }}>500+</div>
               <div className="text-slate-500 font-medium">Placements/Month</div>
             </div>
             <div>
-              <div className="text-4xl font-black mb-2" style={{ color: COLORS.primary }}>150+</div>
+              <div className="text-3xl md:text-4xl font-black mb-2" style={{ color: COLORS.primary }}>150+</div>
               <div className="text-slate-500 font-medium">Partner Employers</div>
             </div>
             <div>
-              <div className="text-4xl font-black mb-2" style={{ color: COLORS.primary }}>98%</div>
+              <div className="text-3xl md:text-4xl font-black mb-2" style={{ color: COLORS.primary }}>98%</div>
               <div className="text-slate-500 font-medium">Satisfaction Rate</div>
             </div>
             <div>
-              <div className="text-4xl font-black mb-2" style={{ color: COLORS.primary }}>24/7</div>
+              <div className="text-3xl md:text-4xl font-black mb-2" style={{ color: COLORS.primary }}>24/7</div>
               <div className="text-slate-500 font-medium">Client Support</div>
             </div>
           </div>
@@ -86,7 +86,7 @@ const Home: React.FC = () => {
       <section className="py-24 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-black text-slate-900 mb-4">Our Expertise</h2>
+            <h2 className="text-3xl md:text-4xl font-black text-slate-900 mb-4">Our Expertise</h2>
             <p className="text-lg text-slate-600 max-w-2xl mx-auto">
               We specialize in sectors where reliability and skill are non-negotiable.
             </p>
@@ -130,7 +130,7 @@ const Home: React.FC = () => {
       {/* 4. Features */}
       <section className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl font-black text-slate-900 mb-6">Why Partner with Promarch?</h2>
+          <h2 className="text-3xl md:text-4xl font-black text-slate-900 mb-6">Why Partner with Promarch?</h2>
           <p className="text-lg text-slate-600 mb-16 max-w-3xl mx-auto">Reliability, speed, and quality vetting are at the core of everything we do.</p>
 
           <div className="grid md:grid-cols-3 gap-12">
@@ -164,14 +164,14 @@ const Home: React.FC = () => {
           <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-6">
             <Link 
               to="/find-a-job" 
-              className="bg-white px-10 py-4 rounded-xl font-black text-lg hover:bg-slate-50 transition-all shadow-lg" 
+              className="bg-white px-6 py-3 md:px-10 md:py-4 rounded-xl font-black text-base md:text-lg hover:bg-slate-50 transition-all shadow-lg" 
               style={{ color: COLORS.primary }}
             >
               Search Jobs
             </Link>
             <Link 
               to="/for-employer" 
-              className="text-white px-10 py-4 rounded-xl font-black text-lg transition-all shadow-lg border border-white/20 hover:opacity-90" 
+              className="text-white px-6 py-3 md:px-10 md:py-4 rounded-xl font-black text-base md:text-lg transition-all shadow-lg border border-white/20 hover:opacity-90" 
               style={{ backgroundColor: COLORS.secondary }}
             >
               Hire Staff

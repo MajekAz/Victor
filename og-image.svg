@@ -1,0 +1,22 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background: Slate 900 -->
+  <rect width="1200" height="630" fill="#0f172a"/>
+  
+  <!-- Logo Icon Group: Centered and Scaled -->
+  <!-- Original icon is 100x100 (visual center ~50,50). We scale by 4x. -->
+  <!-- Positioning at roughly X=600, Y=260 -->
+  <g transform="translate(400, 60) scale(4)">
+    <path d="M0 25 L50 50 L0 75 Z" fill="#2699d6" />
+    <path d="M50 50 L100 25 L100 75 Z" fill="#00459c" />
+    <path d="M50 50 L0 50 L50 25 Z" fill="#00459c" opacity="0.8" />
+  </g>
+  
+  <!-- Text Group -->
+  <g text-anchor="middle" font-family="'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
+    <!-- PROMARCH -->
+    <text x="600" y="440" font-weight="900" font-size="80" fill="#ffffff" letter-spacing="-2">PROMARCH</text>
+    
+    <!-- CONSULTING -->
+    <text x="600" y="500" font-weight="700" font-size="30" fill="#2699d6" letter-spacing="12">CONSULTING</text>
+  </g>
+</svg>

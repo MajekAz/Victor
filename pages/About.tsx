@@ -16,8 +16,8 @@ const About: React.FC = () => {
           <div className="absolute inset-0 bg-slate-900/70 backdrop-blur-[1px]"></div>
         </div>
         <div className="relative z-10 max-w-7xl mx-auto px-4 text-center text-white">
-          <h1 className="text-5xl md:text-7xl font-black mb-8">Our Mission & Values</h1>
-          <p className="text-xl md:text-2xl text-slate-300 max-w-3xl mx-auto leading-relaxed">
+          <h1 className="text-4xl md:text-7xl font-black mb-8">Our Mission & Values</h1>
+          <p className="text-lg md:text-2xl text-slate-300 max-w-3xl mx-auto leading-relaxed">
             At {COMPANY_NAME}, we believe that the right job can transform a life, and the right employee can transform a business.
           </p>
         </div>
@@ -62,7 +62,7 @@ const About: React.FC = () => {
       {/* 3. Core Values Grid */}
       <section className="py-24 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 text-center mb-16">
-          <h2 className="text-4xl font-black mb-4">Values that Drive Us</h2>
+          <h2 className="text-3xl md:text-4xl font-black mb-4">Values that Drive Us</h2>
           <p className="text-slate-600 max-w-2xl mx-auto">The principles we live by every single day at {COMPANY_NAME}.</p>
         </div>
         <div className="max-w-7xl mx-auto px-4 grid md:grid-cols-3 gap-8">
@@ -86,7 +86,7 @@ const About: React.FC = () => {
       {/* 4. Timeline/Evolution Section */}
       <section className="py-24 bg-white">
         <div className="max-w-5xl mx-auto px-4">
-          <h2 className="text-4xl font-black text-center mb-16">Our Journey</h2>
+          <h2 className="text-3xl md:text-4xl font-black text-center mb-16">Our Journey</h2>
           <div className="space-y-12">
             {[
               { year: "2013", title: "Founding", text: "Started as a small firm in London focusing on hospitality staffing." },
@@ -111,7 +111,7 @@ const About: React.FC = () => {
       <section className="py-24 bg-slate-900 text-white">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className="text-4xl font-black mb-8">Work with a partner who cares.</h2>
-          <button className="bg-blue-600 px-8 py-4 rounded-xl font-black text-lg hover:bg-blue-700 transition-all">
+          <button className="bg-blue-600 px-6 py-3 md:px-8 md:py-4 rounded-xl font-black text-lg hover:bg-blue-700 transition-all">
             Join the Promarch Family
           </button>
         </div>

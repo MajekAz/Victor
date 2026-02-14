@@ -17,8 +17,8 @@ const Services: React.FC = () => {
           <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-[1px]"></div>
         </div>
         <div className="relative z-10 max-w-7xl mx-auto px-4 text-center text-white">
-          <h1 className="text-5xl md:text-7xl font-black mb-8 text-white">Our Services</h1>
-          <p className="text-xl md:text-2xl text-blue-100 max-w-3xl mx-auto leading-relaxed">
+          <h1 className="text-4xl md:text-7xl font-black mb-8 text-white">Our Services</h1>
+          <p className="text-lg md:text-2xl text-blue-100 max-w-3xl mx-auto leading-relaxed">
             Comprehensive workforce solutions across the UK's most critical sectors.
           </p>
         </div>
@@ -28,7 +28,7 @@ const Services: React.FC = () => {
       <section className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-black mb-4">How We Work</h2>
+            <h2 className="text-3xl md:text-4xl font-black mb-4">How We Work</h2>
             <p className="text-slate-600">A seamless process designed for speed and reliability.</p>
           </div>
           <div className="grid md:grid-cols-4 gap-8 relative">
@@ -60,7 +60,7 @@ const Services: React.FC = () => {
                 <img src={s.image} alt={s.title} className="rounded-3xl shadow-xl w-full h-[400px] object-cover" />
               </div>
               <div className="lg:w-1/2">
-                <h2 className="text-4xl font-black mb-6">{s.title} Solutions</h2>
+                <h2 className="text-3xl md:text-4xl font-black mb-6">{s.title} Solutions</h2>
                 <p className="text-lg text-slate-600 mb-8 leading-relaxed">{s.description}</p>
                 <ul className="space-y-4 mb-10">
                   <li className="flex items-center text-slate-700">
@@ -75,7 +75,7 @@ const Services: React.FC = () => {
                 </ul>
                 <Link 
                   to="/contact" 
-                  className="inline-block bg-slate-900 text-white px-8 py-3 rounded-xl font-bold hover:bg-slate-800 transition-colors"
+                  className="inline-block bg-slate-900 text-white px-6 py-3 md:px-8 md:py-3 rounded-xl font-bold hover:bg-slate-800 transition-colors"
                 >
                   Request Staff for {s.title}
                 </Link>
@@ -90,7 +90,7 @@ const Services: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
-              <h2 className="text-4xl font-black mb-8">For Candidates</h2>
+              <h2 className="text-3xl md:text-4xl font-black mb-8">For Candidates</h2>
               <p className="text-lg text-slate-600 mb-8">Looking for your next role? We provide more than just job listings.</p>
               <div className="grid sm:grid-cols-2 gap-6">
                 {[
@@ -118,7 +118,7 @@ const Services: React.FC = () => {
       {/* 5. Sector Expansion Cards */}
       <section className="py-24 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 text-center">
-          <h2 className="text-4xl font-black mb-16">Additional Niches</h2>
+          <h2 className="text-3xl md:text-4xl font-black mb-16">Additional Niches</h2>
           <div className="grid md:grid-cols-3 gap-8">
             {['Construction', 'Retail', 'IT Support'].map(niche => (
               <div key={niche} className="bg-white p-10 rounded-3xl border border-slate-200 hover:border-blue-500 transition-colors group text-center">
@@ -136,9 +136,9 @@ const Services: React.FC = () => {
       {/* 6. Partner CTA */}
       <section className="py-24 bg-slate-900 text-white text-center">
         <div className="max-w-4xl mx-auto px-4">
-          <h2 className="text-4xl font-black mb-8">Scale Your Business with Reliable Staff</h2>
-          <p className="text-xl text-slate-400 mb-10">Stop worrying about absenteeism and skills gaps. Partner with us today.</p>
-          <Link to="/contact" className="inline-block bg-blue-600 px-10 py-4 rounded-xl font-black text-lg hover:bg-blue-700">
+          <h2 className="text-3xl md:text-4xl font-black mb-8">Scale Your Business with Reliable Staff</h2>
+          <p className="text-lg md:text-xl text-slate-400 mb-10">Stop worrying about absenteeism and skills gaps. Partner with us today.</p>
+          <Link to="/contact" className="inline-block bg-blue-600 px-6 py-3 md:px-10 md:py-4 rounded-xl font-black text-lg hover:bg-blue-700">
             Enquire Now
           </Link>
         </div>
