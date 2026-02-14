@@ -11,6 +11,7 @@ import HireTalent from './pages/HireTalent.tsx';
 import FindAJob from './pages/FindAJob.tsx';
 import ForEmployer from './pages/ForEmployer.tsx';
 import Terms from './pages/Terms.tsx';
+import AdminDashboard from './pages/AdminDashboard.tsx';
 
 // Scroll to top on route change
 const ScrollToTop = () => {
@@ -37,6 +38,7 @@ const App: React.FC = () => {
           <Route path="/find-a-job" element={<FindAJob />} />
           <Route path="/for-employer" element={<ForEmployer />} />
           <Route path="/terms" element={<Terms />} />
+          <Route path="/admin" element={<AdminDashboard />} />
         </Routes>
       </Layout>
     </Router>

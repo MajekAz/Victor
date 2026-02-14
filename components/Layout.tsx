@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { 
   Menu, X, Phone, Mail, MapPin, 
   Linkedin, Facebook, Twitter, 
-  ChevronRight, Clock, Globe 
+  ChevronRight, Clock, Globe, Shield 
 } from 'lucide-react';
 import { NAV_LINKS, COMPANY_NAME, COMPANY_EMAIL, COMPANY_PHONE, COMPANY_ADDRESS, COLORS } from '../constants.tsx';
 import { Logo } from './Logo.tsx';
@@ -145,6 +145,15 @@ const Navbar = () => {
                   <ChevronRight size={20} className={location.pathname === link.href ? 'text-blue-600' : 'text-slate-300'} />
                 </Link>
               ))}
+              {/* Admin Link Mobile */}
+               <Link
+                  to="/admin"
+                  onClick={() => setIsOpen(false)}
+                  className="text-2xl font-black flex items-center justify-between group py-2 text-slate-400 hover:text-blue-600 hover:pl-2 transition-all"
+                >
+                  Admin Dashboard
+                  <Shield size={20} className="text-slate-300" />
+                </Link>
             </div>
 
             <div className="mt-auto pt-8 border-t border-slate-100">
@@ -251,6 +260,9 @@ const Footer = () => (
       <div className="border-t border-slate-800 pt-10 flex flex-col md:flex-row justify-between items-center text-xs text-slate-500 space-y-4 md:space-y-0">
         <p>© {new Date().getFullYear()} {COMPANY_NAME}. All rights reserved.</p>
         <div className="flex space-x-8">
+          <Link to="/admin" className="text-blue-500 font-bold hover:text-white transition-colors flex items-center">
+             <Shield size={12} className="mr-1" /> Admin Dashboard
+          </Link>
           <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
           <Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
         </div>

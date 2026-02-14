@@ -1,18 +1,51 @@
 import React, { useState } from 'react';
-import { Mail, Phone, MapPin, Send, MessageCircle, Clock } from 'lucide-react';
+import { Mail, Phone, MapPin, Send, MessageCircle, Clock, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import { COMPANY_EMAIL, COMPANY_PHONE, COMPANY_ADDRESS } from '../constants.tsx';
 
 const Contact: React.FC = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    subject: '',
+    subject: 'Hiring Staff', // Default value to match select option
     message: ''
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    alert("Message sent! We'll get back to you shortly.");
+    setStatus('submitting');
+
+    try {
+      // Sending to the local API endpoint (works when hosted on Hostinger in public_html)
+      const response = await fetch('/api/submit_contact.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      // Handle non-JSON responses (e.g., PHP errors) gracefully
+      const text = await response.text();
+      let result;
+      try {
+        result = JSON.parse(text);
+      } catch (err) {
+        console.error("Invalid JSON response:", text);
+        throw new Error("Server returned invalid response");
+      }
+
+      if (response.ok && !result.error) {
+        setStatus('success');
+        setFormData({ name: '', email: '', subject: 'Hiring Staff', message: '' });
+      } else {
+        throw new Error(result.error || 'Submission failed');
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      setStatus('error');
+    }
   };
 
   return (
@@ -105,7 +138,23 @@ const Contact: React.FC = () => {
               </div>
             </div>
             
-            <div className="p-12 lg:p-20">
+            <div className="p-12 lg:p-20 relative">
+              {status === 'success' ? (
+                <div className="absolute inset-0 flex flex-col items-center justify-center p-12 text-center bg-white z-10">
+                  <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-6">
+                    <CheckCircle size={40} />
+                  </div>
+                  <h3 className="text-2xl font-black text-slate-900 mb-2">Message Sent!</h3>
+                  <p className="text-slate-600 mb-8">Thank you for contacting Promarch Consulting. We will get back to you shortly.</p>
+                  <button 
+                    onClick={() => setStatus('idle')}
+                    className="bg-slate-100 text-slate-900 font-bold py-3 px-8 rounded-xl hover:bg-slate-200 transition-colors"
+                  >
+                    Send Another Message
+                  </button>
+                </div>
+              ) : null}
+
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
@@ -113,9 +162,11 @@ const Contact: React.FC = () => {
                     <input 
                       type="text" 
                       required
+                      value={formData.name}
                       className="w-full px-5 py-4 bg-slate-100 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none transition-all"
                       placeholder="John Doe"
                       onChange={(e) => setFormData({...formData, name: e.target.value})}
+                      disabled={status === 'submitting'}
                     />
                   </div>
                   <div>
@@ -123,15 +174,22 @@ const Contact: React.FC = () => {
                     <input 
                       type="email" 
                       required
+                      value={formData.email}
                       className="w-full px-5 py-4 bg-slate-100 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none transition-all"
                       placeholder="john@example.com"
                       onChange={(e) => setFormData({...formData, email: e.target.value})}
+                      disabled={status === 'submitting'}
                     />
                   </div>
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-slate-700 mb-2">Subject</label>
-                  <select className="w-full px-5 py-4 bg-slate-100 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none transition-all">
+                  <select 
+                    value={formData.subject}
+                    className="w-full px-5 py-4 bg-slate-100 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none transition-all"
+                    onChange={(e) => setFormData({...formData, subject: e.target.value})}
+                    disabled={status === 'submitting'}
+                  >
                     <option>Hiring Staff</option>
                     <option>Looking for a Job</option>
                     <option>Partnership Inquiry</option>
@@ -143,17 +201,39 @@ const Contact: React.FC = () => {
                   <textarea 
                     rows={4}
                     required
+                    value={formData.message}
                     className="w-full px-5 py-4 bg-slate-100 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none transition-all"
                     placeholder="Tell us more about your needs..."
                     onChange={(e) => setFormData({...formData, message: e.target.value})}
+                    disabled={status === 'submitting'}
                   ></textarea>
                 </div>
+                
+                {status === 'error' && (
+                  <div className="flex items-center text-red-600 bg-red-50 p-4 rounded-xl border border-red-100">
+                    <AlertCircle size={20} className="mr-2" />
+                    <span className="text-sm font-bold">Something went wrong. Please ensure API is reachable.</span>
+                  </div>
+                )}
+
                 <button 
                   type="submit"
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-3 md:py-4 rounded-xl shadow-lg transition-all flex items-center justify-center space-x-2"
+                  disabled={status === 'submitting'}
+                  className={`w-full text-white font-black py-3 md:py-4 rounded-xl shadow-lg transition-all flex items-center justify-center space-x-2 ${
+                    status === 'submitting' ? 'bg-slate-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
+                  }`}
                 >
-                  <span>Send Message</span>
-                  <Send size={18} />
+                  {status === 'submitting' ? (
+                    <>
+                      <Loader2 size={18} className="animate-spin" />
+                      <span>Sending...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Send Message</span>
+                      <Send size={18} />
+                    </>
+                  )}
                 </button>
               </form>
             </div>
