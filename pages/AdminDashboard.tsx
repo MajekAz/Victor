@@ -1,5 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Loader2, AlertCircle, RefreshCw, Mail, Calendar, Info, Globe, Settings, LogOut, Trash2, KeyRound, Shield, Code, Copy, X, Check } from 'lucide-react';
+import { 
+  Loader2, AlertCircle, RefreshCw, Mail, Calendar, Info, Globe, 
+  Settings, LogOut, Trash2, KeyRound, Shield, Code, Copy, X, Check, 
+  Activity, Database, TrendingUp, Users, Briefcase, Reply, Tag 
+} from 'lucide-react';
 
 interface Message {
   id: number;
@@ -16,24 +20,24 @@ const MOCK_MESSAGES: Message[] = [
     id: 101,
     name: "Sarah Williams",
     email: "sarah.w@carehome-london.co.uk",
-    subject: "Hiring Staff",
-    message: "We urgently need 3 qualified nurses for night shifts starting next week. Please contact us to discuss rates.",
+    subject: "Talent Request: Sunrise Care [Care Sector]",
+    message: "SECTOR: Care Sector\nPHONE: 07700900123\nCOMPANY: Sunrise Care\n\nREQUIREMENTS:\nWe urgently need 3 qualified nurses for night shifts.",
     created_at: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString()
   },
   {
     id: 102,
     name: "James Miller",
     email: "james@logistics-solutions.com",
-    subject: "Partnership Inquiry",
-    message: "Hi, we are a logistics firm looking to partner with a reliable agency for seasonal warehouse staff.",
+    subject: "Employer Callback: FastTrack Logistics",
+    message: "Employer callback request.\n\nCompany: FastTrack Logistics\nSector: Logistics\nPhone: 02081234567",
     created_at: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString()
   },
   {
     id: 103,
     name: "David Chen",
     email: "david.c@email.com",
-    subject: "Looking for a Job",
-    message: "I am a forklift driver with 5 years experience looking for immediate work in East London. Attached is my CV details...",
+    subject: "Candidate Registration: Logistics",
+    message: "New candidate registration.\nSector: Logistics\nName: David Chen",
     created_at: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString()
   }
 ];
@@ -80,12 +84,15 @@ if ($conn->connect_error) {
   },
   {
     name: "public_html/api/submit_contact.php",
-    desc: "3. Handles submissions and creates the table automatically.",
+    desc: "3. Handles submissions, DB Insert, AND Email Sending.",
     code: `<?php
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
+
+// Set timezone to UK
+date_default_timezone_set('Europe/London');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
@@ -123,6 +130,27 @@ if(isset($data->name) && isset($data->email)) {
             VALUES ('$name', '$email', '$subject', '$message', '$created_at')";
 
     if ($conn->query($sql) === TRUE) {
+        // --- EMAIL NOTIFICATION LOGIC ---
+        $to = "info@promarchconsulting.co.uk"; // <--- ENTER YOUR EMAIL HERE to receive notifications
+        $email_subject = "New Lead: $subject";
+        
+        $email_content = "You have received a new message via Promarch Consulting website.\n\n";
+        $email_content .= "Name: $name\n";
+        $email_content .= "Email: $email\n";
+        $email_content .= "Subject: $subject\n";
+        $email_content .= "Date: $created_at\n\n";
+        $email_content .= "--------------------------------------------------\n";
+        $email_content .= "Message:\n$message\n";
+        $email_content .= "--------------------------------------------------\n";
+
+        // Headers for better delivery
+        $headers = "From: no-reply@promarchconsulting.co.uk\r\n";
+        $headers .= "Reply-To: $email\r\n";
+        $headers .= "X-Mailer: PHP/" . phpversion();
+
+        // Attempt to send email (suppress errors to not break JSON response)
+        @mail($to, $email_subject, $email_content, $headers);
+
         echo json_encode(["message" => "Message sent successfully"]);
     } else {
         http_response_code(500);
@@ -221,10 +249,25 @@ const AdminDashboard: React.FC = () => {
   const [showConfig, setShowConfig] = useState(false);
   const [showServerSetup, setShowServerSetup] = useState(false);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [healthStatus, setHealthStatus] = useState<Record<string, string>>({});
 
   // Config State
   const [apiHost, setApiHost] = useState<string>(() => localStorage.getItem('api_host') || '');
   const [isDevEnvironment, setIsDevEnvironment] = useState(false);
+
+  // Computed Stats
+  const totalMessages = messages.length;
+  const hiringCount = messages.filter(m => 
+    m.subject.toLowerCase().includes('hiring') || 
+    m.subject.toLowerCase().includes('staff') ||
+    m.subject.toLowerCase().includes('employer') ||
+    m.subject.toLowerCase().includes('talent request')
+  ).length;
+  const jobCount = messages.filter(m => 
+    m.subject.toLowerCase().includes('job') || 
+    m.subject.toLowerCase().includes('work') ||
+    m.subject.toLowerCase().includes('candidate')
+  ).length;
 
   // Check Authentication on Mount
   useEffect(() => {
@@ -279,6 +322,27 @@ const AdminDashboard: React.FC = () => {
     setTimeout(() => setCopiedIndex(null), 2000);
   };
 
+  const checkHealth = async () => {
+     setHealthStatus({});
+     const baseUrl = apiHost || '';
+     const files = ['get_messages.php', 'submit_contact.php'];
+     const results: Record<string, string> = {};
+
+     for (const file of files) {
+        try {
+           const url = `${baseUrl}/api/${file}`;
+           const res = await fetch(url, { method: 'OPTIONS' }); // Using OPTIONS to check existence without trigger
+           if (res.status === 200 || res.status === 204) results[file] = 'OK';
+           else if (res.status === 404) results[file] = 'Missing (404)';
+           else if (res.status === 500) results[file] = 'Database Error (500)';
+           else results[file] = `Error ${res.status}`;
+        } catch (e) {
+           results[file] = 'Network/CORS Error';
+        }
+     }
+     setHealthStatus(results);
+  };
+
   const handleDelete = async (id: number) => {
     if (!window.confirm("Are you sure you want to permanently delete this message?")) return;
 
@@ -296,6 +360,10 @@ const AdminDashboard: React.FC = () => {
     } catch (e) {
       console.warn("Delete API not available or failed, but message removed from view.");
     }
+  };
+
+  const handleReply = (email: string, subject: string) => {
+    window.location.href = `mailto:${email}?subject=Re: ${subject}`;
   };
 
   const fetchMessages = async (hostOverride?: string) => {
@@ -378,6 +446,32 @@ const AdminDashboard: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Helper to get initials
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .slice(0, 2)
+      .join('')
+      .toUpperCase();
+  };
+
+  // Helper to determine category based on subject
+  const getMessageCategory = (subject: string) => {
+    const s = subject.toLowerCase();
+    
+    // Check specific form subjects
+    if (s.includes('talent request')) return { label: 'Employer Lead', color: 'bg-purple-100 text-purple-700 border-purple-200', icon: Briefcase };
+    if (s.includes('employer callback')) return { label: 'Employer Lead', color: 'bg-purple-100 text-purple-700 border-purple-200', icon: Briefcase };
+    if (s.includes('candidate registration')) return { label: 'Job Seeker', color: 'bg-emerald-100 text-emerald-700 border-emerald-200', icon: Users };
+    
+    // Check fallback keywords from contact form
+    if (s.includes('hiring staff') || s.includes('partnership')) return { label: 'Business Inquiry', color: 'bg-blue-100 text-blue-700 border-blue-200', icon: Globe };
+    if (s.includes('job') || s.includes('work')) return { label: 'Job Seeker', color: 'bg-emerald-100 text-emerald-700 border-emerald-200', icon: Users };
+    
+    return { label: 'General Inquiry', color: 'bg-slate-100 text-slate-700 border-slate-200', icon: Mail };
   };
 
   // ----------------------------------------------------------------------
@@ -474,7 +568,7 @@ const AdminDashboard: React.FC = () => {
             <h3 className="text-xl font-black text-slate-900 mb-2 flex items-center">
                <Globe className="mr-2 text-blue-500" /> Connect to Live Backend
             </h3>
-            <div className="flex gap-4">
+            <div className="flex gap-4 mb-4">
               <input 
                 type="text" 
                 placeholder="https://promarchconsulting.co.uk" 
@@ -484,6 +578,23 @@ const AdminDashboard: React.FC = () => {
               />
               <button onClick={() => fetchMessages()} className="bg-slate-900 text-white px-6 rounded-lg font-bold">Save</button>
             </div>
+            <div className="bg-slate-100 p-4 rounded-lg flex items-center justify-between">
+               <div>
+                  <h4 className="font-bold text-sm text-slate-700 flex items-center"><Activity size={16} className="mr-2"/> API Health Check</h4>
+                  <p className="text-xs text-slate-500">Ping server to verify file existence</p>
+               </div>
+               <button onClick={checkHealth} className="text-blue-600 font-bold text-sm hover:underline">Check API Status</button>
+            </div>
+            {Object.keys(healthStatus).length > 0 && (
+                <div className="mt-4 grid grid-cols-2 gap-2">
+                    {Object.entries(healthStatus).map(([file, status]) => (
+                        <div key={file} className={`p-3 rounded border text-xs font-mono flex justify-between ${status === 'OK' ? 'bg-green-50 border-green-200 text-green-700' : 'bg-red-50 border-red-200 text-red-700'}`}>
+                            <span>{file}</span>
+                            <span className="font-bold">{status}</span>
+                        </div>
+                    ))}
+                </div>
+            )}
           </div>
         )}
 
@@ -569,6 +680,37 @@ const AdminDashboard: React.FC = () => {
           </div>
         )}
 
+        {/* ANALYTICS CARDS */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center">
+                <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mr-4">
+                    <Database size={24} />
+                </div>
+                <div>
+                    <div className="text-slate-500 text-sm font-bold uppercase tracking-wider">Total Inquiries</div>
+                    <div className="text-3xl font-black text-slate-900">{totalMessages}</div>
+                </div>
+            </div>
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center">
+                <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mr-4">
+                    <Briefcase size={24} />
+                </div>
+                <div>
+                    <div className="text-slate-500 text-sm font-bold uppercase tracking-wider">Job Applications</div>
+                    <div className="text-3xl font-black text-slate-900">{jobCount}</div>
+                </div>
+            </div>
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center">
+                <div className="w-12 h-12 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mr-4">
+                    <Users size={24} />
+                </div>
+                <div>
+                    <div className="text-slate-500 text-sm font-bold uppercase tracking-wider">Hiring Requests</div>
+                    <div className="text-3xl font-black text-slate-900">{hiringCount}</div>
+                </div>
+            </div>
+        </div>
+
         {/* MESSAGES TABLE */}
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-100">
           <div className="overflow-x-auto">
@@ -576,6 +718,7 @@ const AdminDashboard: React.FC = () => {
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-200">
                   <th className="p-5 text-xs font-black uppercase tracking-widest text-slate-500">Date</th>
+                  <th className="p-5 text-xs font-black uppercase tracking-widest text-slate-500">Type</th>
                   <th className="p-5 text-xs font-black uppercase tracking-widest text-slate-500">Sender</th>
                   <th className="p-5 text-xs font-black uppercase tracking-widest text-slate-500">Subject</th>
                   <th className="p-5 text-xs font-black uppercase tracking-widest text-slate-500">Message</th>
@@ -585,12 +728,15 @@ const AdminDashboard: React.FC = () => {
               <tbody className="divide-y divide-slate-100">
                 {messages.length === 0 && !loading ? (
                   <tr>
-                    <td colSpan={5} className="p-12 text-center text-slate-500 font-medium">
+                    <td colSpan={6} className="p-12 text-center text-slate-500 font-medium">
                       No messages found.
                     </td>
                   </tr>
                 ) : (
-                  messages.map((msg) => (
+                  messages.map((msg) => {
+                    const category = getMessageCategory(msg.subject);
+                    const CategoryIcon = category.icon;
+                    return (
                     <tr key={msg.id} className="hover:bg-blue-50/50 transition-colors group">
                       <td className="p-5 whitespace-nowrap text-sm text-slate-500">
                         <div className="flex items-center">
@@ -602,13 +748,26 @@ const AdminDashboard: React.FC = () => {
                         </div>
                       </td>
                       <td className="p-5">
-                        <div className="font-bold text-slate-900">{msg.name}</div>
-                        <a href={`mailto:${msg.email}`} className="text-sm text-blue-600 flex items-center hover:underline mt-1">
-                          <Mail size={12} className="mr-1" /> {msg.email}
-                        </a>
+                         <div className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold border ${category.color}`}>
+                            <CategoryIcon size={12} className="mr-1.5" />
+                            {category.label}
+                         </div>
                       </td>
                       <td className="p-5">
-                        <span className="inline-block px-3 py-1 bg-slate-100 rounded-full text-xs font-bold text-slate-700 border border-slate-200">
+                        <div className="flex items-center">
+                           <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold mr-3">
+                               {getInitials(msg.name)}
+                           </div>
+                           <div>
+                                <div className="font-bold text-slate-900">{msg.name}</div>
+                                <a href={`mailto:${msg.email}`} className="text-sm text-blue-600 flex items-center hover:underline mt-0.5">
+                                <Mail size={12} className="mr-1" /> {msg.email}
+                                </a>
+                           </div>
+                        </div>
+                      </td>
+                      <td className="p-5">
+                        <span className="text-sm font-medium text-slate-700">
                           {msg.subject}
                         </span>
                       </td>
@@ -618,16 +777,25 @@ const AdminDashboard: React.FC = () => {
                         </p>
                       </td>
                       <td className="p-5 text-right">
-                        <button 
-                          onClick={() => handleDelete(msg.id)}
-                          className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                          title="Delete Message"
-                        >
-                          <Trash2 size={18} />
-                        </button>
+                        <div className="flex justify-end gap-2">
+                            <button 
+                            onClick={() => handleReply(msg.email, msg.subject)}
+                            className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            title="Reply via Email"
+                            >
+                            <Reply size={18} />
+                            </button>
+                            <button 
+                            onClick={() => handleDelete(msg.id)}
+                            className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Delete Message"
+                            >
+                            <Trash2 size={18} />
+                            </button>
+                        </div>
                       </td>
                     </tr>
-                  ))
+                  )})
                 )}
               </tbody>
             </table>

@@ -35,7 +35,7 @@ const ForEmployer: React.FC = () => {
         body: JSON.stringify(payload),
       });
 
-      if (response.status === 404) throw new Error("API file not found (404).");
+      if (response.status === 404) throw new Error(`API file not found (404) at: ${apiUrl}`);
       
       const text = await response.text();
       if (text.trim().startsWith('<')) throw new Error("Server returned HTML. API path likely incorrect.");
@@ -258,7 +258,7 @@ const ForEmployer: React.FC = () => {
                     <div className="flex items-center justify-center font-bold">
                        <AlertCircle size={16} className="mr-2" /> Error
                     </div>
-                    {errorMessage}
+                    <span className="break-all text-xs">{errorMessage}</span>
                     <button 
                       type="button" 
                       onClick={() => { setStatus('success'); navigate('/contact-success'); }}

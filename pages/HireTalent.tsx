@@ -59,7 +59,7 @@ const HireTalent: React.FC = () => {
       });
 
       if (response.status === 404) {
-        throw new Error("API file not found (404). Please ensure 'submit_contact.php' is uploaded to the /api/ folder.");
+        throw new Error(`API file not found (404) at: ${apiUrl}. Please upload 'submit_contact.php' to the /api/ folder.`);
       }
 
       // Handle response
@@ -67,7 +67,7 @@ const HireTalent: React.FC = () => {
       
       // Check for HTML (index.html returned by SPA router for unknown paths)
       if (text.trim().startsWith('<')) {
-         throw new Error("Server returned HTML instead of JSON. The API path is likely incorrect.");
+         throw new Error(`Server returned HTML instead of JSON from ${apiUrl}.`);
       }
 
       let result;
@@ -344,7 +344,7 @@ const HireTalent: React.FC = () => {
                         <AlertCircle size={20} className="mr-2 mt-0.5 flex-shrink-0" />
                         <div>
                         <span className="text-sm font-bold block">Submission Failed</span>
-                        <span className="text-xs">{errorMessage}</span>
+                        <span className="text-xs break-all">{errorMessage}</span>
                         </div>
                     </div>
                     <button 
