@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { NAV_LINKS, COMPANY_NAME, COMPANY_EMAIL, COMPANY_PHONE, COMPANY_ADDRESS, COMPANY_WHATSAPP, COLORS } from '../constants.tsx';
 import { Logo } from './Logo.tsx';
+import { CookieConsent } from './CookieConsent.tsx';
 
 // Custom WhatsApp Icon Component
 const WhatsAppIcon = ({ size = 20, className = "" }: { size?: number, className?: string }) => (
@@ -299,8 +300,7 @@ const Footer = () => (
           <Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
         </div>
       </div>
-    </div>
-  </footer>
+    </footer>
 );
 
 export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -311,6 +311,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         {children}
       </main>
       <Footer />
+      <CookieConsent />
       {/* Floating WhatsApp Button */}
       <a 
         href={`https://wa.me/${COMPANY_WHATSAPP}`} 

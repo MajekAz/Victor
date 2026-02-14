@@ -64,10 +64,10 @@ const Privacy: React.FC = () => {
             </h2>
             <p>We only use your personal data when the law allows us to. Most commonly, we will use your personal data in the following circumstances:</p>
             <ul className="list-disc pl-6 space-y-2 mb-8">
-              <li>To register you as a new candidate or client.</li>
+              <li>To register you as a new candidate or client (Performance of Contract).</li>
               <li>To match candidates with potential employers (Recruitment Services).</li>
               <li>To manage our relationship with you, including notifying you about changes to our terms or privacy policy.</li>
-              <li>To administer and protect our business and this website.</li>
+              <li>To administer and protect our business and this website (Legitimate Interest).</li>
             </ul>
 
             <h2 className="flex items-center text-2xl font-black text-slate-900 mb-6">
@@ -83,11 +83,17 @@ const Privacy: React.FC = () => {
             </ul>
 
             <h2 className="flex items-center text-2xl font-black text-slate-900 mb-6">
-              <Cookie className="mr-3 text-blue-500" /> 4. Cookies
+              <Cookie className="mr-3 text-blue-500" /> 4. Cookie Policy
             </h2>
             <p>
-              Our website uses cookies to distinguish you from other users of our website. This helps us to provide you with a good experience when you browse our website and also allows us to improve our site. You can set your browser to refuse all or some browser cookies, or to alert you when websites set or access cookies.
+              Our website uses cookies to distinguish you from other users of our website. We categorize cookies as follows:
             </p>
+            <ul className="list-disc pl-6 space-y-2 mb-8">
+              <li><strong>Strictly Necessary Cookies:</strong> Required for the operation of our website (e.g., secure login, form submission tokens).</li>
+              <li><strong>Analytical/Performance Cookies:</strong> Allow us to recognize and count the number of visitors to see how visitors move around our website.</li>
+              <li><strong>Functionality Cookies:</strong> Used to recognize you when you return to our website (e.g., remembering your language or region).</li>
+            </ul>
+            <p>You can set your browser to refuse all or some browser cookies, or to alert you when websites set or access cookies. If you disable or refuse cookies, please note that some parts of this website may become inaccessible or not function properly.</p>
 
             <h2 className="flex items-center text-2xl font-black text-slate-900 mb-6">
               <FileText className="mr-3 text-blue-500" /> 5. Contact Us
@@ -98,6 +104,7 @@ const Privacy: React.FC = () => {
             <div className="bg-blue-50 p-6 rounded-xl border border-blue-100 not-prose mt-4">
               <p className="font-bold text-slate-900 mb-1">Data Protection Officer</p>
               <p className="text-blue-600 font-bold mb-0">{COMPANY_EMAIL}</p>
+              <p className="text-slate-500 text-sm mt-2">124 City Road, London, EC1V 2NX, United Kingdom</p>
             </div>
 
           </div>
