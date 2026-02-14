@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Loader2, AlertCircle, RefreshCw, Mail, Calendar, Info, CheckCircle, ServerCrash, FileQuestion, Lock, ExternalLink, Globe, Settings, LogOut, Trash2, KeyRound, Shield } from 'lucide-react';
+import { Loader2, AlertCircle, RefreshCw, Mail, Calendar, Info, Globe, Settings, LogOut, Trash2, KeyRound, Shield, Code, Copy, X, Check } from 'lucide-react';
 import { COLORS } from '../constants.tsx';
 
 interface Message {
@@ -39,6 +39,132 @@ const MOCK_MESSAGES: Message[] = [
   }
 ];
 
+// PHP TEMPLATES FOR USER TO COPY
+const SERVER_FILES = [
+  {
+    name: "public_html/api/.htaccess",
+    desc: "Critical for allowing access to API files while React handles the rest.",
+    code: `<IfModule mod_rewrite.c>
+  RewriteEngine On
+  # Allow access to existing files in API folder
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^(.*)$ index.php [QSA,L]
+</IfModule>
+
+<IfModule mod_headers.c>
+    Header set Access-Control-Allow-Origin "*"
+    Header set Access-Control-Allow-Methods "GET, POST, OPTIONS"
+    Header set Access-Control-Allow-Headers "Content-Type"
+</IfModule>`
+  },
+  {
+    name: "public_html/api/db_connect.php",
+    desc: "Database connection settings. Update with your Hostinger DB credentials.",
+    code: `<?php
+$host = "localhost"; 
+$user = "u123456789_admin"; // CHANGE THIS
+$pass = "YourPassword123!"; // CHANGE THIS
+$dbname = "u123456789_promarch"; // CHANGE THIS
+
+$conn = new mysqli($host, $user, $pass, $dbname);
+
+if ($conn->connect_error) {
+    die(json_encode(["error" => "Connection failed: " . $conn->connect_error]));
+}
+?>`
+  },
+  {
+    name: "public_html/api/get_messages.php",
+    desc: "Retrieves messages for the admin dashboard.",
+    code: `<?php
+header("Access-Control-Allow-Origin: *");
+header("Content-Type: application/json; charset=UTF-8");
+include_once 'db_connect.php';
+
+$sql = "SELECT * FROM contact_messages ORDER BY id DESC";
+$result = $conn->query($sql);
+
+$messages = array();
+if ($result->num_rows > 0) {
+    while($row = $result->fetch_assoc()) {
+        $messages[] = $row;
+    }
+}
+echo json_encode($messages);
+$conn->close();
+?>`
+  },
+  {
+    name: "public_html/api/submit_contact.php",
+    desc: "Handles form submissions from Contact and Hire pages.",
+    code: `<?php
+header("Access-Control-Allow-Origin: *");
+header("Content-Type: application/json; charset=UTF-8");
+header("Access-Control-Allow-Methods: POST");
+header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
+
+include_once 'db_connect.php';
+
+$data = json_decode(file_get_contents("php://input"));
+
+if(isset($data->name) && isset($data->email)) {
+    $name = $conn->real_escape_string($data->name);
+    $email = $conn->real_escape_string($data->email);
+    $subject = $conn->real_escape_string($data->subject);
+    $message = $conn->real_escape_string($data->message);
+    $created_at = date('Y-m-d H:i:s');
+
+    // Create table if not exists
+    $conn->query("CREATE TABLE IF NOT EXISTS contact_messages (
+        id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(50) NOT NULL,
+        email VARCHAR(50) NOT NULL,
+        subject VARCHAR(100),
+        message TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )");
+
+    $sql = "INSERT INTO contact_messages (name, email, subject, message, created_at)
+            VALUES ('$name', '$email', '$subject', '$message', '$created_at')";
+
+    if ($conn->query($sql) === TRUE) {
+        echo json_encode(["message" => "Message sent successfully"]);
+    } else {
+        echo json_encode(["error" => "Error: " . $sql . "<br>" . $conn->error]);
+    }
+} else {
+    echo json_encode(["error" => "Incomplete data"]);
+}
+$conn->close();
+?>`
+  },
+  {
+    name: "public_html/api/delete_message.php",
+    desc: "Allows deleting messages from dashboard.",
+    code: `<?php
+header("Access-Control-Allow-Origin: *");
+header("Content-Type: application/json; charset=UTF-8");
+header("Access-Control-Allow-Methods: POST");
+include_once 'db_connect.php';
+
+$data = json_decode(file_get_contents("php://input"));
+
+if(isset($data->id)) {
+    $id = intval($data->id);
+    $sql = "DELETE FROM contact_messages WHERE id=$id";
+
+    if ($conn->query($sql) === TRUE) {
+        echo json_encode(["message" => "Deleted successfully"]);
+    } else {
+        echo json_encode(["error" => "Error deleting: " . $conn->error]);
+    }
+}
+$conn->close();
+?>`
+  }
+];
+
 const AdminDashboard: React.FC = () => {
   // Auth State
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -48,14 +174,18 @@ const AdminDashboard: React.FC = () => {
   // Data State
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
-  const [errorDetails, setErrorDetails] = useState<{ type: '404' | 'cors' | 'file_missing' | '500' | 'json' | 'db_auth' | 'unknown', message: string } | null>(null);
+  const [errorDetails, setErrorDetails] = useState<{ type: string, message: string } | null>(null);
   const [isDemoMode, setIsDemoMode] = useState(false);
   const [debugUrl, setDebugUrl] = useState<string>('');
   
+  // UI State
+  const [showConfig, setShowConfig] = useState(false);
+  const [showServerSetup, setShowServerSetup] = useState(false);
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+
   // Config State
   const [apiHost, setApiHost] = useState<string>(() => localStorage.getItem('api_host') || '');
   const [isDevEnvironment, setIsDevEnvironment] = useState(false);
-  const [showConfig, setShowConfig] = useState(false);
 
   // Check Authentication on Mount
   useEffect(() => {
@@ -81,8 +211,6 @@ const AdminDashboard: React.FC = () => {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    // Simple password check. In production, this should be handled by the backend.
-    // Default password is 'admin123'
     if (passwordInput === 'admin123') {
       setIsAuthenticated(true);
       setAuthError(false);
@@ -106,13 +234,18 @@ const AdminDashboard: React.FC = () => {
     setTimeout(() => fetchMessages(cleanHost), 100);
   };
 
+  const copyToClipboard = (text: string, index: number) => {
+    navigator.clipboard.writeText(text);
+    setCopiedIndex(index);
+    setTimeout(() => setCopiedIndex(null), 2000);
+  };
+
   const handleDelete = async (id: number) => {
     if (!window.confirm("Are you sure you want to permanently delete this message?")) return;
 
     // Optimistically remove from UI
     setMessages(prev => prev.filter(msg => msg.id !== id));
 
-    // Attempt to call backend deletion (Optional: requires delete_messages.php on server)
     try {
        const activeHost = apiHost || '';
        const targetPath = `${activeHost}/api/delete_message.php`;
@@ -153,29 +286,16 @@ const AdminDashboard: React.FC = () => {
       });
       
       if (response.status === 404) {
-        let setupFileExists = false;
-        try {
-            const checkSetup = await fetch(`${baseUrl}/api/setup_table.php`);
-            if (checkSetup.status === 200) setupFileExists = true;
-        } catch(e) {}
-
-        if (setupFileExists) {
-           throw { 
-            type: 'file_missing', 
-            message: "Database connected successfully (setup_table found), but 'get_messages.php' is missing." 
-          };
-        }
-
         throw { 
           type: '404', 
-          message: `The file '${targetPath}' was not found.` 
+          message: `The file '${targetPath}' was not found. You haven't uploaded the PHP API files yet, or they are in the wrong folder.` 
         };
       }
 
       if (response.status === 500) {
         throw { 
           type: '500', 
-          message: "Internal Server Error. The PHP script crashed." 
+          message: "Internal Server Error. The PHP script crashed. Check your db_connect.php credentials." 
         };
       }
 
@@ -186,32 +306,34 @@ const AdminDashboard: React.FC = () => {
         data = JSON.parse(text);
       } catch (e) {
         const preview = text.substring(0, 100).replace(/<[^>]*>?/gm, '');
+        // Detect if it's the index.html being served (Hostinger default behavior for 404s sometimes)
+        if (text.includes("<!DOCTYPE html>")) {
+           throw { 
+            type: 'html_response', 
+            message: `The server returned the React app (index.html) instead of the API. This means the API file is missing or .htaccess is misconfigured.` 
+          };
+        }
         throw { 
           type: 'json', 
-          message: `The server responded, but not with data. Response: "${preview}..."` 
+          message: `Invalid JSON response: "${preview}..."` 
         };
       }
 
       if (Array.isArray(data)) {
-        // Sort by ID descending (newest first) if created_at isn't reliable
         const sorted = data.sort((a: any, b: any) => b.id - a.id);
         setMessages(sorted);
       } else if (data.error) {
-        if (data.error.includes("Access denied")) {
-           throw { type: 'db_auth', message: data.error };
-        }
-        throw { type: 'unknown', message: data.error };
+        throw { type: 'api_error', message: data.error };
       } else {
         setMessages([]);
       }
 
     } catch (err: any) {
       console.warn("API Connection Issue:", err);
-      if (err.type) {
-        setErrorDetails(err);
-      } else {
-        setErrorDetails({ type: 'unknown', message: err.message || "Unknown connectivity error" });
-      }
+      setErrorDetails({ 
+        type: err.type || 'unknown', 
+        message: err.message || "Unknown connectivity error" 
+      });
       setMessages(MOCK_MESSAGES);
       setIsDemoMode(true);
     } finally {
@@ -220,7 +342,7 @@ const AdminDashboard: React.FC = () => {
   };
 
   // ----------------------------------------------------------------------
-  // RENDER: LOGIN SCREEN
+  // RENDER: LOGIN
   // ----------------------------------------------------------------------
   if (!isAuthenticated) {
     return (
@@ -256,9 +378,6 @@ const AdminDashboard: React.FC = () => {
               Login to Dashboard
             </button>
           </form>
-          <div className="mt-6 text-center text-xs text-slate-400">
-            <p>Protected Area. Unauthorized access is prohibited.</p>
-          </div>
         </div>
       </div>
     );
@@ -269,6 +388,8 @@ const AdminDashboard: React.FC = () => {
   // ----------------------------------------------------------------------
   return (
     <div className="pt-20 min-h-screen bg-slate-50">
+      
+      {/* HEADER */}
       <div className="bg-slate-900 text-white py-12">
         <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4">
           <div>
@@ -308,48 +429,101 @@ const AdminDashboard: React.FC = () => {
 
       <div className="max-w-7xl mx-auto px-4 -mt-8 pb-20">
         
-        {/* DEV ENVIRONMENT CONFIG PANEL */}
+        {/* CONFIG PANEL */}
         {showConfig && (
           <div className="bg-white border-b-4 border-blue-500 p-6 rounded-xl shadow-xl mb-8 animate-fade-in-up">
             <h3 className="text-xl font-black text-slate-900 mb-2 flex items-center">
                <Globe className="mr-2 text-blue-500" /> Connect to Live Backend
             </h3>
             <div className="flex gap-4">
-              <div className="flex-grow">
-                <input 
-                  type="text" 
-                  placeholder="https://promarchconsulting.co.uk" 
-                  defaultValue={apiHost}
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-medium"
-                  onBlur={(e) => saveApiHost(e.target.value)}
-                />
-              </div>
+              <input 
+                type="text" 
+                placeholder="https://promarchconsulting.co.uk" 
+                defaultValue={apiHost}
+                className="flex-grow px-4 py-3 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-medium"
+                onBlur={(e) => saveApiHost(e.target.value)}
+              />
               <button onClick={() => fetchMessages()} className="bg-slate-900 text-white px-6 rounded-lg font-bold">Save</button>
             </div>
           </div>
         )}
 
-        {/* ERROR BANNERS */}
+        {/* ERROR BANNER WITH SETUP ACTION */}
         {errorDetails && (
-          <div className="mb-8 bg-red-50 border border-red-200 p-6 rounded-xl shadow-lg flex items-start">
-             <AlertCircle className="text-red-600 mr-4 mt-1 flex-shrink-0" />
-             <div>
-               <h3 className="text-lg font-black text-red-800">Connection Error</h3>
-               <p className="text-red-700">{errorDetails.message}</p>
-               {errorDetails.type === '404' && <p className="text-xs mt-2 font-mono bg-white p-2 border rounded">{debugUrl}</p>}
+          <div className="mb-8 bg-red-50 border border-red-200 p-6 rounded-xl shadow-lg">
+             <div className="flex items-start">
+               <AlertCircle className="text-red-600 mr-4 mt-1 flex-shrink-0" />
+               <div>
+                 <h3 className="text-lg font-black text-red-800">Connection Error</h3>
+                 <p className="text-red-700 mb-3">{errorDetails.message}</p>
+                 <button 
+                   onClick={() => setShowServerSetup(true)}
+                   className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-bold text-sm inline-flex items-center transition-colors"
+                 >
+                   <Code size={16} className="mr-2" />
+                   View Server Setup & API Files
+                 </button>
+                 {errorDetails.type === '404' && <p className="text-xs mt-3 font-mono bg-white p-2 border rounded">{debugUrl}</p>}
+               </div>
              </div>
           </div>
         )}
 
-        {/* Demo Mode Notice */}
-        {isDemoMode && (
-          <div className="bg-blue-50 border border-blue-200 text-blue-800 p-4 rounded-xl flex items-center mb-8 shadow-sm">
-            <Info size={20} className="mr-2 flex-shrink-0" />
-            <span className="font-medium text-sm">Demo Mode Active: Showing sample data.</span>
+        {/* SETUP MODAL */}
+        {showServerSetup && (
+          <div className="fixed inset-0 bg-slate-900/90 z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl w-full max-w-4xl h-[85vh] flex flex-col shadow-2xl overflow-hidden relative animate-fade-in-up">
+              <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <div>
+                  <h2 className="text-2xl font-black text-slate-900">Backend Server Setup</h2>
+                  <p className="text-slate-500 text-sm">Create these files in your <code>public_html/api</code> folder.</p>
+                </div>
+                <button onClick={() => setShowServerSetup(false)} className="p-2 hover:bg-slate-200 rounded-full transition-colors">
+                  <X size={24} />
+                </button>
+              </div>
+              
+              <div className="overflow-y-auto p-6 space-y-8 bg-slate-50">
+                {SERVER_FILES.map((file, idx) => (
+                  <div key={idx} className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div className="p-4 bg-slate-100 border-b border-slate-200 flex justify-between items-center">
+                      <div>
+                        <h3 className="font-bold text-slate-800 font-mono text-sm">{file.name}</h3>
+                        <p className="text-xs text-slate-500">{file.desc}</p>
+                      </div>
+                      <button 
+                        onClick={() => copyToClipboard(file.code, idx)}
+                        className={`flex items-center px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${copiedIndex === idx ? 'bg-green-100 text-green-700' : 'bg-white border hover:bg-slate-50'}`}
+                      >
+                        {copiedIndex === idx ? <Check size={14} className="mr-1" /> : <Copy size={14} className="mr-1" />}
+                        {copiedIndex === idx ? 'Copied' : 'Copy Code'}
+                      </button>
+                    </div>
+                    <pre className="p-4 bg-slate-900 text-slate-50 text-xs overflow-x-auto font-mono leading-relaxed">
+                      {file.code}
+                    </pre>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="p-4 border-t border-slate-200 bg-white text-right">
+                <button onClick={() => setShowServerSetup(false)} className="bg-slate-900 text-white px-6 py-3 rounded-xl font-bold">
+                  Close Guide
+                </button>
+              </div>
+            </div>
           </div>
         )}
 
-        {/* DATA TABLE */}
+        {/* DEMO MODE NOTICE */}
+        {isDemoMode && (
+          <div className="bg-blue-50 border border-blue-200 text-blue-800 p-4 rounded-xl flex items-center mb-8 shadow-sm">
+            <Info size={20} className="mr-2 flex-shrink-0" />
+            <span className="font-medium text-sm">Demo Mode Active: Showing sample data because the API is unreachable.</span>
+          </div>
+        )}
+
+        {/* MESSAGES TABLE */}
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-100">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
