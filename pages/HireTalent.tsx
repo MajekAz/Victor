@@ -29,7 +29,6 @@ const HireTalent: React.FC = () => {
 
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState<string>('');
-  const [apiHost, setApiHost] = useState<string>(() => localStorage.getItem('api_host') || '');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,7 +44,8 @@ const HireTalent: React.FC = () => {
       message: `SECTOR: ${formData.sector}\nPHONE: ${formData.phone}\nCOMPANY: ${formData.companyName}\n\nREQUIREMENTS:\n${formData.message}`
     };
 
-    // Determine API URL
+    // Determine API URL (fetch fresh from localStorage)
+    const apiHost = localStorage.getItem('api_host') || '';
     const baseUrl = apiHost || '';
     const apiUrl = `${baseUrl}/api/submit_contact.php`;
 

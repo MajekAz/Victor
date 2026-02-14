@@ -18,6 +18,7 @@ const ForEmployer: React.FC = () => {
     setStatus('submitting');
     setErrorMessage('');
 
+    // Fetch fresh from localStorage
     const apiHost = localStorage.getItem('api_host') || '';
     const apiUrl = `${apiHost}/api/submit_contact.php`;
     

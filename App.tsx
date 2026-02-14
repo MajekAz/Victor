@@ -12,6 +12,7 @@ import HireTalent from './pages/HireTalent.tsx';
 import FindAJob from './pages/FindAJob.tsx';
 import ForEmployer from './pages/ForEmployer.tsx';
 import Terms from './pages/Terms.tsx';
+import Privacy from './pages/Privacy.tsx';
 import AdminDashboard from './pages/AdminDashboard.tsx';
 
 // Scroll to top on route change
@@ -40,6 +41,7 @@ const App: React.FC = () => {
           <Route path="/find-a-job" element={<FindAJob />} />
           <Route path="/for-employer" element={<ForEmployer />} />
           <Route path="/terms" element={<Terms />} />
+          <Route path="/privacy" element={<Privacy />} />
           <Route path="/admin" element={<AdminDashboard />} />
         </Routes>
       </Layout>
