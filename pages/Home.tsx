@@ -48,7 +48,8 @@ const Home: React.FC = () => {
               </Link>
               <Link 
                 to="/for-employer" 
-                className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30 text-white px-10 py-4 rounded-xl font-black text-lg transition-all flex items-center justify-center"
+                className="text-slate-900 px-10 py-4 rounded-xl font-black text-lg transition-all shadow-lg border border-white/20 hover:opacity-90 flex items-center justify-center" 
+                style={{ backgroundColor: COLORS.secondary }}
               >
                 For Employers
               </Link>

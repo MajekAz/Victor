@@ -161,8 +161,7 @@ const Navbar = () => {
               
               <Link 
                 to="/hire-talent"
-                className="w-full text-white text-center py-5 rounded-2xl font-black text-xl shadow-xl transition-transform active:scale-95"
-                style={{ backgroundColor: COLORS.primary }}
+                className="block w-full text-white text-center py-5 rounded-2xl font-black text-xl shadow-xl transition-transform active:scale-95 bg-[#00459c] hover:bg-[#003580]"
                 onClick={() => setIsOpen(false)}
               >
                 Hire Talent
