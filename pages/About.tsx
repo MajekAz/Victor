@@ -107,24 +107,6 @@ const About: React.FC = () => {
         </div>
       </section>
 
-      {/* 5. Team Section Placeholder */}
-      <section className="py-24 bg-slate-50">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <h2 className="text-4xl font-black mb-16">The Leadership Team</h2>
-          <div className="grid md:grid-cols-4 gap-8">
-            {[1, 2, 3, 4].map(i => (
-              <div key={i} className="group">
-                <div className="aspect-square bg-slate-200 rounded-2xl overflow-hidden mb-6 relative">
-                  <img src={`https://i.pravatar.cc/300?u=team${i}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform" alt="Team member" />
-                </div>
-                <h4 className="text-lg font-bold">Executive Name</h4>
-                <p className="text-slate-500">Managing Director</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* 6. Contact CTA */}
       <section className="py-24 bg-slate-900 text-white">
         <div className="max-w-4xl mx-auto px-4 text-center">

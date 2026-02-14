@@ -1,6 +1,6 @@
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Calendar, Tag, ArrowLeft, Share2, MessageCircle, User, ChevronRight } from 'lucide-react';
+import { Calendar, ArrowLeft, Share2, MessageCircle } from 'lucide-react';
 import { BLOG_POSTS, COLORS } from '../constants.tsx';
 
 const Post: React.FC = () => {
@@ -120,28 +120,6 @@ const Post: React.FC = () => {
             <p>
               Looking ahead, Promarch Consulting continues to invest in the technologies and people that make the UK job market one of the most vibrant in the world. We are committed to fostering growth and opportunity for every partner we work with.
             </p>
-          </div>
-        </div>
-      </section>
-
-      {/* 3. Author / Bio Section */}
-      <section className="py-16 bg-slate-50 border-y border-slate-100">
-        <div className="max-w-4xl mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center bg-white p-8 rounded-[32px] shadow-sm gap-8">
-            <img 
-              src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=300" 
-              className="w-24 h-24 rounded-2xl object-cover" 
-              alt="Michael Vance - Author" 
-            />
-            <div className="flex-grow text-center md:text-left">
-              <h4 className="text-xl font-black mb-2">Written by Michael Vance</h4>
-              <p className="text-slate-500 mb-4">Head of Sector Strategy at Promarch Consulting. Michael has over 15 years of experience in UK workforce management and corporate placement strategy.</p>
-              <div className="flex justify-center md:justify-start space-x-4">
-                <button className="text-blue-600 text-sm font-bold flex items-center hover:underline group">
-                  View Full Profile <ChevronRight size={14} className="ml-1 group-hover:translate-x-1 transition-transform" />
-                </button>
-              </div>
-            </div>
           </div>
         </div>
       </section>

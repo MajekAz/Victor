@@ -1,9 +1,16 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, CheckCircle, Users, Zap } from 'lucide-react';
-import { SERVICES, TESTIMONIALS, COLORS } from '../constants.tsx';
+import { ArrowRight, CheckCircle, Users, Zap, HeartPulse, Truck, Sparkles, Utensils } from 'lucide-react';
+import { SERVICES, COLORS } from '../constants.tsx';
 
 const Home: React.FC = () => {
+  const iconMap: Record<string, React.ReactNode> = {
+    HeartPulse: <HeartPulse size={24} />,
+    Truck: <Truck size={24} />,
+    Sparkles: <Sparkles size={24} />,
+    Utensils: <Utensils size={24} />,
+  };
+
   return (
     <div className="overflow-hidden">
       {/* 1. Hero Section */}
@@ -74,8 +81,53 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* 3. Features */}
+      {/* 3. Services Overview */}
       <section className="py-24 bg-slate-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-black text-slate-900 mb-4">Our Expertise</h2>
+            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+              We specialize in sectors where reliability and skill are non-negotiable.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {SERVICES.map((service) => (
+              <Link 
+                key={service.id} 
+                to="/services" 
+                className="group block bg-white rounded-3xl overflow-hidden hover:shadow-xl transition-all duration-300 border border-slate-100 hover:border-blue-200"
+              >
+                <div className="h-48 overflow-hidden relative">
+                  <img 
+                    src={service.image} 
+                    alt={service.title} 
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-slate-900/10 group-hover:bg-transparent transition-colors"></div>
+                  <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur p-3 rounded-xl shadow-lg text-blue-600">
+                    {iconMap[service.icon]}
+                  </div>
+                </div>
+                <div className="p-6">
+                  <h3 className="text-xl font-bold mb-3 text-slate-900 group-hover:text-blue-600 transition-colors">
+                    {service.title}
+                  </h3>
+                  <p className="text-slate-500 text-sm leading-relaxed mb-4 line-clamp-3">
+                    {service.description}
+                  </p>
+                  <div className="flex items-center text-blue-600 font-bold text-sm">
+                    Learn More <ArrowRight size={16} className="ml-2 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 4. Features */}
+      <section className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl font-black text-slate-900 mb-6">Why Partner with Promarch?</h2>
           <p className="text-lg text-slate-600 mb-16 max-w-3xl mx-auto">Reliability, speed, and quality vetting are at the core of everything we do.</p>
@@ -86,7 +138,7 @@ const Home: React.FC = () => {
               { icon: <CheckCircle size={32} />, title: "Rigorous Vetting", desc: "Every candidate undergoes background checks and skills assessment before placement." },
               { icon: <Zap size={32} />, title: "Rapid Turnaround", desc: "Need staff tomorrow? Our automated system and deep database make it happen." }
             ].map((feature, i) => (
-              <div key={i} className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:shadow-xl transition-all group text-left">
+              <div key={i} className="bg-slate-50 p-8 rounded-2xl shadow-sm border border-slate-100 hover:shadow-xl transition-all group text-left">
                 <div 
                   className="w-16 h-16 rounded-xl flex items-center justify-center mb-6 group-hover:text-white transition-all"
                   style={{ backgroundColor: `${COLORS.secondary}15`, color: COLORS.primary }}
@@ -101,7 +153,7 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* 6. Call to Action */}
+      {/* 5. Call to Action */}
       <section className="py-24" style={{ backgroundColor: COLORS.primary }}>
         <div className="max-w-5xl mx-auto px-4 text-center">
           <h2 className="text-4xl md:text-5xl font-black text-white mb-8">Ready for your next career move?</h2>
