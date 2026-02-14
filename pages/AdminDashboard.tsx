@@ -45,8 +45,21 @@ const MOCK_MESSAGES: Message[] = [
 // PHP TEMPLATES FOR USER TO COPY
 const SERVER_FILES = [
   {
+    name: "public_html/.htaccess",
+    desc: "1. Root Server Config (REQUIRED for clean URLs)",
+    code: `<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+  RewriteRule ^index\\.html$ - [L]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{REQUEST_FILENAME} !-l
+  RewriteRule . /index.html [L]
+</IfModule>`
+  },
+  {
     name: "public_html/api/.htaccess",
-    desc: "0. Server Config (Important for Headers/CORS)",
+    desc: "2. API Server Config (Headers/CORS)",
     code: `<IfModule mod_rewrite.c>
     RewriteEngine On
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
@@ -56,7 +69,7 @@ Options -Indexes`
   },
   {
     name: "public_html/api/db_connect.php",
-    desc: "1. Database connection & Session Start. (UPDATED)",
+    desc: "3. Database connection & Session Start.",
     code: `<?php
 // Start secure session handling
 session_set_cookie_params([
@@ -97,7 +110,7 @@ if ($conn->connect_error) {
   },
   {
     name: "public_html/api/login.php",
-    desc: "2. Authenticates user and sets session cookie. (NEW)",
+    desc: "4. Authenticates user and sets session cookie.",
     code: `<?php
 include_once __DIR__ . '/db_connect.php';
 header("Content-Type: application/json");
@@ -119,7 +132,7 @@ $conn->close();
   },
   {
     name: "public_html/api/logout.php",
-    desc: "3. Destroys the session. (NEW)",
+    desc: "5. Destroys the session.",
     code: `<?php
 include_once __DIR__ . '/db_connect.php';
 header("Content-Type: application/json");
@@ -132,7 +145,7 @@ echo json_encode(["success" => true, "message" => "Logged out"]);
   },
   {
     name: "public_html/api/get_messages.php",
-    desc: "4. Retrieves messages (Protected).",
+    desc: "6. Retrieves messages (Protected).",
     code: `<?php
 include_once __DIR__ . '/db_connect.php';
 header("Content-Type: application/json");
@@ -166,7 +179,7 @@ $conn->close();
   },
   {
     name: "public_html/api/submit_contact.php",
-    desc: "5. Public submission & Email Sending.",
+    desc: "7. Public submission & Email Sending.",
     code: `<?php
 include_once __DIR__ . '/db_connect.php';
 header("Content-Type: application/json");
@@ -204,7 +217,7 @@ if(isset($data->name) && isset($data->email)) {
         $email_body .= "Subject: " . $data->subject . "\n\n";
         $email_body .= "Message:\n" . $data->message . "\n";
         
-        $headers = "From: website@promarchconsulting.co.uk\r\n";
+        $headers = "From: info@promarchconsulting.co.uk\r\n";
         $headers .= "Reply-To: " . $data->email . "\r\n";
         $headers .= "X-Mailer: PHP/" . phpversion();
         
@@ -225,7 +238,7 @@ $conn->close();
   },
   {
     name: "public_html/api/delete_message.php",
-    desc: "6. Deletes message (Protected).",
+    desc: "8. Deletes message (Protected).",
     code: `<?php
 include_once __DIR__ . '/db_connect.php';
 header("Content-Type: application/json");
