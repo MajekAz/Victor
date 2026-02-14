@@ -153,7 +153,11 @@ const HireTalent: React.FC = () => {
             </div>
             <div className="lg:w-1/2 relative">
               <div className="relative z-10 rounded-[40px] overflow-hidden shadow-2xl">
-                <img src="https://images.unsplash.com/photo-1521791136064-7986c2923216?auto=format&fit=crop&q=80&w=1200" alt="Vetting Process" />
+                <img 
+                  src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&q=80&w=1200" 
+                  alt="Professional Vetting and Interview Process" 
+                  className="w-full h-auto object-cover"
+                />
               </div>
               <div className="absolute -top-10 -right-10 w-64 h-64 bg-blue-100 rounded-full -z-0 blur-2xl"></div>
               <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-purple-100 rounded-full -z-0 blur-2xl"></div>

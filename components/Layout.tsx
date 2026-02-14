@@ -117,15 +117,15 @@ const Navbar = () => {
 
         {/* Mobile Fullscreen Menu */}
         <div 
-          className={`fixed inset-0 bg-[#0f172a] transition-all duration-500 md:hidden ${
+          className={`fixed inset-0 bg-white transition-all duration-500 md:hidden ${
             isOpen ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-full'
           }`}
           style={{ zIndex: 100 }}
         >
           <div className="flex flex-col h-full p-8">
             <div className="flex justify-between items-center mb-12">
-              <Logo className="h-10" isDark={true} />
-              <button onClick={() => setIsOpen(false)} className="text-white p-2 bg-white/10 rounded-full">
+              <Logo className="h-10" isDark={false} />
+              <button onClick={() => setIsOpen(false)} className="text-slate-900 p-2 bg-slate-100 rounded-full hover:bg-slate-200 transition-colors">
                 <X size={28} />
               </button>
             </div>
@@ -137,24 +137,24 @@ const Navbar = () => {
                   to={link.href}
                   onClick={() => setIsOpen(false)}
                   className={`text-4xl font-black flex items-center justify-between group py-2 transition-all ${
-                    location.pathname === link.href ? 'pl-4 border-l-4' : 'text-slate-100 hover:pl-2'
+                    location.pathname === link.href ? 'pl-4 border-l-4' : 'text-slate-800 hover:text-blue-600 hover:pl-2'
                   }`}
-                  style={location.pathname === link.href ? { color: COLORS.secondary, borderColor: COLORS.secondary } : {}}
+                  style={location.pathname === link.href ? { color: COLORS.primary, borderColor: COLORS.primary } : {}}
                 >
                   {link.label}
-                  <ChevronRight size={24} />
+                  <ChevronRight size={24} className={location.pathname === link.href ? 'text-blue-600' : 'text-slate-300'} />
                 </Link>
               ))}
             </div>
 
-            <div className="mt-auto pt-12 border-t border-slate-800">
+            <div className="mt-auto pt-12 border-t border-slate-100">
               <div className="flex flex-col space-y-4 mb-10">
-                <div className="flex items-center space-x-3 text-slate-300">
-                  <Phone size={18} style={{ color: COLORS.secondary }} />
+                <div className="flex items-center space-x-3 text-slate-600">
+                  <Phone size={18} className="text-blue-600" />
                   <span className="font-bold">{COMPANY_PHONE}</span>
                 </div>
-                <div className="flex items-center space-x-3 text-slate-300">
-                  <Mail size={18} style={{ color: COLORS.secondary }} />
+                <div className="flex items-center space-x-3 text-slate-600">
+                  <Mail size={18} className="text-blue-600" />
                   <span className="text-sm">{COMPANY_EMAIL}</span>
                 </div>
               </div>
