@@ -9,7 +9,9 @@ import {
   Search, 
   Users, 
   Clock,
-  ArrowRight
+  ArrowRight,
+  Loader2,
+  AlertCircle
 } from 'lucide-react';
 import { SERVICES } from '../constants.tsx';
 
@@ -20,16 +22,62 @@ const HireTalent: React.FC = () => {
     contactName: '',
     email: '',
     phone: '',
-    sector: '',
+    sector: 'Care Sector',
     staffCount: '1-5',
     message: ''
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
+  const [apiHost, setApiHost] = useState<string>(() => localStorage.getItem('api_host') || '');
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, this would post to an API. 
-    // For now, we simulate success and redirect to the success story page.
-    navigate('/contact-success');
+    setStatus('submitting');
+    
+    // Prepare data for the existing contact API
+    // We map the specific fields of this form to the generic fields expected by submit_contact.php
+    const payload = {
+      name: formData.contactName,
+      email: formData.email,
+      subject: `Talent Request: ${formData.companyName} [${formData.sector}]`,
+      message: `SECTOR: ${formData.sector}\nPHONE: ${formData.phone}\nCOMPANY: ${formData.companyName}\n\nREQUIREMENTS:\n${formData.message}`
+    };
+
+    // Determine API URL
+    const baseUrl = apiHost || '';
+    const apiUrl = `${baseUrl}/api/submit_contact.php`;
+
+    try {
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      // Handle response
+      const text = await response.text();
+      let result;
+      try {
+        result = JSON.parse(text);
+      } catch (err) {
+        // If not JSON but status is ok, assume success (simple echo servers)
+        if (response.ok) {
+            result = { success: true }; 
+        }
+      }
+
+      if (response.ok && !result?.error) {
+        setStatus('success');
+        navigate('/contact-success');
+      } else {
+        throw new Error(result?.error || 'Submission failed');
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      setStatus('error');
+    }
   };
 
   return (
@@ -202,8 +250,11 @@ const HireTalent: React.FC = () => {
                     <input 
                       type="text" 
                       required 
+                      value={formData.companyName}
+                      onChange={(e) => setFormData({...formData, companyName: e.target.value})}
                       className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600 outline-none" 
                       placeholder="Acme Corp"
+                      disabled={status === 'submitting'}
                     />
                   </div>
                   <div>
@@ -211,8 +262,11 @@ const HireTalent: React.FC = () => {
                     <input 
                       type="text" 
                       required 
+                      value={formData.contactName}
+                      onChange={(e) => setFormData({...formData, contactName: e.target.value})}
                       className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600 outline-none" 
                       placeholder="Jane Smith"
+                      disabled={status === 'submitting'}
                     />
                   </div>
                 </div>
@@ -222,8 +276,11 @@ const HireTalent: React.FC = () => {
                     <input 
                       type="email" 
                       required 
+                      value={formData.email}
+                      onChange={(e) => setFormData({...formData, email: e.target.value})}
                       className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600 outline-none" 
                       placeholder="hr@acme.com"
+                      disabled={status === 'submitting'}
                     />
                   </div>
                   <div>
@@ -231,14 +288,22 @@ const HireTalent: React.FC = () => {
                     <input 
                       type="tel" 
                       required 
+                      value={formData.phone}
+                      onChange={(e) => setFormData({...formData, phone: e.target.value})}
                       className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600 outline-none" 
                       placeholder="+44"
+                      disabled={status === 'submitting'}
                     />
                   </div>
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-slate-700 mb-2">Sector</label>
-                  <select className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600 outline-none appearance-none">
+                  <select 
+                    value={formData.sector}
+                    onChange={(e) => setFormData({...formData, sector: e.target.value})}
+                    className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600 outline-none appearance-none"
+                    disabled={status === 'submitting'}
+                  >
                     <option>Care Sector</option>
                     <option>Logistics & Warehouse</option>
                     <option>Cleaning Services</option>
@@ -250,12 +315,36 @@ const HireTalent: React.FC = () => {
                   <label className="block text-sm font-bold text-slate-700 mb-2">Brief Requirements</label>
                   <textarea 
                     rows={3} 
+                    value={formData.message}
+                    onChange={(e) => setFormData({...formData, message: e.target.value})}
                     className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600 outline-none" 
                     placeholder="E.g. We need 10 warehouse operatives for a 3-month contract..."
+                    disabled={status === 'submitting'}
                   ></textarea>
                 </div>
-                <button type="submit" className="w-full bg-slate-900 text-white py-3 md:py-5 rounded-2xl font-black text-lg md:text-xl hover:bg-slate-800 transition-all shadow-xl">
-                  Submit Requirement
+
+                {status === 'error' && (
+                  <div className="flex items-center text-red-600 bg-red-50 p-4 rounded-xl border border-red-100">
+                    <AlertCircle size={20} className="mr-2" />
+                    <span className="text-sm font-bold">Connection failed. Please check your internet or try again.</span>
+                  </div>
+                )}
+
+                <button 
+                  type="submit" 
+                  disabled={status === 'submitting'}
+                  className={`w-full text-white py-3 md:py-5 rounded-2xl font-black text-lg md:text-xl transition-all shadow-xl flex items-center justify-center ${
+                    status === 'submitting' ? 'bg-slate-700 cursor-not-allowed' : 'bg-slate-900 hover:bg-slate-800'
+                  }`}
+                >
+                  {status === 'submitting' ? (
+                    <>
+                      <Loader2 size={24} className="animate-spin mr-3" />
+                      Sending...
+                    </>
+                  ) : (
+                    "Submit Requirement"
+                  )}
                 </button>
               </form>
             </div>
