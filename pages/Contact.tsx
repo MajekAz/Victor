@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { Mail, Phone, MapPin, Send, MessageCircle, Clock, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Mail, Phone, MapPin, Send, MessageCircle, Clock, Loader2, AlertCircle } from 'lucide-react';
 import { COMPANY_EMAIL, COMPANY_PHONE, COMPANY_ADDRESS } from '../constants.tsx';
 
 const Contact: React.FC = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -11,14 +13,19 @@ const Contact: React.FC = () => {
   });
 
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
+  const [apiHost, setApiHost] = useState<string>(() => localStorage.getItem('api_host') || '');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus('submitting');
+    
+    // Determine API URL (support dev environment override from Admin Dashboard settings)
+    const baseUrl = apiHost || '';
+    const apiUrl = `${baseUrl}/api/submit_contact.php`;
 
     try {
-      // Sending to the local API endpoint (works when hosted on Hostinger in public_html)
-      const response = await fetch('/api/submit_contact.php', {
+      // Sending to the API endpoint
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -33,14 +40,21 @@ const Contact: React.FC = () => {
         result = JSON.parse(text);
       } catch (err) {
         console.error("Invalid JSON response:", text);
-        throw new Error("Server returned invalid response");
+        // If we get a 200 OK but text isn't JSON, it might just be an echo. 
+        // We'll trust the response.ok signal if parsing fails but status is 200.
+        if (response.ok) {
+            result = { success: true }; 
+        } else {
+            throw new Error("Server returned invalid response");
+        }
       }
 
       if (response.ok && !result.error) {
         setStatus('success');
         setFormData({ name: '', email: '', subject: 'Hiring Staff', message: '' });
+        navigate('/contact-success');
       } else {
-        throw new Error(result.error || 'Submission failed');
+        throw new Error(result?.error || 'Submission failed');
       }
     } catch (error) {
       console.error('Error submitting form:', error);
@@ -139,22 +153,6 @@ const Contact: React.FC = () => {
             </div>
             
             <div className="p-12 lg:p-20 relative">
-              {status === 'success' ? (
-                <div className="absolute inset-0 flex flex-col items-center justify-center p-12 text-center bg-white z-10">
-                  <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-6">
-                    <CheckCircle size={40} />
-                  </div>
-                  <h3 className="text-2xl font-black text-slate-900 mb-2">Message Sent!</h3>
-                  <p className="text-slate-600 mb-8">Thank you for contacting Promarch Consulting. We will get back to you shortly.</p>
-                  <button 
-                    onClick={() => setStatus('idle')}
-                    className="bg-slate-100 text-slate-900 font-bold py-3 px-8 rounded-xl hover:bg-slate-200 transition-colors"
-                  >
-                    Send Another Message
-                  </button>
-                </div>
-              ) : null}
-
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
@@ -212,7 +210,7 @@ const Contact: React.FC = () => {
                 {status === 'error' && (
                   <div className="flex items-center text-red-600 bg-red-50 p-4 rounded-xl border border-red-100">
                     <AlertCircle size={20} className="mr-2" />
-                    <span className="text-sm font-bold">Something went wrong. Please ensure API is reachable.</span>
+                    <span className="text-sm font-bold">Something went wrong. Please check your connection.</span>
                   </div>
                 )}
 

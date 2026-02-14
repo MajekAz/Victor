@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { 
   Briefcase, 
   ShieldCheck, 
@@ -14,6 +14,7 @@ import {
 import { SERVICES } from '../constants.tsx';
 
 const HireTalent: React.FC = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     companyName: '',
     contactName: '',
@@ -26,7 +27,9 @@ const HireTalent: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    alert("Requirement submitted successfully. Our sector specialist will contact you within 2 hours.");
+    // In a real app, this would post to an API. 
+    // For now, we simulate success and redirect to the success story page.
+    navigate('/contact-success');
   };
 
   return (

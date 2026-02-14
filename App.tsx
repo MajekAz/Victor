@@ -7,6 +7,7 @@ import Services from './pages/Services.tsx';
 import Blog from './pages/Blog.tsx';
 import Post from './pages/Post.tsx';
 import Contact from './pages/Contact.tsx';
+import ContactSuccess from './pages/ContactSuccess.tsx';
 import HireTalent from './pages/HireTalent.tsx';
 import FindAJob from './pages/FindAJob.tsx';
 import ForEmployer from './pages/ForEmployer.tsx';
@@ -34,6 +35,7 @@ const App: React.FC = () => {
           <Route path="/blog" element={<Blog />} />
           <Route path="/blog/:id" element={<Post />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/contact-success" element={<ContactSuccess />} />
           <Route path="/hire-talent" element={<HireTalent />} />
           <Route path="/find-a-job" element={<FindAJob />} />
           <Route path="/for-employer" element={<ForEmployer />} />
