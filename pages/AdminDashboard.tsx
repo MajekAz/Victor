@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { Loader2, AlertCircle, RefreshCw, Mail, Calendar, Info, Globe, Settings, LogOut, Trash2, KeyRound, Shield, Code, Copy, X, Check } from 'lucide-react';
-import { COLORS } from '../constants.tsx';
 
 interface Message {
   id: number;
@@ -43,10 +42,12 @@ const MOCK_MESSAGES: Message[] = [
 const SERVER_FILES = [
   {
     name: "public_html/api/.htaccess",
-    desc: "Critical for allowing access to API files while React handles the rest.",
+    desc: "1. Handles routing and CORS. Crucial for React apps on shared hosting.",
     code: `<IfModule mod_rewrite.c>
   RewriteEngine On
-  # Allow access to existing files in API folder
+  RewriteBase /api/
+  
+  # Allow access to existing files
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
   RewriteRule ^(.*)$ index.php [QSA,L]
@@ -54,39 +55,114 @@ const SERVER_FILES = [
 
 <IfModule mod_headers.c>
     Header set Access-Control-Allow-Origin "*"
-    Header set Access-Control-Allow-Methods "GET, POST, OPTIONS"
-    Header set Access-Control-Allow-Headers "Content-Type"
+    Header set Access-Control-Allow-Methods "GET, POST, OPTIONS, DELETE, PUT"
+    Header set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With"
 </IfModule>`
   },
   {
     name: "public_html/api/db_connect.php",
-    desc: "Database connection settings. Update with your Hostinger DB credentials.",
+    desc: "2. Database connection. UPDATE PASSWORD HERE.",
     code: `<?php
+// Based on your error log, your username is u123379735_Promarch
 $host = "localhost"; 
-$user = "u123456789_admin"; // CHANGE THIS
-$pass = "YourPassword123!"; // CHANGE THIS
-$dbname = "u123456789_promarch"; // CHANGE THIS
+$user = "u123379735_Promarch"; 
+$pass = "ENTER_YOUR_DB_PASSWORD_HERE"; // <--- CHANGE THIS to your actual password
+$dbname = "u123379735_Promarch"; // <--- Check if this matches your Hostinger DB name
 
 $conn = new mysqli($host, $user, $pass, $dbname);
 
 if ($conn->connect_error) {
-    die(json_encode(["error" => "Connection failed: " . $conn->connect_error]));
+    header("HTTP/1.1 500 Internal Server Error");
+    header("Content-Type: application/json");
+    die(json_encode(["error" => "Database connection failed: " . $conn->connect_error]));
 }
 ?>`
   },
   {
-    name: "public_html/api/get_messages.php",
-    desc: "Retrieves messages for the admin dashboard.",
+    name: "public_html/api/submit_contact.php",
+    desc: "3. Handles submissions and creates the table automatically.",
     code: `<?php
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
-include_once 'db_connect.php';
+header("Access-Control-Allow-Methods: POST, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
+
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit();
+}
+
+include_once __DIR__ . '/db_connect.php';
+
+$data = json_decode(file_get_contents("php://input"));
+
+if(isset($data->name) && isset($data->email)) {
+    $name = $conn->real_escape_string($data->name);
+    $email = $conn->real_escape_string($data->email);
+    $subject = isset($data->subject) ? $conn->real_escape_string($data->subject) : 'No Subject';
+    $message = isset($data->message) ? $conn->real_escape_string($data->message) : '';
+    $created_at = date('Y-m-d H:i:s');
+
+    // Auto-create table if missing
+    $table_sql = "CREATE TABLE IF NOT EXISTS contact_messages (
+        id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(50) NOT NULL,
+        email VARCHAR(50) NOT NULL,
+        subject VARCHAR(100),
+        message TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )";
+    
+    if (!$conn->query($table_sql)) {
+         http_response_code(500);
+         echo json_encode(["error" => "Table creation failed: " . $conn->error]);
+         exit();
+    }
+
+    $sql = "INSERT INTO contact_messages (name, email, subject, message, created_at)
+            VALUES ('$name', '$email', '$subject', '$message', '$created_at')";
+
+    if ($conn->query($sql) === TRUE) {
+        echo json_encode(["message" => "Message sent successfully"]);
+    } else {
+        http_response_code(500);
+        echo json_encode(["error" => "Error: " . $conn->error]);
+    }
+} else {
+    http_response_code(400);
+    echo json_encode(["error" => "Incomplete data"]);
+}
+$conn->close();
+?>`
+  },
+  {
+    name: "public_html/api/get_messages.php",
+    desc: "4. Retrieves messages for the dashboard.",
+    code: `<?php
+header("Access-Control-Allow-Origin: *");
+header("Content-Type: application/json; charset=UTF-8");
+header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
+
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit();
+}
+
+include_once __DIR__ . '/db_connect.php';
+
+// Check if table exists to prevent crash on fresh install
+$checkTable = $conn->query("SHOW TABLES LIKE 'contact_messages'");
+if ($checkTable->num_rows == 0) {
+    echo json_encode([]);
+    exit();
+}
 
 $sql = "SELECT * FROM contact_messages ORDER BY id DESC";
 $result = $conn->query($sql);
 
 $messages = array();
-if ($result->num_rows > 0) {
+if ($result && $result->num_rows > 0) {
     while($row = $result->fetch_assoc()) {
         $messages[] = $row;
     }
@@ -96,57 +172,20 @@ $conn->close();
 ?>`
   },
   {
-    name: "public_html/api/submit_contact.php",
-    desc: "Handles form submissions from Contact and Hire pages.",
+    name: "public_html/api/delete_message.php",
+    desc: "5. Deletes a message.",
     code: `<?php
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
-header("Access-Control-Allow-Methods: POST");
+header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
-include_once 'db_connect.php';
-
-$data = json_decode(file_get_contents("php://input"));
-
-if(isset($data->name) && isset($data->email)) {
-    $name = $conn->real_escape_string($data->name);
-    $email = $conn->real_escape_string($data->email);
-    $subject = $conn->real_escape_string($data->subject);
-    $message = $conn->real_escape_string($data->message);
-    $created_at = date('Y-m-d H:i:s');
-
-    // Create table if not exists
-    $conn->query("CREATE TABLE IF NOT EXISTS contact_messages (
-        id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-        name VARCHAR(50) NOT NULL,
-        email VARCHAR(50) NOT NULL,
-        subject VARCHAR(100),
-        message TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )");
-
-    $sql = "INSERT INTO contact_messages (name, email, subject, message, created_at)
-            VALUES ('$name', '$email', '$subject', '$message', '$created_at')";
-
-    if ($conn->query($sql) === TRUE) {
-        echo json_encode(["message" => "Message sent successfully"]);
-    } else {
-        echo json_encode(["error" => "Error: " . $sql . "<br>" . $conn->error]);
-    }
-} else {
-    echo json_encode(["error" => "Incomplete data"]);
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit();
 }
-$conn->close();
-?>`
-  },
-  {
-    name: "public_html/api/delete_message.php",
-    desc: "Allows deleting messages from dashboard.",
-    code: `<?php
-header("Access-Control-Allow-Origin: *");
-header("Content-Type: application/json; charset=UTF-8");
-header("Access-Control-Allow-Methods: POST");
-include_once 'db_connect.php';
+
+include_once __DIR__ . '/db_connect.php';
 
 $data = json_decode(file_get_contents("php://input"));
 
@@ -450,8 +489,15 @@ const AdminDashboard: React.FC = () => {
 
         {/* ERROR BANNER WITH SETUP ACTION */}
         {errorDetails && (
-          <div className="mb-8 bg-red-50 border border-red-200 p-6 rounded-xl shadow-lg">
-             <div className="flex items-start">
+          <div className="mb-8 bg-red-50 border border-red-200 p-6 rounded-xl shadow-lg relative">
+             <button 
+               onClick={() => setErrorDetails(null)} 
+               className="absolute top-4 right-4 text-red-400 hover:text-red-700 transition-colors p-2"
+               title="Dismiss Error & Use Demo Mode"
+             >
+               <X size={20} />
+             </button>
+             <div className="flex items-start pr-12">
                <AlertCircle className="text-red-600 mr-4 mt-1 flex-shrink-0" />
                <div>
                  <h3 className="text-lg font-black text-red-800">Connection Error</h3>
@@ -463,7 +509,7 @@ const AdminDashboard: React.FC = () => {
                    <Code size={16} className="mr-2" />
                    View Server Setup & API Files
                  </button>
-                 {errorDetails.type === '404' && <p className="text-xs mt-3 font-mono bg-white p-2 border rounded">{debugUrl}</p>}
+                 {errorDetails.type === '404' && <p className="text-xs mt-3 font-mono bg-white p-2 border rounded text-slate-500 break-all">{debugUrl}</p>}
                </div>
              </div>
           </div>
