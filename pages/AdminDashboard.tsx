@@ -293,7 +293,7 @@ const AdminDashboard: React.FC = () => {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (passwordInput === 'admin123') {
+    if (passwordInput === 'Victor@2026') {
       setIsAuthenticated(true);
       setAuthError(false);
       localStorage.setItem('promarch_admin_auth', 'true');
