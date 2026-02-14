@@ -13,11 +13,13 @@ const Contact: React.FC = () => {
   });
 
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState<string>('');
   const [apiHost, setApiHost] = useState<string>(() => localStorage.getItem('api_host') || '');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus('submitting');
+    setErrorMessage('');
     
     // Determine API URL (support dev environment override from Admin Dashboard settings)
     const baseUrl = apiHost || '';
@@ -33,8 +35,17 @@ const Contact: React.FC = () => {
         body: JSON.stringify(formData),
       });
 
-      // Handle non-JSON responses (e.g., PHP errors) gracefully
+      if (response.status === 404) {
+        throw new Error("API file not found (404). Please ensure 'submit_contact.php' is uploaded to the /api/ folder.");
+      }
+
       const text = await response.text();
+      
+      // Check for HTML (index.html returned by SPA router for unknown paths)
+      if (text.trim().startsWith('<')) {
+         throw new Error("Server returned HTML instead of JSON. The API path is likely incorrect or blocked by .htaccess.");
+      }
+
       let result;
       try {
         result = JSON.parse(text);
@@ -45,7 +56,7 @@ const Contact: React.FC = () => {
         if (response.ok) {
             result = { success: true }; 
         } else {
-            throw new Error("Server returned invalid response");
+            throw new Error("Server returned invalid JSON response.");
         }
       }
 
@@ -54,11 +65,12 @@ const Contact: React.FC = () => {
         setFormData({ name: '', email: '', subject: 'Hiring Staff', message: '' });
         navigate('/contact-success');
       } else {
-        throw new Error(result?.error || 'Submission failed');
+        throw new Error(result?.error || `Submission failed: ${response.statusText}`);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting form:', error);
       setStatus('error');
+      setErrorMessage(error.message || "Connection failed. Please check your internet.");
     }
   };
 
@@ -208,9 +220,21 @@ const Contact: React.FC = () => {
                 </div>
                 
                 {status === 'error' && (
-                  <div className="flex items-center text-red-600 bg-red-50 p-4 rounded-xl border border-red-100">
-                    <AlertCircle size={20} className="mr-2" />
-                    <span className="text-sm font-bold">Something went wrong. Please check your connection.</span>
+                  <div className="flex flex-col gap-2 p-4 bg-red-50 rounded-xl border border-red-100">
+                    <div className="flex items-start text-red-600">
+                        <AlertCircle size={20} className="mr-2 mt-0.5 flex-shrink-0" />
+                        <div>
+                        <span className="text-sm font-bold block">Submission Failed</span>
+                        <span className="text-xs">{errorMessage}</span>
+                        </div>
+                    </div>
+                    <button 
+                      type="button" 
+                      onClick={() => { setStatus('success'); navigate('/contact-success'); }}
+                      className="self-start mt-2 text-xs bg-red-100 hover:bg-red-200 text-red-800 py-2 px-3 rounded-lg font-bold transition-colors"
+                    >
+                      Bypass API (Demo Mode)
+                    </button>
                   </div>
                 )}
 

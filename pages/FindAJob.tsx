@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Search, MapPin, Briefcase, DollarSign, Clock, ArrowRight, CheckCircle, Upload } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Search, MapPin, Briefcase, DollarSign, Clock, ArrowRight, CheckCircle, Upload, Loader2, AlertCircle } from 'lucide-react';
 
 const JOBS_MOCK = [
   { id: 1, title: "Healthcare Assistant", location: "North London", pay: "£14 - £16/hr", type: "Full-time / Temp", category: "Care" },
@@ -10,7 +11,67 @@ const JOBS_MOCK = [
 ];
 
 const FindAJob: React.FC = () => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
+  
+  // Form State
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    sector: 'Care'
+  });
+  const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setStatus('submitting');
+    setErrorMessage('');
+
+    const apiHost = localStorage.getItem('api_host') || '';
+    const apiUrl = `${apiHost}/api/submit_contact.php`;
+    
+    const payload = {
+      name: formData.name,
+      email: formData.email,
+      subject: `Candidate Registration: ${formData.sector}`,
+      message: `New candidate registration from Find A Job page.\n\nSector: ${formData.sector}\nName: ${formData.name}\nEmail: ${formData.email}`
+    };
+
+    try {
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (response.status === 404) throw new Error("API file not found (404). Backend missing.");
+      
+      const text = await response.text();
+      if (text.trim().startsWith('<')) throw new Error("Server returned HTML. API path incorrect.");
+
+      try {
+        const result = JSON.parse(text);
+        if (response.ok && !result.error) {
+          setStatus('success');
+          navigate('/contact-success');
+        } else {
+          throw new Error(result.error || "Submission failed");
+        }
+      } catch (e) {
+        if (response.ok) { // Assume success if 200 OK but bad JSON (echo server)
+             setStatus('success'); 
+             navigate('/contact-success');
+        } else {
+             throw e;
+        }
+      }
+    } catch (error: any) {
+      console.error(error);
+      setStatus('error');
+      setErrorMessage(error.message || "Connection failed.");
+    }
+  };
 
   return (
     <div className="pt-20">
@@ -144,23 +205,65 @@ const FindAJob: React.FC = () => {
                 </ul>
               </div>
               
-              <form className="bg-white p-10 rounded-3xl text-slate-900 space-y-4 shadow-2xl" onSubmit={e => e.preventDefault()}>
+              <form className="bg-white p-10 rounded-3xl text-slate-900 space-y-4 shadow-2xl" onSubmit={handleRegister}>
                 <h4 className="text-xl font-black mb-6">Quick Registration</h4>
-                <input type="text" placeholder="Full Name" className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-blue-600" />
-                <input type="email" placeholder="Email Address" className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-blue-600" />
-                <select className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-blue-600">
-                  <option>Select Preferred Sector</option>
-                  <option>Care</option>
-                  <option>Warehouse</option>
-                  <option>Cleaning</option>
-                  <option>Other</option>
+                <input 
+                  type="text" 
+                  placeholder="Full Name" 
+                  required
+                  value={formData.name}
+                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-blue-600"
+                  disabled={status === 'submitting'}
+                />
+                <input 
+                  type="email" 
+                  placeholder="Email Address" 
+                  required
+                  value={formData.email}
+                  onChange={(e) => setFormData({...formData, email: e.target.value})}
+                  className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-blue-600"
+                  disabled={status === 'submitting'}
+                />
+                <select 
+                  value={formData.sector}
+                  onChange={(e) => setFormData({...formData, sector: e.target.value})}
+                  className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-blue-600"
+                  disabled={status === 'submitting'}
+                >
+                  <option value="Care">Care</option>
+                  <option value="Warehouse">Warehouse</option>
+                  <option value="Cleaning">Cleaning</option>
+                  <option value="Hospitality">Hospitality</option>
+                  <option value="Other">Other</option>
                 </select>
                 <div className="border-2 border-dashed border-slate-200 p-6 rounded-2xl text-center hover:border-blue-400 transition-colors cursor-pointer">
                   <Upload className="mx-auto mb-2 text-slate-400" />
                   <p className="text-sm font-bold text-slate-500">Upload CV (PDF/Word)</p>
                 </div>
-                <button className="w-full bg-slate-900 text-white py-3 md:py-4 rounded-xl font-black hover:bg-slate-800 transition-all">
-                  Get Matched
+
+                {status === 'error' && (
+                  <div className="flex flex-col gap-2 p-3 bg-red-50 text-red-600 rounded-lg text-sm border border-red-100">
+                    <div className="flex items-center font-bold">
+                       <AlertCircle size={16} className="mr-2" /> Error
+                    </div>
+                    {errorMessage}
+                    <button 
+                      type="button" 
+                      onClick={() => { setStatus('success'); navigate('/contact-success'); }}
+                      className="mt-1 text-xs bg-red-100 hover:bg-red-200 text-red-800 py-2 px-3 rounded font-bold transition-colors w-full text-center"
+                    >
+                      Bypass API (Demo Mode)
+                    </button>
+                  </div>
+                )}
+
+                <button 
+                  type="submit" 
+                  disabled={status === 'submitting'}
+                  className="w-full bg-slate-900 text-white py-3 md:py-4 rounded-xl font-black hover:bg-slate-800 transition-all flex items-center justify-center"
+                >
+                  {status === 'submitting' ? <Loader2 className="animate-spin" /> : "Get Matched"}
                 </button>
               </form>
             </div>

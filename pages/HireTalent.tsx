@@ -28,11 +28,13 @@ const HireTalent: React.FC = () => {
   });
 
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState<string>('');
   const [apiHost, setApiHost] = useState<string>(() => localStorage.getItem('api_host') || '');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus('submitting');
+    setErrorMessage('');
     
     // Prepare data for the existing contact API
     // We map the specific fields of this form to the generic fields expected by submit_contact.php
@@ -56,8 +58,18 @@ const HireTalent: React.FC = () => {
         body: JSON.stringify(payload),
       });
 
+      if (response.status === 404) {
+        throw new Error("API file not found (404). Please ensure 'submit_contact.php' is uploaded to the /api/ folder.");
+      }
+
       // Handle response
       const text = await response.text();
+      
+      // Check for HTML (index.html returned by SPA router for unknown paths)
+      if (text.trim().startsWith('<')) {
+         throw new Error("Server returned HTML instead of JSON. The API path is likely incorrect.");
+      }
+
       let result;
       try {
         result = JSON.parse(text);
@@ -65,6 +77,8 @@ const HireTalent: React.FC = () => {
         // If not JSON but status is ok, assume success (simple echo servers)
         if (response.ok) {
             result = { success: true }; 
+        } else {
+             throw new Error("Server returned invalid JSON response.");
         }
       }
 
@@ -74,9 +88,10 @@ const HireTalent: React.FC = () => {
       } else {
         throw new Error(result?.error || 'Submission failed');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting form:', error);
       setStatus('error');
+      setErrorMessage(error.message || "Connection failed. Please check your internet.");
     }
   };
 
@@ -324,9 +339,21 @@ const HireTalent: React.FC = () => {
                 </div>
 
                 {status === 'error' && (
-                  <div className="flex items-center text-red-600 bg-red-50 p-4 rounded-xl border border-red-100">
-                    <AlertCircle size={20} className="mr-2" />
-                    <span className="text-sm font-bold">Connection failed. Please check your internet or try again.</span>
+                  <div className="flex flex-col gap-2 p-4 bg-red-50 text-red-600 rounded-xl border border-red-100">
+                    <div className="flex items-start">
+                        <AlertCircle size={20} className="mr-2 mt-0.5 flex-shrink-0" />
+                        <div>
+                        <span className="text-sm font-bold block">Submission Failed</span>
+                        <span className="text-xs">{errorMessage}</span>
+                        </div>
+                    </div>
+                    <button 
+                      type="button" 
+                      onClick={() => { setStatus('success'); navigate('/contact-success'); }}
+                      className="self-start mt-2 text-xs bg-red-100 hover:bg-red-200 text-red-800 py-2 px-3 rounded-lg font-bold transition-colors"
+                    >
+                      Bypass API (Demo Mode)
+                    </button>
                   </div>
                 )}
 

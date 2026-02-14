@@ -1,8 +1,68 @@
-import React from 'react';
-import { ShieldCheck, Zap, TrendingUp, Users, Building2, Globe, Clock, ArrowRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { ShieldCheck, Zap, TrendingUp, Users, Building2, Globe, Clock, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 
 const ForEmployer: React.FC = () => {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    company: '',
+    email: '',
+    phone: '',
+    sector: 'Care'
+  });
+  const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setStatus('submitting');
+    setErrorMessage('');
+
+    const apiHost = localStorage.getItem('api_host') || '';
+    const apiUrl = `${apiHost}/api/submit_contact.php`;
+    
+    const payload = {
+      name: formData.company,
+      email: formData.email,
+      subject: `Employer Callback: ${formData.company}`,
+      message: `Employer callback request.\n\nCompany: ${formData.company}\nSector: ${formData.sector}\nPhone: ${formData.phone}\nEmail: ${formData.email}`
+    };
+
+    try {
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (response.status === 404) throw new Error("API file not found (404).");
+      
+      const text = await response.text();
+      if (text.trim().startsWith('<')) throw new Error("Server returned HTML. API path likely incorrect.");
+
+      try {
+        const result = JSON.parse(text);
+        if (response.ok && !result.error) {
+          setStatus('success');
+          navigate('/contact-success');
+        } else {
+          throw new Error(result.error || "Submission failed");
+        }
+      } catch (e) {
+         if (response.ok) {
+             setStatus('success'); 
+             navigate('/contact-success');
+        } else {
+             throw e;
+        }
+      }
+    } catch (error: any) {
+      console.error(error);
+      setStatus('error');
+      setErrorMessage(error.message || "Connection failed.");
+    }
+  };
+
   return (
     <div className="pt-20">
       {/* 1. Hero Section */}
@@ -154,18 +214,67 @@ const ForEmployer: React.FC = () => {
           <p className="text-xl text-slate-500 mb-12">Join hundreds of London-based companies that rely on Promarch for their growth.</p>
           <div className="bg-slate-50 p-12 rounded-[40px] border border-slate-100 shadow-xl">
             <h4 className="text-2xl font-black mb-8">Request a Callback</h4>
-            <form className="grid md:grid-cols-2 gap-6" onSubmit={e => e.preventDefault()}>
-              <input type="text" placeholder="Company Name" className="w-full px-6 py-4 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-600" />
-              <input type="text" placeholder="Work Email" className="w-full px-6 py-4 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-600" />
-              <input type="tel" placeholder="Phone Number" className="w-full px-6 py-4 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-600" />
-              <select className="w-full px-6 py-4 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-600">
-                <option>Interested Sector</option>
-                <option>Care</option>
-                <option>Logistics</option>
-                <option>Hospitality</option>
+            <form className="grid md:grid-cols-2 gap-6" onSubmit={handleSubmit}>
+              <input 
+                type="text" 
+                placeholder="Company Name" 
+                required
+                value={formData.company}
+                onChange={(e) => setFormData({...formData, company: e.target.value})}
+                className="w-full px-6 py-4 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-600" 
+                disabled={status === 'submitting'}
+              />
+              <input 
+                type="text" 
+                placeholder="Work Email" 
+                required
+                value={formData.email}
+                onChange={(e) => setFormData({...formData, email: e.target.value})}
+                className="w-full px-6 py-4 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-600" 
+                disabled={status === 'submitting'}
+              />
+              <input 
+                type="tel" 
+                placeholder="Phone Number" 
+                required
+                value={formData.phone}
+                onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                className="w-full px-6 py-4 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-600" 
+                disabled={status === 'submitting'}
+              />
+              <select 
+                value={formData.sector}
+                onChange={(e) => setFormData({...formData, sector: e.target.value})}
+                className="w-full px-6 py-4 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-600"
+                disabled={status === 'submitting'}
+              >
+                <option value="Care">Care</option>
+                <option value="Logistics">Logistics</option>
+                <option value="Hospitality">Hospitality</option>
               </select>
-              <button className="md:col-span-2 bg-blue-600 text-white py-3 md:py-5 rounded-2xl font-black text-lg md:text-xl hover:bg-blue-700 transition-all shadow-xl shadow-blue-900/20">
-                Connect with an Expert
+
+              {status === 'error' && (
+                  <div className="md:col-span-2 flex flex-col gap-2 p-3 bg-red-50 text-red-600 rounded-lg text-sm border border-red-100">
+                    <div className="flex items-center justify-center font-bold">
+                       <AlertCircle size={16} className="mr-2" /> Error
+                    </div>
+                    {errorMessage}
+                    <button 
+                      type="button" 
+                      onClick={() => { setStatus('success'); navigate('/contact-success'); }}
+                      className="mt-1 text-xs bg-red-100 hover:bg-red-200 text-red-800 py-2 px-3 rounded font-bold transition-colors mx-auto"
+                    >
+                      Bypass API (Demo Mode)
+                    </button>
+                  </div>
+              )}
+
+              <button 
+                type="submit" 
+                disabled={status === 'submitting'}
+                className="md:col-span-2 bg-blue-600 text-white py-3 md:py-5 rounded-2xl font-black text-lg md:text-xl hover:bg-blue-700 transition-all shadow-xl shadow-blue-900/20 flex items-center justify-center"
+              >
+                {status === 'submitting' ? <Loader2 className="animate-spin" /> : "Connect with an Expert"}
               </button>
             </form>
           </div>
