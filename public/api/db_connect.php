@@ -1,12 +1,25 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 0); // Don't output errors to JSON stream
+
+// Load Configuration
+if (!file_exists(__DIR__ . '/config.php')) {
+    header("HTTP/1.1 500 Internal Server Error");
+    die(json_encode(["error" => "Configuration file missing. Please rename config.sample.php to config.php and set credentials."]));
+}
+require_once __DIR__ . '/config.php';
+
+// Determine if HTTPS is enabled
+$isSecure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || $_SERVER['SERVER_PORT'] == 443;
+
 // Start secure session handling
 session_set_cookie_params([
     'lifetime' => 86400,
     'path' => '/',
-    'domain' => '', // Set to your domain in production if needed
-    'secure' => true, // Requires HTTPS
+    'domain' => '', 
+    'secure' => $isSecure, 
     'httponly' => true,
-    'samesite' => 'None' // Required for cross-origin if React is local and PHP is remote
+    'samesite' => 'None' 
 ]);
 session_start();
 
@@ -22,16 +35,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-$host = "localhost"; 
-$user = "u123379735_Promarch"; 
-$pass = "2Akeem@68"; 
-$dbname = "u123379735_Victor";
-
-$conn = new mysqli($host, $user, $pass, $dbname);
+// Use variables from config.php
+$conn = new mysqli($db_host, $db_user, $db_pass, $db_name);
 
 if ($conn->connect_error) {
     header("HTTP/1.1 500 Internal Server Error");
     header("Content-Type: application/json");
-    die(json_encode(["error" => "Database connection failed"]));
+    die(json_encode(["error" => "Database connection failed: " . $conn->connect_error]));
 }
 ?>

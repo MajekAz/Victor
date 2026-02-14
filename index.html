@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Removed base tag to support HashRouter and relative paths in preview sandboxes -->
     <title>Promarch Consulting | UK Recruitment Specialist</title>
     <meta name="description" content="Promarch Consulting helps candidates find reliable jobs in care, warehouse, logistics, and cleaning sectors across the UK." />
     
@@ -12,7 +13,7 @@
     <meta property="og:title" content="Promarch Consulting | UK Recruitment Specialist" />
     <meta property="og:description" content="Reliable recruitment for Care, Logistics, and Hospitality sectors. We connect exceptional talent with leading UK employers." />
     <meta property="og:url" content="https://promarchconsulting.co.uk" />
-    <meta property="og:image" content="/og-image.svg" />
+    <meta property="og:image" content="og-image.svg" />
     <meta property="og:image:type" content="image/svg+xml" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
@@ -23,7 +24,7 @@
     <meta name="twitter:site" content="@promarchconsulting" />
     <meta name="twitter:title" content="Promarch Consulting | UK Recruitment Specialist" />
     <meta name="twitter:description" content="Reliable recruitment for Care, Logistics, and Hospitality sectors. We connect exceptional talent with leading UK employers." />
-    <meta name="twitter:image" content="/og-image.svg" />
+    <meta name="twitter:image" content="og-image.svg" />
 
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
@@ -69,7 +70,7 @@
 </head>
   <body class="bg-gray-50 text-slate-900 overflow-x-hidden">
     <div id="root"></div>
-    <!-- Explicitly load the entry point module -->
-    <script type="module" src="index.tsx"></script>
+    <!-- Explicitly load the entry point module with relative path -->
+    <script type="module" src="./index.tsx"></script>
   </body>
 </html>

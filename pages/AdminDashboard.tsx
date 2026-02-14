@@ -1,8 +1,8 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { 
-  Loader2, AlertCircle, RefreshCw, Mail, Calendar, Info, Globe, 
-  Settings, LogOut, Trash2, KeyRound, Shield, Code, Copy, X, Check, 
-  Activity, Database, Users, Briefcase, Reply, Eye, EyeOff
+  Loader2, RefreshCw, Mail, Calendar, 
+  LogOut, Trash2, KeyRound, Shield, Briefcase, Reply, Eye, EyeOff,
+  Users, Globe, Check, AlertCircle, X, Database
 } from 'lucide-react';
 
 interface Message {
@@ -14,258 +14,6 @@ interface Message {
   created_at: string;
 }
 
-// Sample data to show when API is not connected
-const MOCK_MESSAGES: Message[] = [
-  {
-    id: 101,
-    name: "Sarah Williams",
-    email: "sarah.w@carehome-london.co.uk",
-    subject: "Talent Request: Sunrise Care [Care Sector]",
-    message: "SECTOR: Care Sector\nPHONE: 07700900123\nCOMPANY: Sunrise Care\n\nREQUIREMENTS:\nWe urgently need 3 qualified nurses for night shifts.",
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString()
-  },
-  {
-    id: 102,
-    name: "James Miller",
-    email: "james@logistics-solutions.com",
-    subject: "Employer Callback: FastTrack Logistics",
-    message: "Employer callback request.\n\nCompany: FastTrack Logistics\nSector: Logistics\nPhone: 02081234567",
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString()
-  },
-  {
-    id: 103,
-    name: "David Chen",
-    email: "david.c@email.com",
-    subject: "Candidate Registration: Logistics",
-    message: "New candidate registration.\nSector: Logistics\nName: David Chen",
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString()
-  }
-];
-
-// PHP TEMPLATES FOR USER TO COPY
-const SERVER_FILES = [
-  {
-    name: "public_html/.htaccess",
-    desc: "1. Root Server Config (REQUIRED for clean URLs)",
-    code: `<IfModule mod_rewrite.c>
-  RewriteEngine On
-  RewriteBase /
-  RewriteRule ^index\\.html$ - [L]
-  RewriteCond %{REQUEST_FILENAME} !-f
-  RewriteCond %{REQUEST_FILENAME} !-d
-  RewriteCond %{REQUEST_FILENAME} !-l
-  RewriteRule . /index.html [L]
-</IfModule>`
-  },
-  {
-    name: "public_html/api/.htaccess",
-    desc: "2. API Server Config (Headers/CORS)",
-    code: `<IfModule mod_rewrite.c>
-    RewriteEngine On
-    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
-</IfModule>
-
-Options -Indexes`
-  },
-  {
-    name: "public_html/api/db_connect.php",
-    desc: "3. Database connection & Session Start.",
-    code: `<?php
-// Start secure session handling
-session_set_cookie_params([
-    'lifetime' => 86400,
-    'path' => '/',
-    'domain' => '', // Set to your domain in production if needed
-    'secure' => true, // Requires HTTPS
-    'httponly' => true,
-    'samesite' => 'None' // Required for cross-origin if React is local and PHP is remote
-]);
-session_start();
-
-// Dynamic CORS for Credentials
-$origin = $_SERVER['HTTP_ORIGIN'] ?? '*';
-header("Access-Control-Allow-Origin: $origin");
-header("Access-Control-Allow-Credentials: true");
-header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
-
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit();
-}
-
-$host = "localhost"; 
-$user = "u123379735_Promarch"; 
-$pass = "ENTER_YOUR_DB_PASSWORD_HERE"; 
-$dbname = "u123379735_Promarch";
-
-$conn = new mysqli($host, $user, $pass, $dbname);
-
-if ($conn->connect_error) {
-    header("HTTP/1.1 500 Internal Server Error");
-    header("Content-Type: application/json");
-    die(json_encode(["error" => "Database connection failed"]));
-}
-?>`
-  },
-  {
-    name: "public_html/api/login.php",
-    desc: "4. Authenticates user and sets session cookie.",
-    code: `<?php
-include_once __DIR__ . '/db_connect.php';
-header("Content-Type: application/json");
-
-$data = json_decode(file_get_contents("php://input"));
-
-// CHANGE YOUR PASSWORD HERE
-$admin_password = "Victor@2026"; 
-
-if (isset($data->password) && $data->password === $admin_password) {
-    $_SESSION['admin_logged_in'] = true;
-    echo json_encode(["success" => true, "message" => "Logged in"]);
-} else {
-    http_response_code(401);
-    echo json_encode(["success" => false, "error" => "Invalid password"]);
-}
-$conn->close();
-?>`
-  },
-  {
-    name: "public_html/api/logout.php",
-    desc: "5. Destroys the session.",
-    code: `<?php
-include_once __DIR__ . '/db_connect.php';
-header("Content-Type: application/json");
-
-session_unset();
-session_destroy();
-
-echo json_encode(["success" => true, "message" => "Logged out"]);
-?>`
-  },
-  {
-    name: "public_html/api/get_messages.php",
-    desc: "6. Retrieves messages (Protected).",
-    code: `<?php
-include_once __DIR__ . '/db_connect.php';
-header("Content-Type: application/json");
-
-// SECURITY CHECK
-if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
-    http_response_code(401);
-    echo json_encode(["error" => "Unauthorized"]);
-    exit();
-}
-
-// Check if table exists
-$checkTable = $conn->query("SHOW TABLES LIKE 'contact_messages'");
-if ($checkTable->num_rows == 0) {
-    echo json_encode([]);
-    exit();
-}
-
-$sql = "SELECT * FROM contact_messages ORDER BY id DESC";
-$result = $conn->query($sql);
-
-$messages = array();
-if ($result && $result->num_rows > 0) {
-    while($row = $result->fetch_assoc()) {
-        $messages[] = $row;
-    }
-}
-echo json_encode($messages);
-$conn->close();
-?>`
-  },
-  {
-    name: "public_html/api/submit_contact.php",
-    desc: "7. Public submission & Email Sending.",
-    code: `<?php
-include_once __DIR__ . '/db_connect.php';
-header("Content-Type: application/json");
-
-$data = json_decode(file_get_contents("php://input"));
-
-if(isset($data->name) && isset($data->email)) {
-    $name = $conn->real_escape_string($data->name);
-    $email = $conn->real_escape_string($data->email);
-    $subject = isset($data->subject) ? $conn->real_escape_string($data->subject) : 'No Subject';
-    $message = isset($data->message) ? $conn->real_escape_string($data->message) : '';
-    $created_at = date('Y-m-d H:i:s');
-
-    $table_sql = "CREATE TABLE IF NOT EXISTS contact_messages (
-        id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-        name VARCHAR(50) NOT NULL,
-        email VARCHAR(50) NOT NULL,
-        subject VARCHAR(100),
-        message TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )";
-    $conn->query($table_sql);
-
-    $sql = "INSERT INTO contact_messages (name, email, subject, message, created_at)
-            VALUES ('$name', '$email', '$subject', '$message', '$created_at')";
-
-    if ($conn->query($sql) === TRUE) {
-        // --- SEND EMAIL NOTIFICATION ---
-        $to = "info@promarchconsulting.co.uk";
-        $email_subject = "New Inquiry: " . $data->subject;
-        
-        $email_body = "You have received a new message from your website contact form.\n\n";
-        $email_body .= "Name: " . $data->name . "\n";
-        $email_body .= "Email: " . $data->email . "\n";
-        $email_body .= "Subject: " . $data->subject . "\n\n";
-        $email_body .= "Message:\n" . $data->message . "\n";
-        
-        $headers = "From: info@promarchconsulting.co.uk\r\n";
-        $headers .= "Reply-To: " . $data->email . "\r\n";
-        $headers .= "X-Mailer: PHP/" . phpversion();
-        
-        mail($to, $email_subject, $email_body, $headers);
-        // -------------------------------
-
-        echo json_encode(["message" => "Message sent successfully"]);
-    } else {
-        http_response_code(500);
-        echo json_encode(["error" => "Error: " . $conn->error]);
-    }
-} else {
-    http_response_code(400);
-    echo json_encode(["error" => "Incomplete data"]);
-}
-$conn->close();
-?>`
-  },
-  {
-    name: "public_html/api/delete_message.php",
-    desc: "8. Deletes message (Protected).",
-    code: `<?php
-include_once __DIR__ . '/db_connect.php';
-header("Content-Type: application/json");
-
-// SECURITY CHECK
-if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
-    http_response_code(401);
-    echo json_encode(["error" => "Unauthorized"]);
-    exit();
-}
-
-$data = json_decode(file_get_contents("php://input"));
-
-if(isset($data->id)) {
-    $id = intval($data->id);
-    $sql = "DELETE FROM contact_messages WHERE id=$id";
-    if ($conn->query($sql) === TRUE) {
-        echo json_encode(["message" => "Deleted successfully"]);
-    } else {
-        echo json_encode(["error" => "Error deleting"]);
-    }
-}
-$conn->close();
-?>`
-  }
-];
-
 const AdminDashboard: React.FC = () => {
   // Auth State
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -276,20 +24,18 @@ const AdminDashboard: React.FC = () => {
 
   // Data State
   const [messages, setMessages] = useState<Message[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [errorDetails, setErrorDetails] = useState<{ type: string, message: string } | null>(null);
-  const [isDemoMode, setIsDemoMode] = useState(false);
-  const [debugUrl, setDebugUrl] = useState<string>('');
-  
-  // UI State
-  const [showConfig, setShowConfig] = useState(false);
-  const [showServerSetup, setShowServerSetup] = useState(false);
-  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
-  const [healthStatus, setHealthStatus] = useState<Record<string, string>>({});
 
-  // Config State
-  const [apiHost, setApiHost] = useState<string>(() => localStorage.getItem('api_host') || '');
-  
+  // Config State - Safe LocalStorage Access (Hidden from UI, used for persistence if needed)
+  const [apiHost] = useState<string>(() => {
+    try {
+        return localStorage.getItem('api_host') || '';
+    } catch (e) {
+        return '';
+    }
+  });
+
   // Computed Stats
   const totalMessages = messages.length;
   const hiringCount = messages.filter(m => 
@@ -304,31 +50,6 @@ const AdminDashboard: React.FC = () => {
     m.subject.toLowerCase().includes('candidate')
   ).length;
 
-  // Check Session on Mount
-  useEffect(() => {
-    checkSessionOnMount();
-  }, []);
-
-  const checkSessionOnMount = async () => {
-      setLoading(true);
-      const activeHost = apiHost || '';
-      const targetPath = `${activeHost}/api/get_messages.php`;
-      try {
-        const response = await fetch(targetPath, { credentials: 'include' });
-        if (response.ok) {
-            const data = await response.json();
-            if (Array.isArray(data)) {
-                setIsAuthenticated(true);
-                setMessages(data);
-            }
-        }
-      } catch (e) {
-          // Silent fail on mount
-      } finally {
-          setLoading(false);
-      }
-  };
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoggingIn(true);
@@ -338,26 +59,9 @@ const AdminDashboard: React.FC = () => {
     const activeHost = apiHost || '';
     const loginUrl = `${activeHost}/api/login.php`;
 
-    // ---------------------------------------------------------
-    // MASTER KEY OVERRIDE
-    // ---------------------------------------------------------
-    if (cleanPassword === 'Victor@2026') {
-        setTimeout(() => {
-            setIsAuthenticated(true);
-            setIsDemoMode(true);
-            setMessages(MOCK_MESSAGES);
-            setErrorDetails({ type: 'success', message: 'Master Key Accepted. Local Mode Active.' });
-            setIsLoggingIn(false);
-        }, 500);
-        return;
-    }
-
-    // ---------------------------------------------------------
-    // STANDARD LOGIN (Server Auth)
-    // ---------------------------------------------------------
     try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000);
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
 
         const response = await fetch(loginUrl, {
             method: 'POST',
@@ -368,20 +72,27 @@ const AdminDashboard: React.FC = () => {
         });
         clearTimeout(timeoutId);
         
+        // Handle 404 explicitly
+        if (response.status === 404) {
+             throw new Error("API endpoint not found. Please ensure backend is deployed.");
+        }
+
         const contentType = response.headers.get("content-type");
         if (contentType && contentType.includes("application/json")) {
              const data = await response.json();
              if (data.success) {
                  setIsAuthenticated(true);
-                 fetchMessages(); // Only fetch real messages if real login succeeded
+                 fetchMessages(); // Fetch messages after successful login
              } else {
                  setAuthError(true);
              }
         } else {
-            throw new Error("Invalid response");
+            throw new Error(`Server returned ${contentType} instead of JSON.`);
         }
-    } catch (e) {
+    } catch (e: any) {
+        console.error(e);
         setAuthError(true);
+        setErrorDetails({ type: 'error', message: `Login failed: ${e.message || "Connection refused"}` });
     } finally {
         setIsLoggingIn(false);
     }
@@ -389,68 +100,31 @@ const AdminDashboard: React.FC = () => {
 
   const handleLogout = async () => {
     const activeHost = apiHost || '';
-    if (!isDemoMode) {
-        try {
-            await fetch(`${activeHost}/api/logout.php`, { method: 'POST', credentials: 'include' });
-        } catch (e) {
-            console.error("Logout API failed", e);
-        }
+    try {
+        await fetch(`${activeHost}/api/logout.php`, { method: 'POST', credentials: 'include' });
+    } catch (e) {
+        console.error("Logout API failed", e);
     }
     setIsAuthenticated(false);
-    setIsDemoMode(false);
     setPasswordInput('');
     setMessages([]);
-  };
-
-  const saveApiHost = (host: string) => {
-    const cleanHost = host.replace(/\/$/, '');
-    setApiHost(cleanHost);
-    localStorage.setItem('api_host', cleanHost);
-  };
-
-  const copyToClipboard = (text: string, index: number) => {
-    navigator.clipboard.writeText(text);
-    setCopiedIndex(index);
-    setTimeout(() => setCopiedIndex(null), 2000);
-  };
-
-  const checkHealth = async () => {
-     setHealthStatus({});
-     const baseUrl = apiHost || '';
-     const files = ['get_messages.php', 'login.php'];
-     const results: Record<string, string> = {};
-
-     for (const file of files) {
-        try {
-           const url = `${baseUrl}/api/${file}`;
-           const res = await fetch(url, { method: 'OPTIONS' });
-           if (res.status === 200 || res.status === 204) results[file] = 'OK';
-           else if (res.status === 404) results[file] = 'Missing (404)';
-           else if (res.status === 500) results[file] = 'Database Error (500)';
-           else results[file] = `Error ${res.status}`;
-        } catch (e) {
-           results[file] = 'Network/CORS Error';
-        }
-     }
-     setHealthStatus(results);
   };
 
   const handleDelete = async (id: number) => {
     if (!window.confirm("Are you sure you want to permanently delete this message?")) return;
     setMessages(prev => prev.filter(msg => msg.id !== id));
-    if (!isDemoMode) {
-        try {
-           const activeHost = apiHost || '';
-           const targetPath = `${activeHost}/api/delete_message.php`;
-           await fetch(targetPath, {
-             method: 'POST',
-             headers: { 'Content-Type': 'application/json' },
-             body: JSON.stringify({ id }),
-             credentials: 'include'
-           });
-        } catch (e) {
-          console.warn("Delete API failed");
-        }
+    
+    try {
+        const activeHost = apiHost || '';
+        const targetPath = `${activeHost}/api/delete_message.php`;
+        await fetch(targetPath, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id }),
+            credentials: 'include'
+        });
+    } catch (e) {
+        console.warn("Delete API failed");
     }
   };
 
@@ -458,21 +132,13 @@ const AdminDashboard: React.FC = () => {
     window.location.href = `mailto:${email}?subject=Re: ${subject}`;
   };
 
-  const fetchMessages = async (hostOverride?: string) => {
-    if (isDemoMode) {
-        setMessages(MOCK_MESSAGES);
-        return;
-    }
-
+  const fetchMessages = async () => {
     setLoading(true);
     setErrorDetails(null);
     
-    const activeHost = hostOverride !== undefined ? hostOverride : apiHost;
-    const baseUrl = activeHost || ''; 
-    const targetPath = `${baseUrl}/api/get_messages.php`;
+    const activeHost = apiHost || ''; 
+    const targetPath = `${activeHost}/api/get_messages.php`;
     
-    setDebugUrl(displayUrl(targetPath, activeHost));
-
     try {
       const response = await fetch(targetPath, {
           credentials: 'include'
@@ -488,7 +154,7 @@ const AdminDashboard: React.FC = () => {
       const isJson = contentType && contentType.indexOf("application/json") !== -1;
 
       if (!isJson) {
-         throw { type: '404', message: `API file missing or returning HTML: ${targetPath}` };
+         throw { type: '404', message: `API missing or returning HTML` };
       }
 
       const data = await response.json();
@@ -505,19 +171,15 @@ const AdminDashboard: React.FC = () => {
 
     } catch (err: any) {
       console.warn("API Connection Issue:", err);
-      if (isAuthenticated && !isDemoMode) {
+      if (isAuthenticated) {
          setErrorDetails({ 
             type: err.type || 'unknown', 
-            message: err.message || "Connection failed" 
+            message: err.message || "Connection failed." 
          });
       }
     } finally {
       setLoading(false);
     }
-  };
-
-  const displayUrl = (path: string, host: string) => {
-      return host ? path : `${window.location.origin}${path}`;
   };
 
   const getInitials = (name: string) => {
@@ -535,12 +197,24 @@ const AdminDashboard: React.FC = () => {
   };
 
   // ----------------------------------------------------------------------
+  // RENDER: LOADING
+  // ----------------------------------------------------------------------
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-4">
+        <Loader2 className="text-blue-500 animate-spin mb-4" size={48} />
+        <p className="text-slate-400 font-medium animate-pulse">Connecting to secure server...</p>
+      </div>
+    );
+  }
+
+  // ----------------------------------------------------------------------
   // RENDER: LOGIN
   // ----------------------------------------------------------------------
-  if (!isAuthenticated && !loading) {
+  if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full animate-fade-in-up">
+        <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full">
           <div className="text-center mb-8">
             <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
               <Shield size={32} />
@@ -550,25 +224,12 @@ const AdminDashboard: React.FC = () => {
           </div>
           
           <form onSubmit={handleLogin} className="space-y-6">
-             {showConfig && (
-                <div className="mb-4">
-                    <label className="block text-xs font-bold text-slate-500 mb-1">API Host URL</label>
-                    <input 
-                        type="text" 
-                        placeholder="https://promarchconsulting.co.uk" 
-                        defaultValue={apiHost}
-                        onBlur={(e) => saveApiHost(e.target.value)}
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm"
-                    />
-                </div>
-             )}
-
             <div>
               <label className="block text-sm font-bold text-slate-700 mb-2">Password</label>
               <div className="relative">
                 <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                 <input 
-                  type={showPassword ? "text" : "password"}
+                  type={showPassword ? "text" : "Victor@2026"}
                   value={passwordInput}
                   onChange={(e) => setPasswordInput(e.target.value)}
                   className={`w-full pl-12 pr-12 py-3 bg-slate-50 border rounded-xl outline-none focus:ring-2 transition-all ${authError ? 'border-red-300 focus:ring-red-200' : 'border-slate-200 focus:ring-blue-500'}`}
@@ -582,80 +243,24 @@ const AdminDashboard: React.FC = () => {
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
-              {authError && <p className="text-red-500 text-xs font-bold mt-2 ml-1">Authentication failed. Check password or connection.</p>}
+              {authError && <p className="text-red-500 text-xs font-bold mt-2 ml-1">Authentication failed. Invalid password.</p>}
             </div>
             
-            <div className="flex flex-col gap-3">
-                <button 
-                type="submit"
-                disabled={isLoggingIn}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition-colors shadow-lg flex justify-center items-center"
-                >
-                {isLoggingIn ? <Loader2 className="animate-spin" /> : "Login to Dashboard"}
-                </button>
-                
-                <div className="flex gap-2 justify-center mt-2">
-                    <button 
-                        type="button" 
-                        onClick={() => setShowServerSetup(true)}
-                        className="text-xs text-slate-400 hover:text-slate-600 underline flex items-center"
-                    >
-                        <Code size={12} className="mr-1"/> API Files
-                    </button>
-                    <span className="text-slate-300">|</span>
-                    <button 
-                        type="button" 
-                        onClick={() => setShowConfig(!showConfig)} 
-                        className="text-xs text-slate-400 hover:text-slate-600 underline"
-                    >
-                        {showConfig ? "Hide Config" : "Config"}
-                    </button>
+            <button 
+              type="submit"
+              disabled={isLoggingIn}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition-colors shadow-lg flex justify-center items-center"
+            >
+              {isLoggingIn ? <Loader2 className="animate-spin" /> : "Login to Dashboard"}
+            </button>
+            
+            {errorDetails && errorDetails.type === 'error' && (
+                <div className="bg-red-50 p-3 rounded text-xs text-red-600 border border-red-100 mt-2 text-center">
+                    {errorDetails.message}
                 </div>
-            </div>
+            )}
           </form>
         </div>
-
-        {/* SETUP MODAL (Accessible from login) */}
-        {showServerSetup && (
-          <div className="fixed inset-0 bg-slate-900/95 z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl w-full max-w-4xl h-[85vh] flex flex-col shadow-2xl overflow-hidden relative animate-fade-in-up">
-              <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                <div>
-                  <h2 className="text-2xl font-black text-slate-900">Backend Server Setup</h2>
-                  <p className="text-slate-500 text-sm">Create these files in your <code>public_html/api</code> folder.</p>
-                </div>
-                <button onClick={() => setShowServerSetup(false)} className="p-2 hover:bg-slate-200 rounded-full transition-colors">
-                  <X size={24} />
-                </button>
-              </div>
-              <div className="overflow-y-auto p-6 space-y-8 bg-slate-50">
-                {SERVER_FILES.map((file, idx) => (
-                  <div key={idx} className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                    <div className="p-4 bg-slate-100 border-b border-slate-200 flex justify-between items-center">
-                      <div>
-                        <h3 className="font-bold text-slate-800 font-mono text-sm">{file.name}</h3>
-                        <p className="text-xs text-slate-500">{file.desc}</p>
-                      </div>
-                      <button 
-                        onClick={() => copyToClipboard(file.code, idx)}
-                        className={`flex items-center px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${copiedIndex === idx ? 'bg-green-100 text-green-700' : 'bg-white border hover:bg-slate-50'}`}
-                      >
-                        {copiedIndex === idx ? <Check size={14} className="mr-1" /> : <Copy size={14} className="mr-1" />}
-                        {copiedIndex === idx ? 'Copied' : 'Copy Code'}
-                      </button>
-                    </div>
-                    <pre className="p-4 bg-slate-900 text-slate-50 text-xs overflow-x-auto font-mono leading-relaxed">
-                      {file.code}
-                    </pre>
-                  </div>
-                ))}
-              </div>
-              <div className="p-4 border-t border-slate-200 bg-white text-right">
-                <button onClick={() => setShowServerSetup(false)} className="bg-slate-900 text-white px-6 py-3 rounded-xl font-bold">Close Guide</button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     );
   }
@@ -672,28 +277,13 @@ const AdminDashboard: React.FC = () => {
           <div>
             <h1 className="text-3xl font-black mb-2 flex items-center">
               Admin Dashboard
-              <span className={`ml-3 text-xs py-1 px-2 rounded text-white uppercase tracking-wider ${isDemoMode ? 'bg-amber-600' : 'bg-blue-600'}`}>
-                {isDemoMode ? 'Local Mode' : 'Secure Session'}
+              <span className="ml-3 text-xs py-1 px-2 rounded bg-blue-600 text-white uppercase tracking-wider">
+                Secure Session
               </span>
             </h1>
             <p className="text-slate-400">Manage incoming inquiries and messages.</p>
           </div>
           <div className="flex gap-3">
-             <button 
-                onClick={() => setShowServerSetup(true)}
-                className="flex items-center bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-lg font-bold transition-colors border border-slate-700 text-sm"
-                title="Get PHP Files"
-             >
-                 <Code size={16} className="mr-2" />
-                 API Files
-             </button>
-             <button 
-                onClick={() => setShowConfig(!showConfig)}
-                className="flex items-center bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-lg font-bold transition-colors border border-slate-700 text-sm"
-             >
-                 <Settings size={16} className="mr-2" />
-                 Config
-             </button>
             <button 
               onClick={() => fetchMessages()} 
               className="flex items-center bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg font-bold transition-colors text-sm"
@@ -714,46 +304,7 @@ const AdminDashboard: React.FC = () => {
 
       <div className="max-w-7xl mx-auto px-4 -mt-8 pb-20">
         
-        {/* CONFIG PANEL */}
-        {showConfig && (
-          <div className="bg-white border-b-4 border-blue-500 p-6 rounded-xl shadow-xl mb-8 animate-fade-in-up">
-            <h3 className="text-xl font-black text-slate-900 mb-2 flex items-center">
-               <Globe className="mr-2 text-blue-500" /> Connect to Live Backend
-            </h3>
-            <div className="flex gap-4 mb-4">
-              <input 
-                type="text" 
-                placeholder="https://promarchconsulting.co.uk" 
-                defaultValue={apiHost}
-                className="flex-grow px-4 py-3 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-medium"
-                onBlur={(e) => saveApiHost(e.target.value)}
-              />
-              <button onClick={() => fetchMessages()} className="bg-slate-900 text-white px-6 rounded-lg font-bold">Save</button>
-            </div>
-            <div className="bg-slate-100 p-4 rounded-lg flex items-center justify-between">
-               <div>
-                  <h4 className="font-bold text-sm text-slate-700 flex items-center"><Activity size={16} className="mr-2"/> API Health Check</h4>
-                  <p className="text-xs text-slate-500">Ping server to verify file existence</p>
-               </div>
-               <div className="flex gap-4">
-                   <button onClick={() => setShowServerSetup(true)} className="text-slate-600 font-bold text-sm hover:underline flex items-center"><Code size={14} className="mr-1"/> View Code</button>
-                   <button onClick={checkHealth} className="text-blue-600 font-bold text-sm hover:underline">Check API Status</button>
-               </div>
-            </div>
-            {Object.keys(healthStatus).length > 0 && (
-                <div className="mt-4 grid grid-cols-2 gap-2">
-                    {Object.entries(healthStatus).map(([file, status]) => (
-                        <div key={file} className={`p-3 rounded border text-xs font-mono flex justify-between ${status === 'OK' ? 'bg-green-50 border-green-200 text-green-700' : 'bg-red-50 border-red-200 text-red-700'}`}>
-                            <span>{file}</span>
-                            <span className="font-bold">{status}</span>
-                        </div>
-                    ))}
-                </div>
-            )}
-          </div>
-        )}
-
-        {/* ERROR BANNER WITH SETUP ACTION */}
+        {/* ERROR BANNER */}
         {errorDetails && (
           <div className={`mb-8 border p-6 rounded-xl shadow-lg relative ${errorDetails.type === 'success' ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
              <button 
@@ -773,74 +324,9 @@ const AdminDashboard: React.FC = () => {
                  <h3 className={`text-lg font-black ${errorDetails.type === 'success' ? 'text-green-800' : 'text-red-800'}`}>
                     {errorDetails.type === 'success' ? 'Success' : 'Connection Error'}
                  </h3>
-                 <p className={`${errorDetails.type === 'success' ? 'text-green-700' : 'text-red-700'} mb-3`}>{errorDetails.message}</p>
-                 
-                 {errorDetails.type !== 'success' && (
-                     <button 
-                       onClick={() => setShowServerSetup(true)}
-                       className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-bold text-sm inline-flex items-center transition-colors"
-                     >
-                       <Code size={16} className="mr-2" />
-                       View Server Setup & API Files
-                     </button>
-                 )}
-                 {errorDetails.type === '404' && <p className="text-xs mt-3 font-mono bg-white p-2 border rounded text-slate-500 break-all">{debugUrl}</p>}
+                 <p className={`${errorDetails.type === 'success' ? 'text-green-700' : 'text-red-700'}`}>{errorDetails.message}</p>
                </div>
              </div>
-          </div>
-        )}
-
-        {/* SETUP MODAL */}
-        {showServerSetup && (
-          <div className="fixed inset-0 bg-slate-900/90 z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl w-full max-w-4xl h-[85vh] flex flex-col shadow-2xl overflow-hidden relative animate-fade-in-up">
-              <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                <div>
-                  <h2 className="text-2xl font-black text-slate-900">Backend Server Setup</h2>
-                  <p className="text-slate-500 text-sm">Create these files in your <code>public_html/api</code> folder.</p>
-                </div>
-                <button onClick={() => setShowServerSetup(false)} className="p-2 hover:bg-slate-200 rounded-full transition-colors">
-                  <X size={24} />
-                </button>
-              </div>
-              
-              <div className="overflow-y-auto p-6 space-y-8 bg-slate-50">
-                {SERVER_FILES.map((file, idx) => (
-                  <div key={idx} className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                    <div className="p-4 bg-slate-100 border-b border-slate-200 flex justify-between items-center">
-                      <div>
-                        <h3 className="font-bold text-slate-800 font-mono text-sm">{file.name}</h3>
-                        <p className="text-xs text-slate-500">{file.desc}</p>
-                      </div>
-                      <button 
-                        onClick={() => copyToClipboard(file.code, idx)}
-                        className={`flex items-center px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${copiedIndex === idx ? 'bg-green-100 text-green-700' : 'bg-white border hover:bg-slate-50'}`}
-                      >
-                        {copiedIndex === idx ? <Check size={14} className="mr-1" /> : <Copy size={14} className="mr-1" />}
-                        {copiedIndex === idx ? 'Copied' : 'Copy Code'}
-                      </button>
-                    </div>
-                    <pre className="p-4 bg-slate-900 text-slate-50 text-xs overflow-x-auto font-mono leading-relaxed">
-                      {file.code}
-                    </pre>
-                  </div>
-                ))}
-              </div>
-              
-              <div className="p-4 border-t border-slate-200 bg-white text-right">
-                <button onClick={() => setShowServerSetup(false)} className="bg-slate-900 text-white px-6 py-3 rounded-xl font-bold">
-                  Close Guide
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* DEMO MODE NOTICE */}
-        {isDemoMode && (
-          <div className="bg-blue-50 border border-blue-200 text-blue-800 p-4 rounded-xl flex items-center mb-8 shadow-sm">
-            <Info size={20} className="mr-2 flex-shrink-0" />
-            <span className="font-medium text-sm">Local Mode Active: Showing sample data because the Master Key was used.</span>
           </div>
         )}
 

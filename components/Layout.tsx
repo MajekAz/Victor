@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { 
   Menu, X, Phone, Mail, MapPin, 
   Linkedin, Facebook, Twitter, 
-  ChevronRight, Clock, Globe, Shield 
+  ChevronRight, Clock, Globe, Shield, Lock 
 } from 'lucide-react';
 import { NAV_LINKS, COMPANY_NAME, COMPANY_EMAIL, COMPANY_PHONE, COMPANY_ADDRESS, COMPANY_WHATSAPP, COLORS } from '../constants.tsx';
 import { Logo } from './Logo.tsx';
@@ -45,15 +45,15 @@ const TopBar = () => (
         </div>
       </div>
       <div className="flex items-center space-x-4">
-        <span className="text-slate-500 flex items-center">
-          <Globe size={14} className="mr-1.5" /> UK Based
-        </span>
-        <div className="h-3 w-px bg-slate-700 mx-2"></div>
         <div className="flex items-center space-x-3">
           <a href="#" aria-label="LinkedIn" className="hover:text-blue-400 transition-colors"><Linkedin size={14} /></a>
           <a href="#" aria-label="Facebook" className="hover:text-blue-400 transition-colors"><Facebook size={14} /></a>
           <a href="#" aria-label="Twitter" className="hover:text-blue-400 transition-colors"><Twitter size={14} /></a>
         </div>
+        <div className="h-3 w-px bg-slate-700 mx-2"></div>
+        <Link to="/admin" className="flex items-center text-slate-400 hover:text-white transition-colors">
+          <Lock size={12} className="mr-1.5" /> Admin
+        </Link>
       </div>
     </div>
   </div>
