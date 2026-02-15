@@ -27,7 +27,7 @@ const AdminDashboard: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [errorDetails, setErrorDetails] = useState<{ type: string, message: string } | null>(null);
 
-  // Config State - Safe LocalStorage Access (Hidden from UI, used for persistence if needed)
+  // Config State - Safe LocalStorage Access (Hidden from UI)
   const [apiHost] = useState<string>(() => {
     try {
         return localStorage.getItem('api_host') || '';
@@ -229,7 +229,7 @@ const AdminDashboard: React.FC = () => {
               <div className="relative">
                 <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                 <input 
-                  type={showPassword ? "text" : "Victor@2026"}
+                  type={showPassword ? "text" : "password"}
                   value={passwordInput}
                   onChange={(e) => setPasswordInput(e.target.value)}
                   className={`w-full pl-12 pr-12 py-3 bg-slate-50 border rounded-xl outline-none focus:ring-2 transition-all ${authError ? 'border-red-300 focus:ring-red-200' : 'border-slate-200 focus:ring-blue-500'}`}
