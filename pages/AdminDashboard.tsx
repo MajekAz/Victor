@@ -31,7 +31,7 @@ const AdminDashboard: React.FC = () => {
   const totalMessages = messages.length;
   const hiringCount = messages.filter(m => 
     m.subject.toLowerCase().includes('hiring') || 
-    m.subject.toLowerCase().includes('staff') || 
+    m.subject.toLowerCase().includes('staff') ||
     m.subject.toLowerCase().includes('employer') ||
     m.subject.toLowerCase().includes('talent request')
   ).length;
@@ -47,7 +47,8 @@ const AdminDashboard: React.FC = () => {
     setAuthError(false);
     
     const cleanPassword = passwordInput.trim();
-    const loginUrl = '/api/login.php';
+    // Using relative path for production security and flexibility
+    const loginUrl = 'api/login.php';
 
     try {
         const controller = new AbortController();
@@ -62,6 +63,7 @@ const AdminDashboard: React.FC = () => {
         });
         clearTimeout(timeoutId);
         
+        // Handle 404 explicitly
         if (response.status === 404) {
              throw new Error("API endpoint not found. Please ensure backend is deployed.");
         }
@@ -89,7 +91,7 @@ const AdminDashboard: React.FC = () => {
 
   const handleLogout = async () => {
     try {
-        await fetch('/api/logout.php', { method: 'POST', credentials: 'include' });
+        await fetch('api/logout.php', { method: 'POST', credentials: 'include' });
     } catch (e) {
         console.error("Logout API failed", e);
     }
@@ -103,7 +105,7 @@ const AdminDashboard: React.FC = () => {
     setMessages(prev => prev.filter(msg => msg.id !== id));
     
     try {
-        await fetch('/api/delete_message.php', {
+        await fetch('api/delete_message.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ id }),
@@ -122,7 +124,7 @@ const AdminDashboard: React.FC = () => {
     setLoading(true);
     setErrorDetails(null);
     
-    const targetPath = '/api/get_messages.php';
+    const targetPath = 'api/get_messages.php';
     
     try {
       const response = await fetch(targetPath, {
@@ -181,6 +183,9 @@ const AdminDashboard: React.FC = () => {
     return { label: 'General Inquiry', color: 'bg-slate-100 text-slate-700 border-slate-200', icon: Mail };
   };
 
+  // ----------------------------------------------------------------------
+  // RENDER: LOADING
+  // ----------------------------------------------------------------------
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-4">
@@ -190,17 +195,19 @@ const AdminDashboard: React.FC = () => {
     );
   }
 
-  // LOGIN SCREEN
+  // ----------------------------------------------------------------------
+  // RENDER: LOGIN
+  // ----------------------------------------------------------------------
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full">
           <div className="text-center mb-8">
-            <div className="w-20 h-20 bg-slate-900 text-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl ring-4 ring-slate-50">
-              <Lock size={40} />
+            <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Shield size={32} />
             </div>
-            <h1 className="text-3xl font-black text-slate-900 mb-2">Secure Admin Login</h1>
-            <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">Authorized Personnel Only</p>
+            <h1 className="text-2xl font-black text-slate-900">Promarch Admin Portal</h1>
+            <p className="text-slate-500">Promarch Consulting Dashboard</p>
           </div>
           
           <form onSubmit={handleLogin} className="space-y-6">
@@ -245,7 +252,9 @@ const AdminDashboard: React.FC = () => {
     );
   }
 
-  // DASHBOARD SCREEN
+  // ----------------------------------------------------------------------
+  // RENDER: DASHBOARD
+  // ----------------------------------------------------------------------
   return (
     <div className="pt-20 min-h-screen bg-slate-50">
       
