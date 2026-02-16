@@ -1,9 +1,14 @@
 import React from 'react';
-import { Shield, Lock, Eye, Server, Cookie, FileText, CheckCircle } from 'lucide-react';
+import { Shield, Lock, Eye, Server, Cookie, FileText, CheckCircle, RefreshCcw } from 'lucide-react';
 import { COLORS, COMPANY_NAME, COMPANY_EMAIL } from '../constants.tsx';
 
 const Privacy: React.FC = () => {
   const lastUpdated = "January 15, 2024";
+
+  const resetCookies = () => {
+    localStorage.removeItem('promarch_cookie_consent');
+    window.location.reload();
+  };
 
   return (
     <div className="pt-20">
@@ -105,6 +110,21 @@ const Privacy: React.FC = () => {
               <p className="font-bold text-slate-900 mb-1">Data Protection Officer</p>
               <p className="text-blue-600 font-bold mb-0">{COMPANY_EMAIL}</p>
               <p className="text-slate-500 text-sm mt-2">124 City Road, London, EC1V 2NX, United Kingdom</p>
+            </div>
+            
+            {/* Cookie Preferences Reset - Helpful for users who dismissed the banner */}
+            <div className="mt-12 pt-8 border-t border-slate-100 not-prose">
+              <h3 className="text-lg font-black text-slate-900 mb-4">Cookie Preferences</h3>
+              <p className="text-sm text-slate-600 mb-4">
+                You can reset your cookie consent preferences at any time. This will cause the consent banner to reappear on your next page load.
+              </p>
+              <button 
+                onClick={resetCookies}
+                className="inline-flex items-center px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-900 font-bold rounded-xl transition-colors text-sm"
+              >
+                <RefreshCcw size={16} className="mr-2" />
+                Reset Cookie Consent
+              </button>
             </div>
 
           </div>

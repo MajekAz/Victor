@@ -4,14 +4,16 @@ import { Cookie } from 'lucide-react';
 import { COLORS } from '../constants.tsx';
 
 export const CookieConsent: React.FC = () => {
+  const [shouldRender, setShouldRender] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     // Check if user has already made a choice
     const consent = localStorage.getItem('promarch_cookie_consent');
     if (!consent) {
-      // Small delay for better UX entrance animation
-      const timer = setTimeout(() => setIsVisible(true), 1500);
+      setShouldRender(true);
+      // Small delay to ensure DOM is ready for transition
+      const timer = setTimeout(() => setIsVisible(true), 100);
       return () => clearTimeout(timer);
     }
   }, []);
@@ -19,17 +21,19 @@ export const CookieConsent: React.FC = () => {
   const handleAccept = () => {
     localStorage.setItem('promarch_cookie_consent', 'accepted');
     setIsVisible(false);
+    setTimeout(() => setShouldRender(false), 500);
   };
 
   const handleDecline = () => {
     localStorage.setItem('promarch_cookie_consent', 'declined');
     setIsVisible(false);
+    setTimeout(() => setShouldRender(false), 500);
   };
 
-  if (!isVisible) return null;
+  if (!shouldRender) return null;
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 z-[100] animate-fade-in-up">
+    <div className={`fixed bottom-4 left-4 right-4 z-[9999] transition-all duration-700 transform ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
       <div className="max-w-5xl mx-auto bg-white rounded-2xl shadow-2xl border border-slate-200 p-6 md:p-8 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 relative overflow-hidden">
         
         {/* Decorative background blur */}

@@ -206,7 +206,7 @@ const AdminDashboard: React.FC = () => {
             <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
               <Shield size={32} />
             </div>
-            <h1 className="text-2xl font-black text-slate-900">Secure Admin Portal</h1>
+            <h1 className="text-2xl font-black text-slate-900">Promarch Admin Portal</h1>
             <p className="text-slate-500">Promarch Consulting Dashboard</p>
           </div>
           
