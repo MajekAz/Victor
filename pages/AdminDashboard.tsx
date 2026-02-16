@@ -206,8 +206,9 @@ const AdminDashboard: React.FC = () => {
             <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
               <Shield size={32} />
             </div>
-            <h1 className="text-2xl font-black text-slate-900">Promarch Admin Portal</h1>
-            <p className="text-slate-500">Promarch Consulting Dashboard</p>
+            {/* Updated Title to ensure visual confirmation of deployment */}
+            <h1 className="text-2xl font-black text-slate-900">Promarch Staff Portal</h1>
+            <p className="text-slate-500">Secure Access Only</p>
           </div>
           
           <form onSubmit={handleLogin} className="space-y-6">
@@ -220,7 +221,7 @@ const AdminDashboard: React.FC = () => {
                   value={passwordInput}
                   onChange={(e) => setPasswordInput(e.target.value)}
                   className={`w-full pl-12 pr-12 py-3 bg-slate-50 border rounded-xl outline-none focus:ring-2 transition-all ${authError ? 'border-red-300 focus:ring-red-200' : 'border-slate-200 focus:ring-blue-500'}`}
-                  placeholder="Enter admin password"
+                  placeholder="Enter access code"
                 />
                 <button 
                   type="button"
@@ -230,7 +231,7 @@ const AdminDashboard: React.FC = () => {
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
-              {authError && <p className="text-red-500 text-xs font-bold mt-2 ml-1">Authentication failed. Invalid password.</p>}
+              {authError && <p className="text-red-500 text-xs font-bold mt-2 ml-1">Access denied. Invalid credentials.</p>}
             </div>
             
             <button 
@@ -238,7 +239,7 @@ const AdminDashboard: React.FC = () => {
               disabled={isLoggingIn}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition-colors shadow-lg flex justify-center items-center"
             >
-              {isLoggingIn ? <Loader2 className="animate-spin" /> : "Login to Dashboard"}
+              {isLoggingIn ? <Loader2 className="animate-spin" /> : "Authenticate"}
             </button>
             
             {errorDetails && errorDetails.type === 'error' && (
@@ -247,6 +248,7 @@ const AdminDashboard: React.FC = () => {
                 </div>
             )}
           </form>
+          {/* Absolutely no other links here */}
         </div>
       </div>
     );
@@ -263,9 +265,9 @@ const AdminDashboard: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4">
           <div>
             <h1 className="text-3xl font-black mb-2 flex items-center">
-              Admin Dashboard
+              Staff Portal
               <span className="ml-3 text-xs py-1 px-2 rounded bg-blue-600 text-white uppercase tracking-wider">
-                Secure Session
+                Authorized
               </span>
             </h1>
             <p className="text-slate-400">Manage incoming inquiries and messages.</p>
