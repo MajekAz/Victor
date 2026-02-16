@@ -31,7 +31,7 @@ const AdminDashboard: React.FC = () => {
   const totalMessages = messages.length;
   const hiringCount = messages.filter(m => 
     m.subject.toLowerCase().includes('hiring') || 
-    m.subject.toLowerCase().includes('staff') ||
+    m.subject.toLowerCase().includes('staff') || 
     m.subject.toLowerCase().includes('employer') ||
     m.subject.toLowerCase().includes('talent request')
   ).length;
@@ -47,7 +47,6 @@ const AdminDashboard: React.FC = () => {
     setAuthError(false);
     
     const cleanPassword = passwordInput.trim();
-    // Using relative path for production security
     const loginUrl = '/api/login.php';
 
     try {
@@ -63,7 +62,6 @@ const AdminDashboard: React.FC = () => {
         });
         clearTimeout(timeoutId);
         
-        // Handle 404 explicitly
         if (response.status === 404) {
              throw new Error("API endpoint not found. Please ensure backend is deployed.");
         }
@@ -183,9 +181,6 @@ const AdminDashboard: React.FC = () => {
     return { label: 'General Inquiry', color: 'bg-slate-100 text-slate-700 border-slate-200', icon: Mail };
   };
 
-  // ----------------------------------------------------------------------
-  // RENDER: LOADING
-  // ----------------------------------------------------------------------
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-4">
@@ -195,9 +190,7 @@ const AdminDashboard: React.FC = () => {
     );
   }
 
-  // ----------------------------------------------------------------------
-  // RENDER: LOGIN
-  // ----------------------------------------------------------------------
+  // LOGIN SCREEN
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
@@ -252,9 +245,7 @@ const AdminDashboard: React.FC = () => {
     );
   }
 
-  // ----------------------------------------------------------------------
-  // RENDER: DASHBOARD
-  // ----------------------------------------------------------------------
+  // DASHBOARD SCREEN
   return (
     <div className="pt-20 min-h-screen bg-slate-50">
       
