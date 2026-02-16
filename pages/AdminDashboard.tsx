@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { 
   Loader2, RefreshCw, Mail, Calendar, 
   LogOut, Trash2, KeyRound, Shield, Briefcase, Reply, Eye, EyeOff,
-  Users, Globe, Check, AlertCircle, X, Database
+  Users, Globe, Check, AlertCircle, X, Database, Lock
 } from 'lucide-react';
 
 interface Message {
@@ -203,11 +203,11 @@ const AdminDashboard: React.FC = () => {
       <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full">
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Shield size={32} />
+            <div className="w-20 h-20 bg-slate-900 text-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl ring-4 ring-slate-50">
+              <Lock size={40} />
             </div>
-            <h1 className="text-2xl font-black text-slate-900">Promarch Admin Portal</h1>
-            <p className="text-slate-500">Promarch Consulting Dashboard</p>
+            <h1 className="text-3xl font-black text-slate-900 mb-2">Secure Admin Login</h1>
+            <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">Authorized Personnel Only</p>
           </div>
           
           <form onSubmit={handleLogin} className="space-y-6">
