@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { 
   Loader2, RefreshCw, Mail, Calendar, 
   LogOut, Trash2, KeyRound, Shield, Briefcase, Reply, Eye, EyeOff,
-  Users, Globe, Check, AlertCircle, X, Database, Lock
+  Users, Globe, Check, AlertCircle, X, Database, Lock, Server
 } from 'lucide-react';
 
 interface Message {
@@ -196,59 +196,67 @@ const AdminDashboard: React.FC = () => {
   }
 
   // ----------------------------------------------------------------------
-  // RENDER: LOGIN
+  // RENDER: LOGIN (Redesigned to avoid confusion with old version)
   // ----------------------------------------------------------------------
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full">
+        <div className="bg-slate-800 rounded-2xl shadow-2xl p-8 max-w-md w-full border border-slate-700">
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Shield size={32} />
+            <div className="inline-flex items-center justify-center gap-2 mb-4 bg-blue-600/20 px-3 py-1 rounded-full border border-blue-500/30">
+               <Lock size={12} className="text-blue-400" />
+               <span className="text-xs font-bold text-blue-300 uppercase tracking-widest">Secure Environment</span>
             </div>
-            {/* Updated Title to ensure visual confirmation of deployment */}
-            <h1 className="text-2xl font-black text-slate-900">Promarch Staff Portal</h1>
-            <p className="text-slate-500">Secure Access Only</p>
+            
+            <h1 className="text-2xl font-black text-white mb-2">Promarch Systems</h1>
+            <p className="text-slate-400 text-sm">Authorized Personnel Access Only</p>
           </div>
           
           <form onSubmit={handleLogin} className="space-y-6">
             <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">Password</label>
+              <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Admin Key</label>
               <div className="relative">
-                <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                <Server className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
                 <input 
                   type={showPassword ? "text" : "password"}
                   value={passwordInput}
                   onChange={(e) => setPasswordInput(e.target.value)}
-                  className={`w-full pl-12 pr-12 py-3 bg-slate-50 border rounded-xl outline-none focus:ring-2 transition-all ${authError ? 'border-red-300 focus:ring-red-200' : 'border-slate-200 focus:ring-blue-500'}`}
-                  placeholder="Enter access code"
+                  className={`w-full pl-12 pr-12 py-3 bg-slate-900 border rounded-xl outline-none focus:ring-2 transition-all text-white ${authError ? 'border-red-500/50 focus:ring-red-500/30' : 'border-slate-600 focus:ring-blue-500/50'}`}
+                  placeholder="Enter password"
                 />
                 <button 
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 focus:outline-none"
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
-              {authError && <p className="text-red-500 text-xs font-bold mt-2 ml-1">Access denied. Invalid credentials.</p>}
+              {authError && <p className="text-red-400 text-xs font-bold mt-2 ml-1">Access denied. Invalid credentials.</p>}
             </div>
             
             <button 
               type="submit"
               disabled={isLoggingIn}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition-colors shadow-lg flex justify-center items-center"
+              className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-blue-900/20 flex justify-center items-center"
             >
-              {isLoggingIn ? <Loader2 className="animate-spin" /> : "Authenticate"}
+              {isLoggingIn ? <Loader2 className="animate-spin" /> : "Verify Credentials"}
             </button>
             
             {errorDetails && errorDetails.type === 'error' && (
-                <div className="bg-red-50 p-3 rounded text-xs text-red-600 border border-red-100 mt-2 text-center">
+                <div className="bg-red-900/20 p-3 rounded text-xs text-red-300 border border-red-900/30 mt-2 text-center">
                     {errorDetails.message}
                 </div>
             )}
           </form>
-          {/* Absolutely no other links here */}
+          
+          <div className="mt-8 pt-6 border-t border-slate-700 text-center">
+             <p className="text-xs text-slate-500 flex items-center justify-center gap-2">
+               <Shield size={12} />
+               End-to-End Encrypted Session
+             </p>
+          </div>
+          {/* Ensure NO links exist here */}
         </div>
       </div>
     );

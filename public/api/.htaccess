@@ -15,7 +15,7 @@ Options -Indexes
 </IfModule>
 
 # PROTECT SENSITIVE FILES
-# Deny direct HTTP access to config files, but allow server-side includes.
+# Strict denial for config files
 <FilesMatch "^(config\.php|config\.sample\.php|db_connect\.php)$">
     <IfModule mod_authz_core.c>
         Require all denied
@@ -25,3 +25,9 @@ Options -Indexes
         Deny from all
     </IfModule>
 </FilesMatch>
+
+# Fallback specifically for config.php if the above regex fails on some systems
+<Files "config.php">
+    Order allow,deny
+    Deny from all
+</Files>
