@@ -27,15 +27,6 @@ const AdminDashboard: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [errorDetails, setErrorDetails] = useState<{ type: string, message: string } | null>(null);
 
-  // Config State - Safe LocalStorage Access (Hidden from UI)
-  const [apiHost] = useState<string>(() => {
-    try {
-        return localStorage.getItem('api_host') || '';
-    } catch (e) {
-        return '';
-    }
-  });
-
   // Computed Stats
   const totalMessages = messages.length;
   const hiringCount = messages.filter(m => 
@@ -46,7 +37,7 @@ const AdminDashboard: React.FC = () => {
   ).length;
   const jobCount = messages.filter(m => 
     m.subject.toLowerCase().includes('job') || 
-    m.subject.toLowerCase().includes('work') ||
+    m.subject.toLowerCase().includes('work') || 
     m.subject.toLowerCase().includes('candidate')
   ).length;
 
@@ -56,8 +47,7 @@ const AdminDashboard: React.FC = () => {
     setAuthError(false);
     
     const cleanPassword = passwordInput.trim();
-    const activeHost = apiHost || '';
-    const loginUrl = `${activeHost}/api/login.php`;
+    const loginUrl = '/api/login.php';
 
     try {
         const controller = new AbortController();
@@ -99,9 +89,8 @@ const AdminDashboard: React.FC = () => {
   };
 
   const handleLogout = async () => {
-    const activeHost = apiHost || '';
     try {
-        await fetch(`${activeHost}/api/logout.php`, { method: 'POST', credentials: 'include' });
+        await fetch('/api/logout.php', { method: 'POST', credentials: 'include' });
     } catch (e) {
         console.error("Logout API failed", e);
     }
@@ -115,9 +104,7 @@ const AdminDashboard: React.FC = () => {
     setMessages(prev => prev.filter(msg => msg.id !== id));
     
     try {
-        const activeHost = apiHost || '';
-        const targetPath = `${activeHost}/api/delete_message.php`;
-        await fetch(targetPath, {
+        await fetch('/api/delete_message.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ id }),
@@ -136,8 +123,7 @@ const AdminDashboard: React.FC = () => {
     setLoading(true);
     setErrorDetails(null);
     
-    const activeHost = apiHost || ''; 
-    const targetPath = `${activeHost}/api/get_messages.php`;
+    const targetPath = '/api/get_messages.php';
     
     try {
       const response = await fetch(targetPath, {
