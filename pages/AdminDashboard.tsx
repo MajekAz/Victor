@@ -3,8 +3,9 @@ import React, { useState, useEffect } from 'react';
 // Added Database to the imports from lucide-react
 import { 
   Loader2, RefreshCw, LogOut, Trash2, KeyRound, Shield, Eye, EyeOff,
-  Lock, Server, AlertCircle, CheckCircle2, Globe, Wifi, Copy, Database
+  Lock, Server, AlertCircle, CheckCircle2, Globe, Wifi, Copy, Database, ArrowLeft
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface Message {
   id: number;
@@ -183,6 +184,12 @@ const AdminDashboard: React.FC = () => {
               {isLoggingIn ? <Loader2 className="animate-spin" size={20} /> : "Verify Identity"}
             </button>
           </form>
+
+          <div className="mt-6">
+             <Link to="/" className="text-slate-500 hover:text-white transition-colors text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2">
+                <ArrowLeft size={14} /> Back to Website
+             </Link>
+          </div>
 
           {/* Diagnostic Status Bar */}
           <div className="mt-12 pt-8 border-t border-slate-800 flex flex-col gap-4">

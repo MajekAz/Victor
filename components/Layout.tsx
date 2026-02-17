@@ -134,6 +134,13 @@ const Navbar = () => {
               {link.label}
             </Link>
           ))}
+          <Link
+            to="/admin"
+            className="flex items-center px-3 py-4 text-base font-black text-blue-600 border-b border-slate-50 uppercase tracking-widest"
+            onClick={() => setIsOpen(false)}
+          >
+            <Lock size={18} className="mr-2" /> Staff Portal
+          </Link>
           <div className="pt-4 px-3">
              <Link 
                to="/contact" 
@@ -183,6 +190,7 @@ const Footer = () => {
               <li><Link to="/about" className="text-slate-400 hover:text-white transition-colors text-sm font-medium flex items-center group"><ChevronRight size={14} className="mr-2 group-hover:text-blue-400 transition-colors" /> About Us</Link></li>
               <li><Link to="/blog" className="text-slate-400 hover:text-white transition-colors text-sm font-medium flex items-center group"><ChevronRight size={14} className="mr-2 group-hover:text-blue-400 transition-colors" /> Industry Insights</Link></li>
               <li><Link to="/find-a-job" className="text-slate-400 hover:text-white transition-colors text-sm font-medium flex items-center group"><ChevronRight size={14} className="mr-2 group-hover:text-blue-400 transition-colors" /> Careers / Jobs</Link></li>
+              <li><Link to="/admin" className="text-slate-400 hover:text-white transition-colors text-sm font-medium flex items-center group"><Lock size={14} className="mr-2 text-blue-400" /> Admin Access</Link></li>
               <li><Link to="/terms" className="text-slate-400 hover:text-white transition-colors text-sm font-medium flex items-center group"><ChevronRight size={14} className="mr-2 group-hover:text-blue-400 transition-colors" /> Terms of Service</Link></li>
               <li><Link to="/privacy" className="text-slate-400 hover:text-white transition-colors text-sm font-medium flex items-center group"><ChevronRight size={14} className="mr-2 group-hover:text-blue-400 transition-colors" /> Privacy Policy</Link></li>
             </ul>
