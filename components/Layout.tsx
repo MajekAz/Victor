@@ -300,7 +300,8 @@ const Footer = () => (
           <Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
         </div>
       </div>
-    </footer>
+    </div>
+  </footer>
 );
 
 export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
