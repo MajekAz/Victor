@@ -12,14 +12,14 @@ require_once __DIR__ . '/config.php';
 // Determine if HTTPS is enabled
 $isSecure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || $_SERVER['SERVER_PORT'] == 443;
 
-// Start secure session handling
+// Start secure session handling - Set SameSite to Lax for broader compatibility on shared hosts
 session_set_cookie_params([
     'lifetime' => 86400,
     'path' => '/',
     'domain' => '', 
     'secure' => $isSecure, 
     'httponly' => true,
-    'samesite' => 'None' 
+    'samesite' => 'Lax' 
 ]);
 session_start();
 

@@ -112,6 +112,7 @@ const Privacy: React.FC = () => {
               <p className="text-slate-500 text-sm mt-2">124 City Road, London, EC1V 2NX, United Kingdom</p>
             </div>
             
+            {/* Cookie Preferences Reset - Helpful for users who dismissed the banner */}
             <div className="mt-12 pt-8 border-t border-slate-100 not-prose">
               <h3 className="text-lg font-black text-slate-900 mb-4">Cookie Preferences</h3>
               <p className="text-sm text-slate-600 mb-4">
