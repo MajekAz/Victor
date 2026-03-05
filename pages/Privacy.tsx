@@ -1,6 +1,6 @@
 import React from 'react';
 import { Shield, Lock, Eye, Server, Cookie, FileText, CheckCircle, RefreshCcw } from 'lucide-react';
-import { COLORS, COMPANY_NAME, COMPANY_EMAIL } from '../constants.tsx';
+import { COLORS, COMPANY_NAME, COMPANY_EMAIL, COMPANY_ADDRESS } from '../constants.tsx';
 
 const Privacy: React.FC = () => {
   const lastUpdated = "January 15, 2024";
@@ -109,7 +109,7 @@ const Privacy: React.FC = () => {
             <div className="bg-blue-50 p-6 rounded-xl border border-blue-100 not-prose mt-4">
               <p className="font-bold text-slate-900 mb-1">Data Protection Officer</p>
               <p className="text-blue-600 font-bold mb-0">{COMPANY_EMAIL}</p>
-              <p className="text-slate-500 text-sm mt-2">124 City Road, London, EC1V 2NX, United Kingdom</p>
+              <p className="text-slate-500 text-sm mt-2">{COMPANY_ADDRESS}</p>
             </div>
             
             <div className="mt-12 pt-8 border-t border-slate-100 not-prose">

@@ -4,7 +4,7 @@ export const COMPANY_NAME = "Promarch Consulting";
 export const COMPANY_EMAIL = "info@promarchconsulting.co.uk";
 export const COMPANY_PHONE = "+44 7594 459931";
 export const COMPANY_WHATSAPP = "447594459931"; // Format for WhatsApp API (no plus, no spaces)
-export const COMPANY_ADDRESS = "124 City Road, London, EC1V 2NX, United Kingdom";
+export const COMPANY_ADDRESS = "167-169 Great Portland Street, 5th Floor, London, United Kingdom";
 
 // Colors precisely matched from the provided brand logo
 export const COLORS = {
