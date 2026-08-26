@@ -17,10 +17,40 @@ export const COLORS = {
 export const NAV_LINKS: NavItem[] = [
   { label: "Home", href: "/" },
   { label: "About", href: "/about" },
+  { label: "Jobs", href: "/jobs" },
   { label: "Services", href: "/services" },
   { label: "Blog", href: "/blog" },
   { label: "Contact", href: "/contact" },
 ];
+
+export const JOB_CATEGORIES = [
+  "Care Sector",
+  "Warehouse & Logistics",
+  "Professional Cleaning",
+  "Hospitality & Dining",
+  "Nursing & Healthcare",
+  "Management & Supervision",
+  "Facilities & Maintenance",
+  "Office & Administration",
+];
+
+export const JOB_TYPES = [
+  "Full-time",
+  "Part-time",
+  "Permanent",
+  "Temporary",
+  "Contract",
+  "Apprenticeship",
+  "Internship",
+  "Freelance",
+];
+
+export const WORK_ARRANGEMENTS = [
+  "On-site",
+  "Hybrid",
+  "Remote",
+];
+
 
 export const SERVICES: Service[] = [
   {

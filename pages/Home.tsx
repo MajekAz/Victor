@@ -1,9 +1,29 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, CheckCircle, Users, Zap, HeartPulse, Truck, Sparkles, Utensils } from 'lucide-react';
+import { ArrowRight, CheckCircle, Users, Zap, HeartPulse, Truck, Sparkles, Utensils, Briefcase } from 'lucide-react';
 import { SERVICES, COLORS } from '../constants.tsx';
+import { Job } from '../types.ts';
+import { JobService } from '../services/jobService.ts';
+import { JobCard } from '../components/JobCard.tsx';
 
 const Home: React.FC = () => {
+  const [latestJobs, setLatestJobs] = useState<Job[]>([]);
+  const [isLoadingJobs, setIsLoadingJobs] = useState<boolean>(true);
+
+  useEffect(() => {
+    const fetchLatestJobs = async () => {
+      try {
+        const res = await JobService.getJobs({ limit: 3, sortBy: 'newest' });
+        setLatestJobs(res.jobs);
+      } catch (e) {
+        console.error('Failed to fetch home vacancies:', e);
+      } finally {
+        setIsLoadingJobs(false);
+      }
+    };
+    fetchLatestJobs();
+  }, []);
+
   const iconMap: Record<string, React.ReactNode> = {
     HeartPulse: <HeartPulse size={24} />,
     Truck: <Truck size={24} />,
@@ -12,7 +32,7 @@ const Home: React.FC = () => {
   };
 
   return (
-    <div className="overflow-hidden">
+    <div className="overflow-hidden font-sans">
       {/* 1. Hero Section */}
       <section className="relative h-screen flex items-center justify-center pt-20">
         <div className="absolute inset-0 z-0">
@@ -35,12 +55,12 @@ const Home: React.FC = () => {
             <h1 className="text-4xl md:text-8xl font-[900] leading-tight mb-8">
               Connecting <span style={{ color: COLORS.secondary }}>Talent</span> <br className="hidden md:block" /> with Opportunity.
             </h1>
-            <p className="text-lg md:text-2xl text-slate-200 mb-10 leading-relaxed max-w-2xl mx-auto">
+            <p className="text-lg md:text-2xl text-slate-200 mb-10 leading-relaxed max-w-2xl mx-auto font-medium">
               We help candidates find reliable jobs and connect employers with the best talent in the Care, Warehouse, Logistics, and Hospitality sectors.
             </p>
             <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 justify-center">
               <Link 
-                to="/find-a-job" 
+                to="/jobs" 
                 className="text-white px-6 py-3 md:px-10 md:py-4 rounded-xl font-black text-base md:text-lg transition-all flex items-center justify-center shadow-2xl hover:opacity-90"
                 style={{ backgroundColor: COLORS.primary }}
               >
@@ -82,8 +102,53 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* 3. Services Overview */}
-      <section className="py-24 bg-slate-50">
+      {/* 3. Featured & Latest Job Vacancies Section */}
+      <section className="py-24 bg-slate-100" id="home-latest-jobs">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
+            <div>
+              <span className="text-xs font-black uppercase tracking-widest text-blue-600 block mb-2">
+                Live Opportunities
+              </span>
+              <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">
+                Latest Job Vacancies
+              </h2>
+              <p className="text-base text-slate-600 font-medium mt-1">
+                Explore recently added opportunities across London & the UK.
+              </p>
+            </div>
+
+            <Link
+              to="/jobs"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-slate-900 hover:bg-blue-600 text-white text-xs font-black uppercase tracking-wider transition-all shadow-md self-start md:self-auto"
+            >
+              <span>View All Vacancies</span>
+              <ArrowRight size={14} />
+            </Link>
+          </div>
+
+          {isLoadingJobs ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="bg-white rounded-3xl p-7 border border-slate-200 shadow-xs animate-pulse h-96"></div>
+              ))}
+            </div>
+          ) : latestJobs.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+              {latestJobs.map((job) => (
+                <JobCard key={job.id} job={job} />
+              ))}
+            </div>
+          ) : (
+            <div className="bg-white rounded-3xl p-10 text-center border border-slate-200">
+              <p className="text-sm font-semibold text-slate-500">No active vacancies currently posted. Check back shortly!</p>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* 4. Services Overview */}
+      <section className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-black text-slate-900 mb-4">Our Expertise</h2>
@@ -127,8 +192,8 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* 4. Features */}
-      <section className="py-24 bg-white">
+      {/* 5. Features */}
+      <section className="py-24 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-black text-slate-900 mb-6">Why Partner with Promarch?</h2>
           <p className="text-lg text-slate-600 mb-16 max-w-3xl mx-auto">Reliability, speed, and quality vetting are at the core of everything we do.</p>
@@ -139,33 +204,32 @@ const Home: React.FC = () => {
               { icon: <CheckCircle size={32} />, title: "Rigorous Vetting", desc: "Every candidate undergoes background checks and skills assessment before placement." },
               { icon: <Zap size={32} />, title: "Rapid Turnaround", desc: "Need staff tomorrow? Our automated system and deep database make it happen." }
             ].map((feature, i) => (
-              <div key={i} className="bg-slate-50 p-8 rounded-2xl shadow-sm border border-slate-100 hover:shadow-xl transition-all group text-left">
+              <div key={i} className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:shadow-xl transition-all group text-left">
                 <div 
                   className="w-16 h-16 rounded-xl flex items-center justify-center mb-6 group-hover:text-white transition-all"
                   style={{ backgroundColor: `${COLORS.secondary}15`, color: COLORS.primary }}
                 >
                   {feature.icon}
                 </div>
-                <h3 className="text-xl font-bold mb-4">{feature.title}</h3>
-                <p className="text-slate-600 leading-relaxed">{feature.desc}</p>
+                <h3 className="text-xl font-bold mb-4 text-slate-900">{feature.title}</h3>
+                <p className="text-slate-600 leading-relaxed font-normal">{feature.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* 5. Call to Action */}
+      {/* 6. Call to Action */}
       <section className="py-24" style={{ backgroundColor: COLORS.primary }}>
         <div className="max-w-5xl mx-auto px-4 text-center">
           <h2 className="text-4xl md:text-5xl font-black text-white mb-8">Ready for your next career move?</h2>
-          <p className="text-xl text-blue-100 mb-12 max-w-3xl mx-auto">
+          <p className="text-xl text-blue-100 mb-12 max-w-3xl mx-auto font-medium">
             Join thousands of professionals already thriving with Promarch Consulting.
           </p>
           <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-6">
             <Link 
-              to="/find-a-job" 
-              className="bg-white px-6 py-3 md:px-10 md:py-4 rounded-xl font-black text-base md:text-lg hover:bg-slate-50 transition-all shadow-lg" 
-              style={{ color: COLORS.primary }}
+              to="/jobs" 
+              className="bg-white px-6 py-3 md:px-10 md:py-4 rounded-xl font-black text-base md:text-lg hover:bg-slate-50 transition-all shadow-lg text-slate-900" 
             >
               Search Jobs
             </Link>

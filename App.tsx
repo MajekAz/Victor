@@ -3,13 +3,14 @@ import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-d
 import { Layout } from './components/Layout.tsx';
 import Home from './pages/Home.tsx';
 import About from './pages/About.tsx';
+import { Jobs } from './pages/Jobs.tsx';
+import { JobDetails } from './pages/JobDetails.tsx';
 import Services from './pages/Services.tsx';
 import Blog from './pages/Blog.tsx';
 import Post from './pages/Post.tsx';
 import Contact from './pages/Contact.tsx';
 import ContactSuccess from './pages/ContactSuccess.tsx';
 import HireTalent from './pages/HireTalent.tsx';
-import FindAJob from './pages/FindAJob.tsx';
 import ForEmployer from './pages/ForEmployer.tsx';
 import Terms from './pages/Terms.tsx';
 import Privacy from './pages/Privacy.tsx';
@@ -33,17 +34,20 @@ const App: React.FC = () => {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
+          <Route path="/jobs" element={<Jobs />} />
+          <Route path="/jobs/:slug" element={<JobDetails />} />
+          <Route path="/find-a-job" element={<Jobs />} />
           <Route path="/services" element={<Services />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/blog/:id" element={<Post />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/contact-success" element={<ContactSuccess />} />
           <Route path="/hire-talent" element={<HireTalent />} />
-          <Route path="/find-a-job" element={<FindAJob />} />
           <Route path="/for-employer" element={<ForEmployer />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/*" element={<AdminDashboard />} />
           {/* Catch all 404 */}
           <Route path="*" element={<NotFound />} />
         </Routes>
