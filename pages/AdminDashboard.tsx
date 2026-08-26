@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
   Lock, 
   Unlock, 
@@ -45,6 +45,7 @@ type AdminTab = 'analytics' | 'jobs' | 'create' | 'import' | 'logs' | 'security'
 
 export const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Auth State
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -163,6 +164,23 @@ export const AdminDashboard: React.FC = () => {
       loadJobsData();
     }
   }, []);
+
+  useEffect(() => {
+    const p = location.pathname;
+    if (p === '/admin/jobs/new') {
+      handleStartCreateJob();
+    } else if (p === '/admin/jobs') {
+      setActiveTab('jobs');
+    } else if (p === '/admin/import') {
+      setActiveTab('import');
+    } else if (p === '/admin/logs') {
+      setActiveTab('logs');
+    } else if (p === '/admin/settings' || p === '/admin/security') {
+      setActiveTab('security');
+    } else if (p === '/admin' || p === '/admin/dashboard') {
+      setActiveTab('analytics');
+    }
+  }, [location.pathname]);
 
   const loadJobsData = async () => {
     setIsLoadingJobs(true);
