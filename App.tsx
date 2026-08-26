@@ -1,5 +1,5 @@
-import React from 'react';
-import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { Layout } from './components/Layout.tsx';
 import Home from './pages/Home.tsx';
 import About from './pages/About.tsx';
@@ -17,19 +17,32 @@ import Privacy from './pages/Privacy.tsx';
 import AdminDashboard from './pages/AdminDashboard.tsx';
 import NotFound from './pages/NotFound.tsx';
 
-// Scroll to top on route change
-const ScrollToTop = () => {
+// Scroll to top on route change & seamlessly redirect any legacy hash URLs (e.g. /#/jobs -> /jobs)
+const NavigationHelper = () => {
   const { pathname } = useLocation();
-  React.useEffect(() => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
     window.scrollTo(0, 0);
   }, [pathname]);
+
+  // Backward compatibility: If visitor arrives via legacy /#/jobs or /#/about
+  useEffect(() => {
+    if (window.location.hash && window.location.hash.startsWith('#/')) {
+      const targetPath = window.location.hash.slice(1); // remove '#' e.g. '/jobs'
+      if (targetPath) {
+        navigate(targetPath, { replace: true });
+      }
+    }
+  }, [navigate]);
+
   return null;
 };
 
 const App: React.FC = () => {
   return (
     <Router>
-      <ScrollToTop />
+      <NavigationHelper />
       <Layout>
         <Routes>
           <Route path="/" element={<Home />} />

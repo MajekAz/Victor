@@ -97,6 +97,7 @@ export const JobDetails: React.FC = () => {
       },
       "datePosted": j.datePosted,
       "validThrough": j.closingDate || undefined,
+      "url": `https://promarchconsulting.co.uk/jobs/${j.slug}`,
       "employmentType": j.jobType.toUpperCase().replace('-', '_'),
       "hiringOrganization": {
         "@type": "Organization",
@@ -137,7 +138,7 @@ export const JobDetails: React.FC = () => {
   const handleApplyClick = () => {
     if (!job) return;
     JobService.incrementApplyClick(job.id);
-    const targetUrl = job.applicationUrl || 'https://promarchconsulting.co.uk/#/contact';
+    const targetUrl = job.applicationUrl || 'https://promarchconsulting.co.uk/contact';
     window.open(targetUrl, '_blank', 'noopener,noreferrer');
   };
 

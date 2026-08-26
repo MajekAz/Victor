@@ -133,7 +133,7 @@ export const AdminDashboard: React.FC = () => {
     workingHours: '',
     sourceName: 'Promarch Consulting',
     sourceUrl: 'https://promarchconsulting.co.uk',
-    applicationUrl: 'https://promarchconsulting.co.uk/#/contact',
+    applicationUrl: 'https://promarchconsulting.co.uk/contact',
     datePosted: new Date().toISOString().split('T')[0],
     closingDate: '',
     featured: false,
@@ -247,7 +247,7 @@ export const AdminDashboard: React.FC = () => {
       workingHours: '',
       sourceName: 'Promarch Consulting',
       sourceUrl: 'https://promarchconsulting.co.uk',
-      applicationUrl: 'https://promarchconsulting.co.uk/#/contact',
+      applicationUrl: 'https://promarchconsulting.co.uk/contact',
       datePosted: new Date().toISOString().split('T')[0],
       closingDate: '',
       featured: false,
@@ -291,7 +291,7 @@ export const AdminDashboard: React.FC = () => {
       workingHours: job.workingHours || '',
       sourceName: job.sourceName || 'Promarch Consulting',
       sourceUrl: job.sourceUrl || '',
-      applicationUrl: job.applicationUrl || 'https://promarchconsulting.co.uk/#/contact',
+      applicationUrl: job.applicationUrl || 'https://promarchconsulting.co.uk/contact',
       datePosted: job.datePosted ? job.datePosted.split('T')[0] : new Date().toISOString().split('T')[0],
       closingDate: job.closingDate ? job.closingDate.split('T')[0] : '',
       featured: job.featured,
@@ -1465,7 +1465,7 @@ export const AdminDashboard: React.FC = () => {
                         setFormData({ ...formData, applicationUrl: e.target.value });
                         handleTitleOrUrlChange(formData.title, e.target.value);
                       }}
-                      placeholder="https://promarchconsulting.co.uk/#/contact"
+                      placeholder="https://promarchconsulting.co.uk/contact"
                       className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-semibold text-slate-900 outline-none focus:ring-2 focus:ring-blue-600"
                     />
                   </div>

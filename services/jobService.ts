@@ -58,7 +58,7 @@ const SEED_JOBS: Job[] = [
     workingHours: '36 hours per week (3 x 12-hour waking nights, 20:00 - 08:00)',
     sourceName: 'Promarch Consulting',
     sourceUrl: 'https://promarchconsulting.co.uk',
-    applicationUrl: 'https://promarchconsulting.co.uk/#/contact',
+    applicationUrl: 'https://promarchconsulting.co.uk/contact',
     datePosted: '2026-08-20T09:00:00.000Z',
     closingDate: '2026-09-30T23:59:59.000Z',
     featured: true,
@@ -118,7 +118,7 @@ const SEED_JOBS: Job[] = [
     workingHours: '40 hours per week (4 on / 4 off shift rotation, 06:00 - 18:00)',
     sourceName: 'Indeed UK',
     sourceUrl: 'https://www.indeed.com',
-    applicationUrl: 'https://promarchconsulting.co.uk/#/contact',
+    applicationUrl: 'https://promarchconsulting.co.uk/contact',
     datePosted: '2026-08-22T11:30:00.000Z',
     closingDate: '2026-09-25T23:59:59.000Z',
     featured: true,
@@ -178,7 +178,7 @@ const SEED_JOBS: Job[] = [
     workingHours: '25 hours per week (Monday to Friday, 17:30 - 22:30)',
     sourceName: 'Promarch Consulting',
     sourceUrl: 'https://promarchconsulting.co.uk',
-    applicationUrl: 'https://promarchconsulting.co.uk/#/contact',
+    applicationUrl: 'https://promarchconsulting.co.uk/contact',
     datePosted: '2026-08-18T14:00:00.000Z',
     closingDate: '2026-09-20T23:59:59.000Z',
     featured: false,
@@ -238,7 +238,7 @@ const SEED_JOBS: Job[] = [
     workingHours: '48 hours per week (5 days out of 7 on rota basis)',
     sourceName: 'Totaljobs',
     sourceUrl: 'https://www.totaljobs.com',
-    applicationUrl: 'https://promarchconsulting.co.uk/#/contact',
+    applicationUrl: 'https://promarchconsulting.co.uk/contact',
     datePosted: '2026-08-23T16:00:00.000Z',
     closingDate: '2026-10-15T23:59:59.000Z',
     featured: true,
@@ -298,7 +298,7 @@ const SEED_JOBS: Job[] = [
     workingHours: '37.5 hours per week (Internal rotation between day and night shifts)',
     sourceName: 'NHS Jobs',
     sourceUrl: 'https://www.jobs.nhs.uk',
-    applicationUrl: 'https://promarchconsulting.co.uk/#/contact',
+    applicationUrl: 'https://promarchconsulting.co.uk/contact',
     datePosted: '2026-08-15T10:00:00.000Z',
     closingDate: '2026-09-18T23:59:59.000Z',
     featured: false,
@@ -358,7 +358,7 @@ const SEED_JOBS: Job[] = [
     workingHours: '40 hours per week (Monday to Friday, 08:30 - 17:30)',
     sourceName: 'LinkedIn',
     sourceUrl: 'https://www.linkedin.com',
-    applicationUrl: 'https://promarchconsulting.co.uk/#/contact',
+    applicationUrl: 'https://promarchconsulting.co.uk/contact',
     datePosted: '2026-08-21T13:00:00.000Z',
     closingDate: '2026-09-28T23:59:59.000Z',
     featured: true,
@@ -1173,7 +1173,7 @@ export class JobService {
       '"37.5 hours per week"',
       '"Promarch Consulting"',
       '"https://promarchconsulting.co.uk"',
-      '"https://promarchconsulting.co.uk/#/contact"',
+      '"https://promarchconsulting.co.uk/contact"',
       '"2026-08-25"',
       '"2026-10-30"',
       'true',
@@ -1203,7 +1203,7 @@ export class JobService {
       '"40 hours, 4 on 4 off rotation"',
       '"Indeed UK"',
       '"https://indeed.com"',
-      '"https://promarchconsulting.co.uk/#/contact"',
+      '"https://promarchconsulting.co.uk/contact"',
       '"2026-08-24"',
       '"2026-09-30"',
       'false',
@@ -1300,7 +1300,7 @@ export class JobService {
       if (!rowData.title) errors.push('Job title is required');
       if (!rowData.company) rowData.company = 'Promarch Consulting';
       if (!rowData.location) rowData.location = 'London, UK';
-      if (!rowData.applicationUrl) rowData.applicationUrl = 'https://promarchconsulting.co.uk/#/contact';
+      if (!rowData.applicationUrl) rowData.applicationUrl = 'https://promarchconsulting.co.uk/contact';
       if (!rowData.shortDescription) {
         rowData.shortDescription = `Exciting career opportunity for ${rowData.title || 'qualified candidates'} with ${rowData.company}.`;
       }
@@ -1368,7 +1368,7 @@ export class JobService {
         workingHours: rec.workingHours,
         sourceName: rec.sourceName || 'Promarch Consulting',
         sourceUrl: rec.sourceUrl,
-        applicationUrl: rec.applicationUrl || 'https://promarchconsulting.co.uk/#/contact',
+        applicationUrl: rec.applicationUrl || 'https://promarchconsulting.co.uk/contact',
         datePosted: rec.datePosted || new Date().toISOString(),
         closingDate: rec.closingDate,
         featured: Boolean(rec.featured),
