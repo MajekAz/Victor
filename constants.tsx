@@ -9,6 +9,10 @@ export const COMPANY_ADDRESS = "167-169 Great Portland Street, 5th Floor, London
 // Google Apps Script Web App Endpoint for CRM submission
 export const GOOGLE_APPS_SCRIPT_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx5rogD7z4ZaXXOlbKItyW58LrZX_G7ej-lyftOm-fZSIXblEQdEpk1Iv5m_1Dbnnyj/exec";
 
+// Google Form for Consultation / Application Enquiries
+export const GOOGLE_FORM_CONSULTATION_URL = "https://docs.google.com/forms/d/e/1FAIpQLScF0YYhklxoh_bXEEEmVup9cNOz-4OUPi2nGQfA6aEjJjJNnw/viewform?usp=preview";
+export const GOOGLE_FORM_EMBED_URL = "https://docs.google.com/forms/d/e/1FAIpQLScF0YYhklxoh_bXEEEmVup9cNOz-4OUPi2nGQfA6aEjJjJNnw/viewform?embedded=true";
+
 // Colors precisely matched from the provided brand logo
 export const COLORS = {
   primary: "#00459c",    // Deep Blue from the PROMARCH icon and text
@@ -22,6 +26,7 @@ export const NAV_LINKS: NavItem[] = [
   { label: "About", href: "/about" },
   { label: "Jobs", href: "/jobs" },
   { label: "Services", href: "/services" },
+  { label: "Consultation", href: "/book-consultation" },
   { label: "Blog", href: "/blog" },
   { label: "Contact", href: "/contact" },
 ];

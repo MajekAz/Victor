@@ -101,7 +101,7 @@ const Navbar = () => {
               </Link>
             ))}
             <Link 
-              to="/contact" 
+              to="/book-consultation" 
               className="px-6 py-2.5 rounded-xl font-black text-xs uppercase tracking-widest text-white shadow-lg transition-all hover:scale-105"
               style={{ backgroundColor: COLORS.primary }}
             >
@@ -141,14 +141,21 @@ const Navbar = () => {
           >
             <Lock size={18} className="mr-2" /> Staff Portal
           </Link>
-          <div className="pt-4 px-3">
+          <div className="pt-4 px-3 space-y-2">
              <Link 
-               to="/contact" 
-               className="block w-full text-center py-4 rounded-xl text-white font-black uppercase tracking-widest"
+               to="/book-consultation" 
+               className="block w-full text-center py-3.5 rounded-xl text-white font-black uppercase tracking-widest text-sm shadow-md"
                style={{ backgroundColor: COLORS.primary }}
                onClick={() => setIsOpen(false)}
              >
-               Get Started
+               Book Consultation / Apply
+             </Link>
+             <Link 
+               to="/contact" 
+               className="block w-full text-center py-3 rounded-xl text-slate-800 bg-slate-100 font-black uppercase tracking-widest text-xs hover:bg-slate-200 transition-colors"
+               onClick={() => setIsOpen(false)}
+             >
+               Contact Us
              </Link>
           </div>
         </div>
@@ -187,6 +194,7 @@ const Footer = () => {
           <div>
             <h4 className="text-lg font-black mb-8 border-b border-slate-800 pb-2">Quick Links</h4>
             <ul className="space-y-4">
+              <li><Link to="/book-consultation" className="text-blue-400 hover:text-white transition-colors text-sm font-bold flex items-center group"><ChevronRight size={14} className="mr-2 text-blue-400" /> Book Consultation</Link></li>
               <li><Link to="/about" className="text-slate-400 hover:text-white transition-colors text-sm font-medium flex items-center group"><ChevronRight size={14} className="mr-2 group-hover:text-blue-400 transition-colors" /> About Us</Link></li>
               <li><Link to="/blog" className="text-slate-400 hover:text-white transition-colors text-sm font-medium flex items-center group"><ChevronRight size={14} className="mr-2 group-hover:text-blue-400 transition-colors" /> Industry Insights</Link></li>
               <li><Link to="/find-a-job" className="text-slate-400 hover:text-white transition-colors text-sm font-medium flex items-center group"><ChevronRight size={14} className="mr-2 group-hover:text-blue-400 transition-colors" /> Careers / Jobs</Link></li>

@@ -58,17 +58,23 @@ const Home: React.FC = () => {
             <p className="text-lg md:text-2xl text-slate-200 mb-10 leading-relaxed max-w-2xl mx-auto font-medium">
               We help candidates find reliable jobs and connect employers with the best talent in the Care, Warehouse, Logistics, and Hospitality sectors.
             </p>
-            <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 justify-center">
+            <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4 justify-center">
               <Link 
-                to="/jobs" 
-                className="text-white px-6 py-3 md:px-10 md:py-4 rounded-xl font-black text-base md:text-lg transition-all flex items-center justify-center shadow-2xl hover:opacity-90"
+                to="/book-consultation" 
+                className="text-white px-6 py-3 md:px-8 md:py-4 rounded-xl font-black text-base md:text-lg transition-all flex items-center justify-center shadow-2xl hover:opacity-90"
                 style={{ backgroundColor: COLORS.primary }}
               >
-                Find a Job <ArrowRight className="ml-2" size={20} />
+                Book Consultation / Apply <ArrowRight className="ml-2" size={18} />
+              </Link>
+              <Link 
+                to="/jobs" 
+                className="text-slate-900 bg-white px-6 py-3 md:px-8 md:py-4 rounded-xl font-black text-base md:text-lg transition-all flex items-center justify-center shadow-lg hover:bg-slate-100"
+              >
+                Find a Job
               </Link>
               <Link 
                 to="/for-employer" 
-                className="text-slate-900 px-6 py-3 md:px-10 md:py-4 rounded-xl font-black text-base md:text-lg transition-all shadow-lg border border-white/20 hover:opacity-90 flex items-center justify-center" 
+                className="text-white px-6 py-3 md:px-8 md:py-4 rounded-xl font-black text-base md:text-lg transition-all shadow-lg border border-white/20 hover:opacity-90 flex items-center justify-center" 
                 style={{ backgroundColor: COLORS.secondary }}
               >
                 For Employers
@@ -226,16 +232,23 @@ const Home: React.FC = () => {
           <p className="text-xl text-blue-100 mb-12 max-w-3xl mx-auto font-medium">
             Join thousands of professionals already thriving with Promarch Consulting.
           </p>
-          <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-6">
+          <div className="flex flex-col sm:flex-row justify-center space-y-3 sm:space-y-0 sm:space-x-4">
+            <Link 
+              to="/book-consultation" 
+              className="bg-white px-6 py-3 md:px-8 md:py-4 rounded-xl font-black text-base md:text-lg hover:bg-slate-50 transition-all shadow-lg text-slate-900 flex items-center justify-center gap-2" 
+            >
+              <span>Book Consultation</span>
+              <ArrowRight size={18} />
+            </Link>
             <Link 
               to="/jobs" 
-              className="bg-white px-6 py-3 md:px-10 md:py-4 rounded-xl font-black text-base md:text-lg hover:bg-slate-50 transition-all shadow-lg text-slate-900" 
+              className="text-white bg-slate-900/40 border border-white/30 px-6 py-3 md:px-8 md:py-4 rounded-xl font-black text-base md:text-lg hover:bg-slate-900/60 transition-all shadow-lg flex items-center justify-center" 
             >
               Search Jobs
             </Link>
             <Link 
               to="/for-employer" 
-              className="text-white px-6 py-3 md:px-10 md:py-4 rounded-xl font-black text-base md:text-lg transition-all shadow-lg border border-white/20 hover:opacity-90" 
+              className="text-white px-6 py-3 md:px-8 md:py-4 rounded-xl font-black text-base md:text-lg transition-all shadow-lg border border-white/20 hover:opacity-90 flex items-center justify-center" 
               style={{ backgroundColor: COLORS.secondary }}
             >
               Hire Staff

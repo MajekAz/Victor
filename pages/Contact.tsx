@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Mail, Phone, MapPin, Send, MessageCircle, Clock, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Mail, Phone, MapPin, Send, MessageCircle, Clock, Loader2, CheckCircle2, AlertCircle, ArrowRight, GraduationCap, Sparkles } from 'lucide-react';
 import { 
   COMPANY_EMAIL, 
   COMPANY_PHONE, 
@@ -98,8 +99,39 @@ const Contact: React.FC = () => {
         </div>
       </section>
 
+      {/* Consultation Banner for Study Abroad / Career Abroad Enquiries */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 relative z-20">
+        <div className="bg-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-slate-800 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-blue-600/30 text-blue-400 flex items-center justify-center shrink-0 mt-1">
+              <GraduationCap size={24} />
+            </div>
+            <div>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 text-[11px] font-black uppercase tracking-wider mb-1.5">
+                <Sparkles size={12} />
+                <span>Specialized Advisory</span>
+              </div>
+              <h3 className="text-lg sm:text-xl font-black text-white">
+                Looking for Study Abroad, Career Abroad, or Relocation Consultation?
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-300 font-normal mt-1 max-w-2xl">
+                Complete our dedicated consultation questionnaire for comprehensive guidance on international universities, skilled visa roles, and settlement.
+              </p>
+            </div>
+          </div>
+
+          <Link
+            to="/book-consultation"
+            className="px-6 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider transition-all shadow-lg shrink-0 flex items-center gap-2 w-full md:w-auto justify-center"
+          >
+            <span>Book Consultation Form</span>
+            <ArrowRight size={15} />
+          </Link>
+        </div>
+      </div>
+
       {/* 2. Contact Grid */}
-      <section className="py-24 bg-white">
+      <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           <div className="bg-slate-50 p-8 rounded-[32px] text-center border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
             <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6">

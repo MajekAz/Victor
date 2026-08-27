@@ -136,11 +136,18 @@ const Services: React.FC = () => {
       {/* 6. Partner CTA */}
       <section className="py-24 bg-slate-900 text-white text-center">
         <div className="max-w-4xl mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-black mb-8">Scale Your Business with Reliable Staff</h2>
-          <p className="text-lg md:text-xl text-slate-400 mb-10">Stop worrying about absenteeism and skills gaps. Partner with us today.</p>
-          <Link to="/contact" className="inline-block bg-blue-600 px-6 py-3 md:px-10 md:py-4 rounded-xl font-black text-lg hover:bg-blue-700">
-            Enquire Now
-          </Link>
+          <h2 className="text-3xl md:text-4xl font-black mb-6">Scale Your Business with Reliable Staff</h2>
+          <p className="text-lg md:text-xl text-slate-300 mb-10 max-w-2xl mx-auto font-normal">
+            Whether you need workforce placement in the UK or career abroad advisory, our team is ready to assist.
+          </p>
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <Link to="/book-consultation" className="inline-block bg-blue-600 px-6 py-3.5 md:px-8 md:py-4 rounded-xl font-black text-base text-white hover:bg-blue-700 shadow-lg">
+              Book a Consultation
+            </Link>
+            <Link to="/contact" className="inline-block bg-slate-800 border border-slate-700 px-6 py-3.5 md:px-8 md:py-4 rounded-xl font-black text-base text-white hover:bg-slate-700">
+              Direct Contact
+            </Link>
+          </div>
         </div>
       </section>
     </div>

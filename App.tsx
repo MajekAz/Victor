@@ -10,6 +10,7 @@ import Blog from './pages/Blog.tsx';
 import Post from './pages/Post.tsx';
 import Contact from './pages/Contact.tsx';
 import ContactSuccess from './pages/ContactSuccess.tsx';
+import BookConsultation from './pages/BookConsultation.tsx';
 import HireTalent from './pages/HireTalent.tsx';
 import ForEmployer from './pages/ForEmployer.tsx';
 import Terms from './pages/Terms.tsx';
@@ -55,6 +56,10 @@ const App: React.FC = () => {
           <Route path="/blog/:id" element={<Post />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/contact-success" element={<ContactSuccess />} />
+          <Route path="/book-consultation" element={<BookConsultation />} />
+          <Route path="/start-application" element={<BookConsultation />} />
+          <Route path="/consultation" element={<BookConsultation />} />
+          <Route path="/apply" element={<BookConsultation />} />
           <Route path="/hire-talent" element={<HireTalent />} />
           <Route path="/for-employer" element={<ForEmployer />} />
           <Route path="/terms" element={<Terms />} />

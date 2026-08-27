@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Target, Users, ShieldCheck, Globe, Award, Heart } from 'lucide-react';
 import { COMPANY_NAME } from '../constants.tsx';
 
@@ -110,10 +111,24 @@ const About: React.FC = () => {
       {/* 6. Contact CTA */}
       <section className="py-24 bg-slate-900 text-white">
         <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-4xl font-black mb-8">Work with a partner who cares.</h2>
-          <button className="bg-blue-600 px-6 py-3 md:px-8 md:py-4 rounded-xl font-black text-lg hover:bg-blue-700 transition-all">
-            Join the Promarch Family
-          </button>
+          <h2 className="text-3xl sm:text-4xl font-black mb-6">Work with a partner who cares.</h2>
+          <p className="text-slate-300 text-base sm:text-lg mb-8 max-w-2xl mx-auto font-normal">
+            Whether you are looking to study abroad, relocate to the UK, or recruit certified staff, we're ready to guide you.
+          </p>
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <Link 
+              to="/book-consultation"
+              className="bg-blue-600 px-6 py-3.5 md:px-8 md:py-4 rounded-xl font-black text-base hover:bg-blue-700 transition-all shadow-lg text-white"
+            >
+              Book a Consultation
+            </Link>
+            <Link 
+              to="/contact"
+              className="bg-slate-800 border border-slate-700 px-6 py-3.5 md:px-8 md:py-4 rounded-xl font-black text-base hover:bg-slate-700 transition-all text-white"
+            >
+              Contact Us
+            </Link>
+          </div>
         </div>
       </section>
     </div>
