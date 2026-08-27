@@ -6,6 +6,9 @@ export const COMPANY_PHONE = "+44 7594 459931";
 export const COMPANY_WHATSAPP = "447594459931"; // Format for WhatsApp API (no plus, no spaces)
 export const COMPANY_ADDRESS = "167-169 Great Portland Street, 5th Floor, London, United Kingdom";
 
+// Google Apps Script Web App Endpoint for CRM submission
+export const GOOGLE_APPS_SCRIPT_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx5rogD7z4ZaXXOlbKItyW58LrZX_G7ej-lyftOm-fZSIXblEQdEpk1Iv5m_1Dbnnyj/exec";
+
 // Colors precisely matched from the provided brand logo
 export const COLORS = {
   primary: "#00459c",    // Deep Blue from the PROMARCH icon and text

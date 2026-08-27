@@ -13,7 +13,7 @@ import {
   Loader2,
   AlertCircle
 } from 'lucide-react';
-import { SERVICES } from '../constants.tsx';
+import { SERVICES, GOOGLE_APPS_SCRIPT_WEB_APP_URL } from '../constants.tsx';
 
 const HireTalent: React.FC = () => {
   const navigate = useNavigate();
@@ -35,63 +35,35 @@ const HireTalent: React.FC = () => {
     setStatus('submitting');
     setErrorMessage('');
     
-    // Prepare data for the existing contact API
-    // We map the specific fields of this form to the generic fields expected by submit_contact.php
     const payload = {
-      name: formData.contactName,
+      formType: "Hire Talent Request",
+      fullName: formData.contactName,
       email: formData.email,
+      phone: formData.phone,
       subject: `Talent Request: ${formData.companyName} [${formData.sector}]`,
-      message: `SECTOR: ${formData.sector}\nPHONE: ${formData.phone}\nCOMPANY: ${formData.companyName}\n\nREQUIREMENTS:\n${formData.message}`
+      message: `Company: ${formData.companyName}\nSector: ${formData.sector}\nStaff Needed: ${formData.staffCount}\nPhone: ${formData.phone}\nRequirements: ${formData.message}`,
+      source: "Website Hire Talent Page",
+      pageUrl: window.location.href,
+      submittedAt: new Date().toISOString()
     };
 
-    // Determine API URL (fetch fresh from localStorage)
-    const apiHost = localStorage.getItem('api_host') || '';
-    const baseUrl = apiHost || '';
-    const apiUrl = `${baseUrl}/api/submit_contact.php`;
-
     try {
-      const response = await fetch(apiUrl, {
+      const endpoint = GOOGLE_APPS_SCRIPT_WEB_APP_URL || 'PASTE_MY_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE';
+      await fetch(endpoint, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'text/plain;charset=utf-8',
         },
         body: JSON.stringify(payload),
+        mode: 'no-cors'
       });
 
-      if (response.status === 404) {
-        throw new Error(`API file not found (404) at: ${apiUrl}. Please upload 'submit_contact.php' to the /api/ folder.`);
-      }
-
-      // Handle response
-      const text = await response.text();
-      
-      // Check for HTML (index.html returned by SPA router for unknown paths)
-      if (text.trim().startsWith('<')) {
-         throw new Error(`Server returned HTML instead of JSON from ${apiUrl}.`);
-      }
-
-      let result;
-      try {
-        result = JSON.parse(text);
-      } catch (err) {
-        // If not JSON but status is ok, assume success (simple echo servers)
-        if (response.ok) {
-            result = { success: true }; 
-        } else {
-             throw new Error("Server returned invalid JSON response.");
-        }
-      }
-
-      if (response.ok && !result?.error) {
-        setStatus('success');
-        navigate('/contact-success');
-      } else {
-        throw new Error(result?.error || 'Submission failed');
-      }
+      setStatus('success');
+      navigate('/contact-success');
     } catch (error: any) {
       console.error('Error submitting form:', error);
       setStatus('error');
-      setErrorMessage(error.message || "Connection failed. Please check your internet.");
+      setErrorMessage("Sorry, your message could not be sent. Please try again or contact us directly by email.");
     }
   };
 
@@ -339,21 +311,12 @@ const HireTalent: React.FC = () => {
                 </div>
 
                 {status === 'error' && (
-                  <div className="flex flex-col gap-2 p-4 bg-red-50 text-red-600 rounded-xl border border-red-100">
-                    <div className="flex items-start">
-                        <AlertCircle size={20} className="mr-2 mt-0.5 flex-shrink-0" />
-                        <div>
-                        <span className="text-sm font-bold block">Submission Failed</span>
-                        <span className="text-xs break-all">{errorMessage}</span>
-                        </div>
+                  <div className="p-4 bg-red-50 text-red-700 rounded-xl border border-red-200 flex items-start space-x-3">
+                    <AlertCircle size={20} className="text-red-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-bold">Submission Failed</p>
+                      <p className="text-xs mt-1">{errorMessage}</p>
                     </div>
-                    <button 
-                      type="button" 
-                      onClick={() => { setStatus('success'); navigate('/contact-success'); }}
-                      className="self-start mt-2 text-xs bg-red-100 hover:bg-red-200 text-red-800 py-2 px-3 rounded-lg font-bold transition-colors"
-                    >
-                      Bypass API (Demo Mode)
-                    </button>
                   </div>
                 )}
 

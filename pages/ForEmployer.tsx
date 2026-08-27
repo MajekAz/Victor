@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ShieldCheck, Zap, TrendingUp, Users, Building2, Globe, Clock, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import { GOOGLE_APPS_SCRIPT_WEB_APP_URL } from '../constants.tsx';
 
 const ForEmployer: React.FC = () => {
   const navigate = useNavigate();
@@ -18,49 +19,33 @@ const ForEmployer: React.FC = () => {
     setStatus('submitting');
     setErrorMessage('');
 
-    // Fetch fresh from localStorage
-    const apiHost = localStorage.getItem('api_host') || '';
-    const apiUrl = `${apiHost}/api/submit_contact.php`;
-    
     const payload = {
-      name: formData.company,
+      formType: "Employer Callback Request",
+      fullName: formData.company,
       email: formData.email,
-      subject: `Employer Callback: ${formData.company}`,
-      message: `Employer callback request.\n\nCompany: ${formData.company}\nSector: ${formData.sector}\nPhone: ${formData.phone}\nEmail: ${formData.email}`
+      phone: formData.phone,
+      subject: `Employer Callback: ${formData.company} [${formData.sector}]`,
+      message: `Employer callback request.\nCompany: ${formData.company}\nSector: ${formData.sector}\nPhone: ${formData.phone}\nEmail: ${formData.email}`,
+      source: "Website For Employers Page",
+      pageUrl: window.location.href,
+      submittedAt: new Date().toISOString()
     };
 
     try {
-      const response = await fetch(apiUrl, {
+      const endpoint = GOOGLE_APPS_SCRIPT_WEB_APP_URL || 'PASTE_MY_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE';
+      await fetch(endpoint, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify(payload),
+        mode: 'no-cors'
       });
 
-      if (response.status === 404) throw new Error(`API file not found (404) at: ${apiUrl}`);
-      
-      const text = await response.text();
-      if (text.trim().startsWith('<')) throw new Error("Server returned HTML. API path likely incorrect.");
-
-      try {
-        const result = JSON.parse(text);
-        if (response.ok && !result.error) {
-          setStatus('success');
-          navigate('/contact-success');
-        } else {
-          throw new Error(result.error || "Submission failed");
-        }
-      } catch (e) {
-         if (response.ok) {
-             setStatus('success'); 
-             navigate('/contact-success');
-        } else {
-             throw e;
-        }
-      }
+      setStatus('success');
+      navigate('/contact-success');
     } catch (error: any) {
       console.error(error);
       setStatus('error');
-      setErrorMessage(error.message || "Connection failed.");
+      setErrorMessage("Sorry, your message could not be sent. Please try again or contact us directly by email.");
     }
   };
 
@@ -255,19 +240,13 @@ const ForEmployer: React.FC = () => {
               </select>
 
               {status === 'error' && (
-                  <div className="md:col-span-2 flex flex-col gap-2 p-3 bg-red-50 text-red-600 rounded-lg text-sm border border-red-100">
-                    <div className="flex items-center justify-center font-bold">
-                       <AlertCircle size={16} className="mr-2" /> Error
-                    </div>
-                    <span className="break-all text-xs">{errorMessage}</span>
-                    <button 
-                      type="button" 
-                      onClick={() => { setStatus('success'); navigate('/contact-success'); }}
-                      className="mt-1 text-xs bg-red-100 hover:bg-red-200 text-red-800 py-2 px-3 rounded font-bold transition-colors mx-auto"
-                    >
-                      Bypass API (Demo Mode)
-                    </button>
+                <div className="md:col-span-2 flex items-start space-x-3 p-4 bg-red-50 text-red-700 rounded-xl border border-red-200">
+                  <AlertCircle size={20} className="text-red-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-bold">Submission Failed</p>
+                    <p className="text-xs mt-1">{errorMessage}</p>
                   </div>
+                </div>
               )}
 
               <button 

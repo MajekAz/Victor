@@ -1,7 +1,12 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Mail, Phone, MapPin, Send, MessageCircle, Clock, Loader2, AlertCircle } from 'lucide-react';
-import { COMPANY_EMAIL, COMPANY_PHONE, COMPANY_ADDRESS, COMPANY_WHATSAPP } from '../constants.tsx';
+import { Mail, Phone, MapPin, Send, MessageCircle, Clock, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { 
+  COMPANY_EMAIL, 
+  COMPANY_PHONE, 
+  COMPANY_ADDRESS, 
+  COMPANY_WHATSAPP, 
+  GOOGLE_APPS_SCRIPT_WEB_APP_URL 
+} from '../constants.tsx';
 
 // Reusing the simple WhatsApp icon here or just use MessageCircle for visual consistency
 const WhatsAppIcon = ({ size = 20 }: { size?: number }) => (
@@ -17,73 +22,59 @@ const WhatsAppIcon = ({ size = 20 }: { size?: number }) => (
 );
 
 const Contact: React.FC = () => {
-  const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    name: '',
+    fullName: '',
     email: '',
-    subject: 'Hiring Staff', // Default value to match select option
+    phone: '',
+    subject: 'Hiring Staff',
     message: ''
   });
 
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
-  const [errorMessage, setErrorMessage] = useState<string>('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus('submitting');
-    setErrorMessage('');
     
-    // Determine API URL (fetch fresh from localStorage)
-    const apiHost = localStorage.getItem('api_host') || '';
-    const baseUrl = apiHost || '';
-    const apiUrl = `${baseUrl}/api/submit_contact.php`;
+    // Payload matching Google Sheet CRM requirements
+    const payload = {
+      formType: "Contact Form",
+      fullName: formData.fullName,
+      email: formData.email,
+      phone: formData.phone,
+      subject: formData.subject,
+      message: formData.message,
+      source: "Website Contact Page",
+      pageUrl: window.location.href,
+      submittedAt: new Date().toISOString()
+    };
 
     try {
-      // Sending to the API endpoint
-      const response = await fetch(apiUrl, {
+      const endpoint = GOOGLE_APPS_SCRIPT_WEB_APP_URL || 'PASTE_MY_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE';
+      
+      // Send JSON payload to Google Apps Script Web App
+      // text/plain Content-Type avoids browser CORS preflight restrictions while delivering raw JSON string
+      await fetch(endpoint, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'text/plain;charset=utf-8',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
+        mode: 'no-cors'
       });
 
-      if (response.status === 404) {
-        throw new Error(`API file not found (404) at: ${apiUrl}. Please upload 'submit_contact.php' to the /api/ folder.`);
-      }
-
-      const text = await response.text();
-      
-      // Check for HTML (index.html returned by SPA router for unknown paths)
-      if (text.trim().startsWith('<')) {
-         throw new Error(`Server returned HTML instead of JSON from ${apiUrl}. Path incorrect or blocked.`);
-      }
-
-      let result;
-      try {
-        result = JSON.parse(text);
-      } catch (err) {
-        console.error("Invalid JSON response:", text);
-        // If we get a 200 OK but text isn't JSON, it might just be an echo. 
-        // We'll trust the response.ok signal if parsing fails but status is 200.
-        if (response.ok) {
-            result = { success: true }; 
-        } else {
-            throw new Error("Server returned invalid JSON response.");
-        }
-      }
-
-      if (response.ok && !result.error) {
-        setStatus('success');
-        setFormData({ name: '', email: '', subject: 'Hiring Staff', message: '' });
-        navigate('/contact-success');
-      } else {
-        throw new Error(result?.error || `Submission failed: ${response.statusText}`);
-      }
-    } catch (error: any) {
-      console.error('Error submitting form:', error);
+      // Clear the form and set success state
+      setStatus('success');
+      setFormData({
+        fullName: '',
+        email: '',
+        phone: '',
+        subject: 'Hiring Staff',
+        message: ''
+      });
+    } catch (error) {
+      console.error('Error submitting contact form:', error);
       setStatus('error');
-      setErrorMessage(error.message || "Connection failed. Please check your internet.");
     }
   };
 
@@ -192,19 +183,19 @@ const Contact: React.FC = () => {
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-2">Full Name</label>
+                    <label className="block text-sm font-bold text-slate-700 mb-2">Full Name *</label>
                     <input 
                       type="text" 
                       required
-                      value={formData.name}
+                      value={formData.fullName}
                       className="w-full px-5 py-4 bg-slate-100 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none transition-all"
                       placeholder="John Doe"
-                      onChange={(e) => setFormData({...formData, name: e.target.value})}
+                      onChange={(e) => setFormData({...formData, fullName: e.target.value})}
                       disabled={status === 'submitting'}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-2">Email Address</label>
+                    <label className="block text-sm font-bold text-slate-700 mb-2">Email Address *</label>
                     <input 
                       type="email" 
                       required
@@ -216,22 +207,37 @@ const Contact: React.FC = () => {
                     />
                   </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-2">Subject</label>
-                  <select 
-                    value={formData.subject}
-                    className="w-full px-5 py-4 bg-slate-100 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none transition-all"
-                    onChange={(e) => setFormData({...formData, subject: e.target.value})}
-                    disabled={status === 'submitting'}
-                  >
-                    <option>Hiring Staff</option>
-                    <option>Looking for a Job</option>
-                    <option>Partnership Inquiry</option>
-                    <option>Other</option>
-                  </select>
+
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 mb-2">Phone Number</label>
+                    <input 
+                      type="tel" 
+                      value={formData.phone}
+                      className="w-full px-5 py-4 bg-slate-100 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none transition-all"
+                      placeholder="+44 7123 456789"
+                      onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                      disabled={status === 'submitting'}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 mb-2">Subject *</label>
+                    <select 
+                      value={formData.subject}
+                      className="w-full px-5 py-4 bg-slate-100 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none transition-all"
+                      onChange={(e) => setFormData({...formData, subject: e.target.value})}
+                      disabled={status === 'submitting'}
+                    >
+                      <option>Hiring Staff</option>
+                      <option>Looking for a Job</option>
+                      <option>Partnership Inquiry</option>
+                      <option>Other</option>
+                    </select>
+                  </div>
                 </div>
+
                 <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-2">Your Message</label>
+                  <label className="block text-sm font-bold text-slate-700 mb-2">Your Message *</label>
                   <textarea 
                     rows={4}
                     required
@@ -242,23 +248,22 @@ const Contact: React.FC = () => {
                     disabled={status === 'submitting'}
                   ></textarea>
                 </div>
+
+                {status === 'success' && (
+                  <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-200 text-emerald-800 flex items-start space-x-3">
+                    <CheckCircle2 size={22} className="text-emerald-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-bold">Thank you. Your message has been received. A Promarch consultant will contact you shortly.</p>
+                    </div>
+                  </div>
+                )}
                 
                 {status === 'error' && (
-                  <div className="flex flex-col gap-2 p-4 bg-red-50 rounded-xl border border-red-100">
-                    <div className="flex items-start text-red-600">
-                        <AlertCircle size={20} className="mr-2 mt-0.5 flex-shrink-0" />
-                        <div>
-                        <span className="text-sm font-bold block">Submission Failed</span>
-                        <span className="text-xs break-all">{errorMessage}</span>
-                        </div>
+                  <div className="p-4 bg-red-50 rounded-xl border border-red-200 text-red-800 flex items-start space-x-3">
+                    <AlertCircle size={22} className="text-red-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-bold">Sorry, your message could not be sent. Please try again or contact us directly by email.</p>
                     </div>
-                    <button 
-                      type="button" 
-                      onClick={() => { setStatus('success'); navigate('/contact-success'); }}
-                      className="self-start mt-2 text-xs bg-red-100 hover:bg-red-200 text-red-800 py-2 px-3 rounded-lg font-bold transition-colors"
-                    >
-                      Bypass API (Demo Mode)
-                    </button>
                   </div>
                 )}
 
