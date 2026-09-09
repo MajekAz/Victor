@@ -173,23 +173,17 @@ export const JobCard: React.FC<JobCardProps> = ({ job, compact = false }) => {
           </h3>
         </Link>
 
-        {/* 4. Salary Highlight & Role Rate Tiers */}
-        {job.salaryTiers && job.salaryTiers.length > 0 ? (
-          <div className="mb-3 p-2.5 rounded-xl bg-slate-50 border border-slate-100 space-y-1">
-            {job.salaryTiers.map((tier, idx) => (
-              <div key={idx} className="flex items-baseline justify-between text-xs">
-                <span className="font-bold text-slate-700 truncate mr-2">{tier.role}:</span>
-                <span className="font-black text-blue-700 shrink-0">{tier.hourlyRate}</span>
-              </div>
-            ))}
+        {/* 4. Salary Highlight */}
+        <div className="mb-3 flex items-baseline justify-between gap-2">
+          <div className="text-sm sm:text-base font-black text-blue-700 tracking-tight">
+            {formatSalary()}
           </div>
-        ) : (
-          <div className="mb-3">
-            <div className="text-sm font-black text-blue-700">
-              {formatSalary()}
-            </div>
-          </div>
-        )}
+          {job.salaryTiers && job.salaryTiers.length > 0 && (
+            <span className="text-[11px] font-bold text-slate-400 shrink-0">
+              Pay tiers apply
+            </span>
+          )}
+        </div>
 
         {/* 5, 6. Badges (Job Type, Work Arrangement, Category, Contract Hours) */}
         <div className="flex flex-wrap gap-1.5 mb-3">

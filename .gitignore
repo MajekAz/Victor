@@ -25,3 +25,7 @@ yarn-error.log*
 
 # SENSITIVE: Do not commit the actual config file
 public/api/config.php
+
+# Local mock data & locks
+data/
+bun.lock

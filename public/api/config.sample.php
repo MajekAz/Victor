@@ -1,11 +1,23 @@
 <?php
-// RENAME THIS FILE TO config.php AND UPDATE VALUES
-// DO NOT COMMIT THE REAL config.php TO GIT
+/**
+ * Promarch Consulting - Production Database Configuration
+ * 
+ * Keep this file private. Never commit real credentials to public source control.
+ * Store outside public_html (recommended) or in public_html/api/ protected by .htaccess.
+ * 
+ * Hostinger MySQL Database Credentials:
+ * Copy these exact values from Hostinger hPanel -> Databases -> Management
+ */
 
-$db_host = "localhost";
-$db_user = "YOUR_DB_USER";
-$db_pass = "YOUR_DB_PASSWORD";
-$db_name = "YOUR_DB_NAME";
+// Prevent direct web execution/access even if webserver is misconfigured
+if (basename($_SERVER['PHP_SELF']) === basename(__FILE__)) {
+    http_response_code(403);
+    exit('Direct access forbidden.');
+}
 
-$admin_password = "YOUR_ADMIN_PASSWORD";
-?>
+// Database Connection Credentials (Placeholder template)
+define('DB_HOST', 'YOUR_HOSTINGER_DB_HOST');
+define('DB_NAME', 'YOUR_HOSTINGER_DB_NAME');
+define('DB_USER', 'YOUR_HOSTINGER_DB_USER');
+define('DB_PASS', 'YOUR_HOSTINGER_DB_PASSWORD');
+define('DB_CHARSET', 'utf8mb4');

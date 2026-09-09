@@ -158,11 +158,16 @@ export const AdminDashboard: React.FC = () => {
   const [passwordChangeSuccess, setPasswordChangeSuccess] = useState<string>('');
 
   useEffect(() => {
-    const isAuth = AuthService.isAuthenticated();
-    setIsAuthenticated(isAuth);
-    if (isAuth) {
-      loadJobsData();
-    }
+    const initAuth = async () => {
+      const session = await AuthService.checkSession();
+      setIsAuthenticated(session.isAuthenticated);
+      if (session.isAuthenticated) {
+        loadJobsData();
+      } else {
+        setIsLoadingJobs(false);
+      }
+    };
+    initAuth();
   }, []);
 
   useEffect(() => {
@@ -187,7 +192,7 @@ export const AdminDashboard: React.FC = () => {
     try {
       const list = await JobService.getAllAdminJobs();
       setAllJobs(list);
-      setAnalytics(JobService.getAnalytics());
+      setAnalytics(JobService.getAnalytics(list));
     } catch (e) {
       console.error('Failed to load admin jobs:', e);
     } finally {

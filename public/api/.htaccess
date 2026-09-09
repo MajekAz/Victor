@@ -1,22 +1,33 @@
-<IfModule mod_rewrite.c>
-    RewriteEngine On
-    # Ensure Authorization header is passed to PHP
-    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
-</IfModule>
+# ==============================================================================
+# Promarch Consulting - Production API Routing & Security (.htaccess)
+# ==============================================================================
 
-# Prevent directory listing (hides file list)
+# Prevent directory indexing
 Options -Indexes
 
-# Allow cross-origin requests
-<IfModule mod_headers.c>
-    Header set Access-Control-Allow-Origin "*"
-    Header set Access-Control-Allow-Methods "GET, POST, OPTIONS"
-    Header set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With"
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /api/
+
+    # Ensure Authorization and CSRF headers are passed through to PHP
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+    RewriteRule .* - [E=HTTP_X_CSRF_TOKEN:%{HTTP:X-CSRF-Token}]
+
+    # Route /api/jobs and /api/jobs/:slug to jobs.php
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^jobs/?$ jobs.php [L,QSA]
+    RewriteRule ^jobs/([^/]+)/?$ jobs.php?slug=$1 [L,QSA]
+
+    # Route /api/admin/jobs and /api/admin/auth
+    RewriteRule ^admin/jobs/?$ admin/jobs.php [L,QSA]
+    RewriteRule ^admin/jobs/([^/]+)/?$ admin/jobs.php?id=$1 [L,QSA]
+    RewriteRule ^admin/auth/?$ admin/auth.php [L,QSA]
+    RewriteRule ^admin/logs/?$ admin/logs.php [L,QSA]
 </IfModule>
 
-# PROTECT SENSITIVE FILES
-# Strict denial for config files
-<FilesMatch "^(config\.php|config\.sample\.php|db_connect\.php)$">
+# PROTECT SENSITIVE SERVER FILES
+<FilesMatch "(\.(env|sql|log|ini|lock|bak|sh)|config.*\.php|db.*\.php|security\.php|composer\.|package\.)">
     <IfModule mod_authz_core.c>
         Require all denied
     </IfModule>
@@ -25,9 +36,3 @@ Options -Indexes
         Deny from all
     </IfModule>
 </FilesMatch>
-
-# Fallback specifically for config.php if the above regex fails on some systems
-<Files "config.php">
-    Order allow,deny
-    Deny from all
-</Files>

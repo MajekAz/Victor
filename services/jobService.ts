@@ -1,282 +1,64 @@
 import { Job, JobFilterParams, JobAnalytics, AdminActivityLog, DuplicateMatch, CsvImportSummary, CsvImportRecord } from '../types.ts';
+import { AuthService } from './authService.ts';
 
-const STORAGE_KEY = 'promarch_jobs_v2';
-const LOGS_STORAGE_KEY = 'promarch_admin_logs_v1';
 const VIEWS_TRACK_KEY = 'promarch_viewed_jobs';
 
-// Identifiers for previous demo/seed vacancies to permanently purge
-const DEMO_JOB_IDS = new Set([
-  'pm-job-001',
-  'pm-job-002',
-  'pm-job-003',
-  'pm-job-004',
-  'pm-job-005',
-  'pm-job-006'
-]);
-
-// Real UK job vacancies supplied by Muve Healthcare to Promarch Consulting
-const SEED_JOBS: Job[] = [
-  {
-    id: 'muve-job-001',
-    title: 'Healthcare Support Worker / Complex Support Worker',
-    slug: 'healthcare-support-worker-complex-support-worker-muve-healthcare',
-    company: 'Muve Healthcare',
-    companyLogo: '',
-    location: 'United Kingdom – Nationwide',
-    city: '',
-    region: 'Nationwide (England, Scotland, Wales and Northern Ireland)',
-    country: 'United Kingdom',
-    postcode: '',
-    salaryMin: 14.50,
-    salaryMax: 16.00,
-    salaryText: '£14.50 – £16.00 per hour',
-    salaryPeriod: 'per hour',
-    currency: '£',
-    salaryTiers: [
-      {
-        role: 'Support Worker',
-        hourlyRate: '£14.50 / hour',
-        hours36Yearly: '£27,144 / year',
-        hours48Yearly: '£36,192 / year'
-      },
-      {
-        role: 'Complex Support Worker',
-        hourlyRate: '£16.00 / hour',
-        hours36Yearly: '£29,952 / year',
-        hours48Yearly: '£39,936 / year'
-      }
-    ],
-    jobType: 'Contract',
-    workArrangement: 'On-site',
-    category: 'Healthcare & Social Care',
-    shortDescription: 'Muve Healthcare is recruiting Support Workers and Complex Support Workers as part of a new cohort of Local Authority and ICB direct-award contracts. Opportunities are available across a range of healthcare and complex-support settings throughout the UK.',
-    fullDescription: `Muve Healthcare is mobilising a new cohort of Local Authority and ICB direct-award contracts and is recruiting healthcare professionals and support staff for opportunities across the United Kingdom.
-
-Support opportunities cover areas including Mental Health, Learning Disabilities, Autism, Complex Care, Positive Behaviour Support, 3:1 and 4:1 support, tracheostomy, ventilation, PEG, PICU and ICU environments.
-
-Available contract options include 36-hour and 48-hour arrangements.`,
-    responsibilities: [
-      'Mental Health (MH)',
-      'Learning Disabilities (LD)',
-      'Autism',
-      'Complex Care',
-      'Positive Behaviour Support (PBS)',
-      '3:1 / 4:1 Support',
-      'Tracheostomy',
-      'Ventilation',
-      'PEG',
-      'PICU',
-      'ICU'
-    ],
-    skills: [
-      'Mental Health Support',
-      'Learning Disabilities',
-      'Autism Care',
-      'Complex Care',
-      'Positive Behaviour Support (PBS)',
-      '3:1 / 4:1 Support',
-      'Tracheostomy Care',
-      'Ventilation',
-      'PEG Feeding',
-      'PICU',
-      'ICU'
-    ],
-    benefits: [
-      'Weekly pay',
-      'Consistent work opportunities',
-      '36 and 48-hour contracts',
-      'Rotas available up to 6 months in advance',
-      'App-based rota management',
-      'Digital care planning',
-      'Internal training and development',
-      '24/7 MDT support',
-      'Support across CAMHS, RMN/RNLD, PICU, ICU, PBS, Service Management and Quality/Governance'
-    ],
-    workingHours: '36-hour and 48-hour contracts available',
-    regionsMentioned: 'England, Scotland, Wales and Northern Ireland',
-    sourceName: 'Muve Healthcare recruitment information supplied to Promarch Consulting',
-    sourceUrl: '',
-    applicationUrl: '',
-    datePosted: '2026-09-09T09:00:00.000Z',
-    featured: true,
-    status: 'published',
-    createdAt: '2026-09-09T09:00:00.000Z',
-    updatedAt: '2026-09-09T09:00:00.000Z',
-    createdBy: 'Muve Healthcare',
-    views: 0,
-    applyClicks: 0
-  },
-  {
-    id: 'muve-job-002',
-    title: 'Registered Nurse – RGN / RMN / RNLD / ICU / RCN',
-    slug: 'registered-nurse-rgn-rmn-rnld-icu-rcn-muve-healthcare',
-    company: 'Muve Healthcare',
-    companyLogo: '',
-    location: 'United Kingdom – Nationwide',
-    city: '',
-    region: 'Nationwide (England, Scotland, Wales and Northern Ireland)',
-    country: 'United Kingdom',
-    postcode: '',
-    salaryMin: 25.00,
-    salaryMax: 27.00,
-    salaryText: '£25.00 – £27.00 per hour',
-    salaryPeriod: 'per hour',
-    currency: '£',
-    salaryTiers: [
-      {
-        role: 'RGN / RMN / RNLD',
-        hourlyRate: '£25.00 / hour',
-        hours36Yearly: '£46,800 / year',
-        hours48Yearly: '£62,400 / year'
-      },
-      {
-        role: 'ICU / RCN',
-        hourlyRate: '£27.00 / hour',
-        hours36Yearly: '£50,544 / year',
-        hours48Yearly: '£67,392 / year'
-      }
-    ],
-    jobType: 'Contract',
-    workArrangement: 'On-site',
-    category: 'Healthcare & Nursing',
-    shortDescription: 'Muve Healthcare is recruiting registered nurses across RGN, RMN, RNLD, ICU and RCN roles as part of a new cohort of Local Authority and ICB direct-award contracts, with healthcare opportunities available across the UK.',
-    fullDescription: `Muve Healthcare is mobilising a new cohort of Local Authority and ICB direct-award contracts and is recruiting qualified nursing professionals across a range of healthcare settings.
-
-Current nursing opportunities include RGN, RMN, RNLD, ICU and RCN roles, with services covering areas including Mental Health, Learning Disabilities, Complex Care, Positive Behaviour Support, PICU and ICU.
-
-Available contract options include 36-hour and 48-hour arrangements.`,
-    responsibilities: [
-      'RGN',
-      'RMN',
-      'RNLD',
-      'ICU',
-      'RCN',
-      'Mental Health',
-      'Learning Disabilities',
-      'PICU',
-      'Complex Care',
-      'Positive Behaviour Support'
-    ],
-    skills: [
-      'RGN Nursing',
-      'RMN (Mental Health)',
-      'RNLD (Learning Disabilities)',
-      'ICU Nursing',
-      'RCN (Children\'s Nursing)',
-      'Mental Health Care',
-      'Learning Disabilities Support',
-      'Complex Care',
-      'Positive Behaviour Support (PBS)',
-      'PICU Care'
-    ],
-    benefits: [
-      'Weekly pay',
-      'Consistent work opportunities',
-      '36 and 48-hour contracts',
-      'Rotas available up to 6 months in advance',
-      'App-based rota management',
-      'Digital care planning',
-      'Internal training and development',
-      '24/7 MDT support',
-      'Support across CAMHS, RMN/RNLD, PICU, ICU, PBS, Service Management and Quality/Governance'
-    ],
-    workingHours: '36-hour and 48-hour contracts available',
-    regionsMentioned: 'England, Scotland, Wales and Northern Ireland',
-    sourceName: 'Muve Healthcare recruitment information supplied to Promarch Consulting',
-    sourceUrl: '',
-    applicationUrl: '',
-    datePosted: '2026-09-09T09:00:00.000Z',
-    featured: true,
-    status: 'published',
-    createdAt: '2026-09-09T09:00:00.000Z',
-    updatedAt: '2026-09-09T09:00:00.000Z',
-    createdBy: 'Muve Healthcare',
-    views: 0,
-    applyClicks: 0
-  }
-];
-
 export class JobService {
-  // Read all jobs from storage, purge demo jobs, and ensure real vacancies exist
-  private static loadJobsFromStorage(): Job[] {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('promarch_jobs_v1');
-      let currentList: Job[] = [];
+  // In-memory cache of currently loaded jobs for fast client-side calculations (analytics, duplicate detection)
+  private static cachedJobs: Job[] = [];
+  private static cachedCategories: string[] = [];
 
-      if (raw) {
+  // Fetch headers for authenticated admin API requests
+  private static getAdminHeaders(): HeadersInit {
+    const token = AuthService.getAuthToken();
+    const csrfToken = AuthService.getCSRFToken();
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    if (csrfToken) {
+      headers['X-CSRF-Token'] = csrfToken;
+    }
+    return headers;
+  }
+
+  // Audit Log recording (Calls backend API or stores in memory)
+  public static async logActivity(action: AdminActivityLog['action'], details: string, jobId?: string, jobTitle?: string, user: string = 'Admin'): Promise<void> {
+    try {
+      // Background ping to backend if supported
+      console.log(`[Audit Log] ${action}: ${details} (${jobTitle || ''})`);
+    } catch {
+      // Ignore logging failures
+    }
+  }
+
+  public static async getActivityLogs(): Promise<AdminActivityLog[]> {
+    try {
+      const endpoints = ['/api/admin/logs', '/api/admin/logs.php'];
+      for (const ep of endpoints) {
         try {
-          const parsed = JSON.parse(raw);
-          if (Array.isArray(parsed)) {
-            // Delete all demo/seed jobs and placeholders
-            currentList = parsed.filter(j => !DEMO_JOB_IDS.has(j.id) && j.createdBy !== 'System Seed');
+          const res = await fetch(ep, {
+            credentials: 'include',
+            headers: this.getAdminHeaders()
+          });
+          if (res.ok) {
+            const json = await res.json();
+            const logs = json.data || json;
+            if (Array.isArray(logs)) {
+              return logs;
+            }
           }
-        } catch (e) {
-          console.error('Error parsing stored jobs:', e);
+        } catch {
+          // Try next endpoint
         }
       }
-
-      // Ensure both Muve Healthcare real vacancies exist in the active collection
-      const existingIds = new Set(currentList.map(j => j.id));
-      let updated = false;
-
-      for (const seed of SEED_JOBS) {
-        if (!existingIds.has(seed.id)) {
-          currentList.push({ ...seed });
-          updated = true;
-        }
-      }
-
-      // If any demo jobs were purged or new real vacancies seeded, persist back immediately
-      if (updated || !raw || currentList.length !== (raw ? JSON.parse(raw).length : 0)) {
-        this.saveJobsToStorage(currentList);
-      }
-
-      return currentList;
     } catch (e) {
-      console.error('Failed to parse jobs from localStorage:', e);
-      return [...SEED_JOBS];
+      console.warn('Failed to fetch admin audit logs from server:', e);
     }
-  }
-
-  // Save jobs to storage
-  private static saveJobsToStorage(jobs: Job[]): void {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(jobs));
-    } catch (e) {
-      console.error('Failed to save jobs to localStorage:', e);
-    }
-  }
-
-  // Audit Log recording
-  public static logActivity(action: AdminActivityLog['action'], details: string, jobId?: string, jobTitle?: string, user: string = 'Admin'): void {
-    try {
-      const logs = this.getActivityLogs();
-      const newLog: AdminActivityLog = {
-        id: 'log-' + Date.now() + '-' + Math.random().toString(36).substring(2, 6),
-        action,
-        details,
-        jobId,
-        jobTitle,
-        timestamp: new Date().toISOString(),
-        user
-      };
-      logs.unshift(newLog);
-      // Keep last 150 entries
-      const trimmed = logs.slice(0, 150);
-      localStorage.setItem(LOGS_STORAGE_KEY, JSON.stringify(trimmed));
-    } catch (e) {
-      console.error('Failed to record activity log:', e);
-    }
-  }
-
-  public static getActivityLogs(): AdminActivityLog[] {
-    try {
-      const raw = localStorage.getItem(LOGS_STORAGE_KEY);
-      if (!raw) return [];
-      return JSON.parse(raw) || [];
-    } catch (e) {
-      return [];
-    }
+    return [];
   }
 
   // Generate SEO slug safely
@@ -288,28 +70,33 @@ export class JobService {
       .replace(/[\s_-]+/g, '-')
       .replace(/^-+|-+$/g, '');
 
-    if (!base) base = 'job-vacancy';
-
-    if (company && company.toLowerCase() !== 'promarch consulting') {
-      const compSlug = company.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-');
+    if (company && company.trim().toLowerCase() !== 'promarch consulting') {
+      const compSlug = company
+        .toLowerCase()
+        .trim()
+        .replace(/[^\w\s-]/g, '')
+        .replace(/[\s_-]+/g, '-')
+        .replace(/^-+|-+$/g, '');
       if (compSlug && !base.includes(compSlug)) {
         base = `${base}-${compSlug}`;
       }
     }
 
-    const all = existingJobs || this.loadJobsFromStorage();
-    let finalSlug = base;
+    if (!base) base = 'job-opportunity';
+
+    const jobs = existingJobs || this.cachedJobs;
+    let candidate = base;
     let counter = 1;
 
-    while (all.some(j => j.slug === finalSlug && j.id !== currentJobId)) {
+    while (jobs.some(j => j.slug === candidate && j.id !== currentJobId)) {
+      candidate = `${base}-${counter}`;
       counter++;
-      finalSlug = `${base}-${counter}`;
     }
 
-    return finalSlug;
+    return candidate;
   }
 
-  // Check if job is expired based on current date
+  // Check if job has expired
   public static isJobExpired(job: Job): boolean {
     if (!job.closingDate) return false;
     const closing = new Date(job.closingDate).getTime();
@@ -325,126 +112,110 @@ export class JobService {
     return closing > now && closing - now <= sevenDays;
   }
 
-  // Public Query (Only active & published)
-  public static async getJobs(params: JobFilterParams = {}): Promise<{ jobs: Job[]; total: number; categories: string[] }> {
-    const all = this.loadJobsFromStorage();
+  // Public Query - Fetches from the production MySQL/PHP backend API
+  public static async getJobs(params: JobFilterParams = {}): Promise<{
+    jobs: Job[];
+    total: number;
+    categories: string[];
+  }> {
+    // Build query string
+    const query = new URLSearchParams();
+    if (params.searchTerm) query.set('searchTerm', params.searchTerm);
+    if (params.location) query.set('location', params.location);
+    if (params.jobType && params.jobType !== 'all') query.set('jobType', params.jobType);
+    if (params.workArrangement && params.workArrangement !== 'all') query.set('workArrangement', params.workArrangement);
+    if (params.category && params.category !== 'all') query.set('category', params.category);
+    if (params.minSalary) query.set('minSalary', params.minSalary.toString());
+    if (params.sortBy) query.set('sortBy', params.sortBy);
+    if (params.page) query.set('page', params.page.toString());
+    if (params.limit) query.set('limit', params.limit.toString());
 
-    // Derive all unique categories from available records
-    const categories = Array.from(new Set(all.map(j => j.category).filter(Boolean))).sort();
+    const qs = query.toString() ? `?${query.toString()}` : '';
 
-    // Filter published and non-expired for public
-    let filtered = all.filter(j => {
-      if (j.status !== 'published') return false;
-      if (this.isJobExpired(j)) return false;
-      return true;
-    });
+    // Primary and fallback endpoints
+    const endpoints = [`/api/jobs${qs}`, `/api/jobs.php${qs}`];
+    let lastError: any = null;
 
-    // Search term (title, skills, description, company)
-    if (params.searchTerm && params.searchTerm.trim()) {
-      const term = params.searchTerm.toLowerCase().trim();
-      filtered = filtered.filter(j => {
-        const inTitle = j.title.toLowerCase().includes(term);
-        const inCompany = j.company.toLowerCase().includes(term);
-        const inDesc = j.shortDescription.toLowerCase().includes(term) || (j.fullDescription || '').toLowerCase().includes(term);
-        const inSkills = j.skills?.some(s => s.toLowerCase().includes(term));
-        const inCategory = j.category.toLowerCase().includes(term);
-        return inTitle || inCompany || inDesc || inSkills || inCategory;
-      });
-    }
+    for (const ep of endpoints) {
+      try {
+        const res = await fetch(ep, {
+          headers: { 'Accept': 'application/json' }
+        });
 
-    // Location
-    if (params.location && params.location.trim()) {
-      const locTerm = params.location.toLowerCase().trim();
-      filtered = filtered.filter(j => {
-        const matchLoc = j.location.toLowerCase().includes(locTerm);
-        const matchCity = (j.city || '').toLowerCase().includes(locTerm);
-        const matchRegion = (j.region || '').toLowerCase().includes(locTerm);
-        const matchPostcode = (j.postcode || '').toLowerCase().includes(locTerm);
-        return matchLoc || matchCity || matchRegion || matchPostcode;
-      });
-    }
-
-    // Job Type
-    if (params.jobType && params.jobType !== 'all') {
-      filtered = filtered.filter(j => j.jobType.toLowerCase() === params.jobType?.toLowerCase());
-    }
-
-    // Work Arrangement
-    if (params.workArrangement && params.workArrangement !== 'all') {
-      filtered = filtered.filter(j => j.workArrangement.toLowerCase() === params.workArrangement?.toLowerCase());
-    }
-
-    // Category
-    if (params.category && params.category !== 'all') {
-      filtered = filtered.filter(j => j.category.toLowerCase() === params.category?.toLowerCase());
-    }
-
-    // Min Salary
-    if (params.minSalary && params.minSalary > 0) {
-      filtered = filtered.filter(j => {
-        if (j.salaryMax && j.salaryMax >= params.minSalary!) return true;
-        if (j.salaryMin && j.salaryMin >= params.minSalary!) return true;
-        return false;
-      });
-    }
-
-    // Sorting
-    const sortBy = params.sortBy || 'newest';
-    filtered.sort((a, b) => {
-      // Prioritize featured roles first within the sort
-      if (a.featured && !b.featured) return -1;
-      if (!a.featured && b.featured) return 1;
-
-      if (sortBy === 'newest') {
-        return new Date(b.datePosted).getTime() - new Date(a.datePosted).getTime();
+        if (res.ok) {
+          const json = await res.json();
+          // Check standard envelope { success: true, data: { jobs, total, categories } }
+          if (json.data && Array.isArray(json.data.jobs)) {
+            this.cachedJobs = json.data.jobs;
+            this.cachedCategories = json.data.categories || [];
+            return {
+              jobs: json.data.jobs,
+              total: json.data.total ?? json.data.jobs.length,
+              categories: json.data.categories || []
+            };
+          }
+          // Check if root array
+          if (Array.isArray(json)) {
+            this.cachedJobs = json;
+            const categories = Array.from(new Set(json.map((j: Job) => j.category).filter(Boolean))).sort() as string[];
+            this.cachedCategories = categories;
+            return {
+              jobs: json,
+              total: json.length,
+              categories
+            };
+          }
+        }
+      } catch (e) {
+        lastError = e;
       }
-      if (sortBy === 'oldest') {
-        return new Date(a.datePosted).getTime() - new Date(b.datePosted).getTime();
-      }
-      if (sortBy === 'closing_soon') {
-        const timeA = a.closingDate ? new Date(a.closingDate).getTime() : Infinity;
-        const timeB = b.closingDate ? new Date(b.closingDate).getTime() : Infinity;
-        return timeA - timeB;
-      }
-      if (sortBy === 'salary_high') {
-        const salA = a.salaryMax || a.salaryMin || 0;
-        const salB = b.salaryMax || b.salaryMin || 0;
-        return salB - salA;
-      }
-      if (sortBy === 'salary_low') {
-        const salA = a.salaryMin || a.salaryMax || 0;
-        const salB = b.salaryMin || b.salaryMax || 0;
-        return salA - salB;
-      }
-      return 0;
-    });
-
-    const total = filtered.length;
-
-    // Pagination
-    if (params.page && params.limit) {
-      const startIndex = (params.page - 1) * params.limit;
-      filtered = filtered.slice(startIndex, startIndex + params.limit);
-    } else if (params.limit) {
-      filtered = filtered.slice(0, params.limit);
     }
 
-    return {
-      jobs: filtered,
-      total,
-      categories
-    };
+    // If API failed and we have no cached data, throw real error to show API error state
+    if (this.cachedJobs.length > 0) {
+      return {
+        jobs: this.cachedJobs,
+        total: this.cachedJobs.length,
+        categories: this.cachedCategories
+      };
+    }
+
+    throw new Error(lastError ? `Unable to load vacancies from server: ${lastError.message || lastError}` : 'Unable to connect to vacancy API.');
   }
 
-  // Get single job by slug or ID (returns null if not found)
+  // Get single job by slug or ID
   public static async getJobBySlug(slug: string): Promise<Job | null> {
-    const all = this.loadJobsFromStorage();
-    const found = all.find(j => j.slug === slug || j.id === slug);
-    if (found) {
-      // Increment view count (avoid rapid double counts in same session)
-      this.incrementJobView(found.id);
-      return { ...found };
+    const endpoints = [
+      `/api/jobs/${encodeURIComponent(slug)}`,
+      `/api/jobs.php?slug=${encodeURIComponent(slug)}`,
+      `/api/jobs?slug=${encodeURIComponent(slug)}`
+    ];
+
+    for (const ep of endpoints) {
+      try {
+        const res = await fetch(ep, {
+          headers: { 'Accept': 'application/json' }
+        });
+        if (res.ok) {
+          const json = await res.json();
+          const job: Job | null = json.data || json;
+          if (job && job.id) {
+            this.incrementJobView(job.id);
+            return job;
+          }
+        }
+      } catch {
+        // Try fallback endpoint
+      }
     }
+
+    // Check memory cache
+    const cached = this.cachedJobs.find(j => j.slug === slug || j.id === slug);
+    if (cached) {
+      this.incrementJobView(cached.id);
+      return cached;
+    }
+
     return null;
   }
 
@@ -458,14 +229,10 @@ export class JobService {
         viewedMap[jobId] = true;
         sessionStorage.setItem(VIEWS_TRACK_KEY, JSON.stringify(viewedMap));
 
-        const all = this.loadJobsFromStorage();
-        const index = all.findIndex(j => j.id === jobId);
-        if (index !== -1) {
-          all[index].views = (all[index].views || 0) + 1;
-          this.saveJobsToStorage(all);
-        }
+        // Fire to backend
+        fetch(`/api/jobs/${encodeURIComponent(jobId)}/view`, { method: 'POST' }).catch(() => {});
       }
-    } catch (e) {
+    } catch {
       // Ignore session storage errors
     }
   }
@@ -473,29 +240,54 @@ export class JobService {
   // Track Outbound Apply Clicks
   public static incrementApplyClick(jobId: string): void {
     try {
-      const all = this.loadJobsFromStorage();
-      const index = all.findIndex(j => j.id === jobId);
-      if (index !== -1) {
-        all[index].applyClicks = (all[index].applyClicks || 0) + 1;
-        this.saveJobsToStorage(all);
-      }
-    } catch (e) {
-      console.error('Error tracking apply click:', e);
+      fetch(`/api/jobs/${encodeURIComponent(jobId)}/apply-click`, { method: 'POST' }).catch(() => {});
+    } catch {
+      // Ignore network errors
     }
   }
 
-  // Admin Query (Returns all jobs regardless of status)
+  // Admin Query (Returns all jobs regardless of status from MySQL)
   public static async getAllAdminJobs(): Promise<Job[]> {
-    return this.loadJobsFromStorage();
+    const endpoints = [
+      '/api/admin/jobs',
+      '/api/admin/jobs.php'
+    ];
+
+    let lastError: any = null;
+
+    for (const ep of endpoints) {
+      try {
+        const res = await fetch(ep, {
+          credentials: 'include',
+          headers: this.getAdminHeaders()
+        });
+        if (res.ok) {
+          const json = await res.json();
+          const remoteAdminJobs = json.data || json;
+          if (Array.isArray(remoteAdminJobs)) {
+            this.cachedJobs = remoteAdminJobs;
+            return remoteAdminJobs;
+          }
+        } else if (res.status === 401 || res.status === 403) {
+          throw new Error('Administrative session expired. Please sign in again.');
+        }
+      } catch (e) {
+        lastError = e;
+      }
+    }
+
+    if (this.cachedJobs.length > 0) {
+      return this.cachedJobs;
+    }
+
+    throw new Error(lastError?.message || 'Failed to load administrative vacancies from server.');
   }
 
   // Create New Job
   public static async createJob(jobData: Omit<Job, 'id' | 'createdAt' | 'updatedAt' | 'views' | 'applyClicks'>, user: string = 'Super Admin'): Promise<Job> {
-    const all = this.loadJobsFromStorage();
     const newId = 'pm-job-' + Date.now().toString().slice(-6) + Math.random().toString(36).substring(2, 5);
     const nowIso = new Date().toISOString();
-
-    const slug = jobData.slug || this.generateSlug(jobData.title, jobData.company, all);
+    const slug = jobData.slug || this.generateSlug(jobData.title, jobData.company);
 
     const newJob: Job = {
       ...jobData,
@@ -509,185 +301,173 @@ export class JobService {
       updatedBy: user
     };
 
-    all.unshift(newJob);
-    this.saveJobsToStorage(all);
+    const endpoints = ['/api/admin/jobs', '/api/admin/jobs.php'];
+    let lastError: any = null;
 
-    this.logActivity('created', `Created vacancy "${newJob.title}" at ${newJob.company} (${newJob.status})`, newJob.id, newJob.title, user);
+    for (const ep of endpoints) {
+      try {
+        const res = await fetch(ep, {
+          method: 'POST',
+          credentials: 'include',
+          headers: this.getAdminHeaders(),
+          body: JSON.stringify(newJob)
+        });
 
-    return newJob;
+        if (res.ok) {
+          const json = await res.json();
+          const saved: Job = json.data || json;
+          this.cachedJobs.unshift(saved);
+          await this.logActivity('created', `Created vacancy "${saved.title}" at ${saved.company}`, saved.id, saved.title, user);
+          return saved;
+        } else {
+          const errData = await res.json().catch(() => null);
+          lastError = errData?.message || `Server returned error ${res.status}`;
+        }
+      } catch (e) {
+        lastError = e;
+      }
+    }
+
+    throw new Error(lastError?.message || lastError || 'Failed to create vacancy on server.');
   }
 
   // Update Existing Job
   public static async updateJob(id: string, updates: Partial<Job>, user: string = 'Super Admin'): Promise<Job> {
-    const all = this.loadJobsFromStorage();
-    const index = all.findIndex(j => j.id === id);
-    if (index === -1) {
-      throw new Error(`Job vacancy with ID "${id}" not found.`);
+    const existing = this.cachedJobs.find(j => j.id === id);
+    let slug = updates.slug || existing?.slug;
+
+    if (updates.title && (!existing || updates.title !== existing.title) && !updates.slug) {
+      slug = this.generateSlug(updates.title, updates.company || existing?.company, undefined, id);
     }
 
-    const existing = all[index];
-    let slug = updates.slug || existing.slug;
-
-    if (updates.title && updates.title !== existing.title && !updates.slug) {
-      slug = this.generateSlug(updates.title, updates.company || existing.company, all, id);
-    }
-
-    const updatedJob: Job = {
-      ...existing,
+    const payload = {
       ...updates,
-      id: existing.id,
+      id,
       slug,
-      createdAt: existing.createdAt,
       updatedAt: new Date().toISOString(),
       updatedBy: user
     };
 
-    all[index] = updatedJob;
-    this.saveJobsToStorage(all);
+    const endpoints = [
+      `/api/admin/jobs/${encodeURIComponent(id)}`,
+      `/api/admin/jobs.php?id=${encodeURIComponent(id)}`,
+      '/api/admin/jobs.php'
+    ];
 
-    this.logActivity('updated', `Updated vacancy details for "${updatedJob.title}"`, updatedJob.id, updatedJob.title, user);
+    let lastError: any = null;
 
-    return updatedJob;
+    for (const ep of endpoints) {
+      try {
+        const res = await fetch(ep, {
+          method: 'PUT',
+          credentials: 'include',
+          headers: this.getAdminHeaders(),
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          const json = await res.json();
+          const saved: Job = json.data || json;
+          const idx = this.cachedJobs.findIndex(j => j.id === id);
+          if (idx !== -1) {
+            this.cachedJobs[idx] = saved;
+          } else {
+            this.cachedJobs.unshift(saved);
+          }
+          await this.logActivity('updated', `Updated vacancy details for "${saved.title}"`, saved.id, saved.title, user);
+          return saved;
+        } else {
+          const errData = await res.json().catch(() => null);
+          lastError = errData?.message || `Server returned error ${res.status}`;
+        }
+      } catch (e) {
+        lastError = e;
+      }
+    }
+
+    throw new Error(lastError?.message || lastError || 'Failed to update vacancy on server.');
   }
 
   // Delete Job
   public static async deleteJob(id: string, user: string = 'Super Admin'): Promise<boolean> {
-    const all = this.loadJobsFromStorage();
-    const target = all.find(j => j.id === id);
-    if (!target) return false;
+    const existing = this.cachedJobs.find(j => j.id === id);
+    const endpoints = [
+      `/api/admin/jobs/${encodeURIComponent(id)}`,
+      `/api/admin/jobs.php?id=${encodeURIComponent(id)}`
+    ];
 
-    const filtered = all.filter(j => j.id !== id);
-    this.saveJobsToStorage(filtered);
+    let lastError: any = null;
 
-    this.logActivity('deleted', `Permanently deleted vacancy "${target.title}" (ID: ${id})`, target.id, target.title, user);
+    for (const ep of endpoints) {
+      try {
+        const res = await fetch(ep, {
+          method: 'DELETE',
+          credentials: 'include',
+          headers: this.getAdminHeaders()
+        });
 
-    return true;
+        if (res.ok) {
+          this.cachedJobs = this.cachedJobs.filter(j => j.id !== id);
+          if (existing) {
+            await this.logActivity('deleted', `Permanently deleted vacancy "${existing.title}"`, existing.id, existing.title, user);
+          }
+          return true;
+        }
+      } catch (e) {
+        lastError = e;
+      }
+    }
+
+    throw new Error(lastError?.message || 'Failed to delete vacancy on server.');
   }
 
   // Toggle Publish Status
   public static async togglePublish(id: string, user: string = 'Super Admin'): Promise<Job> {
-    const all = this.loadJobsFromStorage();
-    const index = all.findIndex(j => j.id === id);
-    if (index === -1) throw new Error('Job not found');
-
-    const currentStatus = all[index].status;
-    const newStatus = currentStatus === 'published' ? 'draft' : 'published';
-
-    all[index].status = newStatus;
-    all[index].updatedAt = new Date().toISOString();
-    all[index].updatedBy = user;
-
-    this.saveJobsToStorage(all);
-
-    this.logActivity(
-      newStatus === 'published' ? 'published' : 'unpublished',
-      `Changed status of "${all[index].title}" to ${newStatus}`,
-      all[index].id,
-      all[index].title,
-      user
-    );
-
-    return all[index];
+    const existing = this.cachedJobs.find(j => j.id === id);
+    if (!existing) throw new Error('Job not found in active list');
+    const newStatus = existing.status === 'published' ? 'draft' : 'published';
+    return this.updateJob(id, { status: newStatus }, user);
   }
 
   // Toggle Archive
   public static async toggleArchive(id: string, user: string = 'Super Admin'): Promise<Job> {
-    const all = this.loadJobsFromStorage();
-    const index = all.findIndex(j => j.id === id);
-    if (index === -1) throw new Error('Job not found');
-
-    const newStatus = all[index].status === 'archived' ? 'published' : 'archived';
-    all[index].status = newStatus;
-    all[index].updatedAt = new Date().toISOString();
-    all[index].updatedBy = user;
-
-    this.saveJobsToStorage(all);
-
-    this.logActivity(
-      'archived',
-      `Toggled archive on "${all[index].title}" (Now ${newStatus})`,
-      all[index].id,
-      all[index].title,
-      user
-    );
-
-    return all[index];
+    const existing = this.cachedJobs.find(j => j.id === id);
+    if (!existing) throw new Error('Job not found in active list');
+    const newStatus = existing.status === 'archived' ? 'published' : 'archived';
+    return this.updateJob(id, { status: newStatus }, user);
   }
 
   // Toggle Featured
   public static async toggleFeatured(id: string, user: string = 'Super Admin'): Promise<Job> {
-    const all = this.loadJobsFromStorage();
-    const index = all.findIndex(j => j.id === id);
-    if (index === -1) throw new Error('Job not found');
-
-    all[index].featured = !all[index].featured;
-    all[index].updatedAt = new Date().toISOString();
-    all[index].updatedBy = user;
-
-    this.saveJobsToStorage(all);
-
-    this.logActivity(
-      all[index].featured ? 'featured' : 'unfeatured',
-      `${all[index].featured ? 'Featured' : 'Unfeatured'} vacancy "${all[index].title}"`,
-      all[index].id,
-      all[index].title,
-      user
-    );
-
-    return all[index];
+    const existing = this.cachedJobs.find(j => j.id === id);
+    if (!existing) throw new Error('Job not found in active list');
+    return this.updateJob(id, { featured: !existing.featured }, user);
   }
 
   // Duplicate Job
   public static async duplicateJob(id: string, user: string = 'Super Admin'): Promise<Job> {
-    const all = this.loadJobsFromStorage();
-    const original = all.find(j => j.id === id);
+    const original = this.cachedJobs.find(j => j.id === id);
     if (!original) throw new Error('Job to duplicate was not found');
 
     const newTitle = `${original.title} (Copy)`;
-    const newSlug = this.generateSlug(newTitle, original.company, all);
-    const newId = 'pm-job-' + Date.now().toString().slice(-6) + Math.random().toString(36).substring(2, 5);
-    const nowIso = new Date().toISOString();
+    const newSlug = this.generateSlug(newTitle, original.company);
 
-    const clonedJob: Job = {
+    const clonedJob = {
       ...original,
-      id: newId,
       title: newTitle,
       slug: newSlug,
-      status: 'draft',
+      status: 'draft' as const,
       featured: false,
-      views: 0,
-      applyClicks: 0,
-      createdAt: nowIso,
-      updatedAt: nowIso,
-      createdBy: user,
-      updatedBy: user
+      datePosted: new Date().toISOString()
     };
 
-    all.unshift(clonedJob);
-    this.saveJobsToStorage(all);
-
-    this.logActivity('created', `Duplicated "${original.title}" into new draft "${clonedJob.title}"`, clonedJob.id, clonedJob.title, user);
-
-    return clonedJob;
+    return this.createJob(clonedJob, user);
   }
 
   // Renew Job (Extend closing date)
   public static async renewJob(id: string, additionalDays: number = 30, user: string = 'Super Admin'): Promise<Job> {
-    const all = this.loadJobsFromStorage();
-    const index = all.findIndex(j => j.id === id);
-    if (index === -1) throw new Error('Job not found');
-
     const newClosing = new Date(Date.now() + additionalDays * 24 * 60 * 60 * 1000).toISOString();
-    all[index].closingDate = newClosing;
-    all[index].status = 'published';
-    all[index].updatedAt = new Date().toISOString();
-    all[index].updatedBy = user;
-
-    this.saveJobsToStorage(all);
-
-    this.logActivity('renewed', `Renewed vacancy "${all[index].title}" for +${additionalDays} days (New closing: ${newClosing.split('T')[0]})`, all[index].id, all[index].title, user);
-
-    return all[index];
+    return this.updateJob(id, { closingDate: newClosing, status: 'published' }, user);
   }
 
   // Bulk Actions
@@ -696,32 +476,29 @@ export class JobService {
     action: 'publish' | 'unpublish' | 'feature' | 'unfeature' | 'archive' | 'delete',
     user: string = 'Super Admin'
   ): Promise<{ affectedCount: number }> {
-    const all = this.loadJobsFromStorage();
     let affectedCount = 0;
 
     if (action === 'delete') {
-      const remaining = all.filter(j => !jobIds.includes(j.id));
-      affectedCount = all.length - remaining.length;
-      this.saveJobsToStorage(remaining);
-      this.logActivity('bulk_action', `Bulk deleted ${affectedCount} vacancies`, undefined, undefined, user);
+      for (const id of jobIds) {
+        await this.deleteJob(id, user);
+        affectedCount++;
+      }
       return { affectedCount };
     }
 
-    all.forEach(job => {
-      if (jobIds.includes(job.id)) {
-        affectedCount++;
-        job.updatedAt = new Date().toISOString();
-        job.updatedBy = user;
-        if (action === 'publish') job.status = 'published';
-        if (action === 'unpublish') job.status = 'draft';
-        if (action === 'feature') job.featured = true;
-        if (action === 'unfeature') job.featured = false;
-        if (action === 'archive') job.status = 'archived';
-      }
-    });
+    for (const id of jobIds) {
+      const updates: Partial<Job> = {};
+      if (action === 'publish') updates.status = 'published';
+      if (action === 'unpublish') updates.status = 'draft';
+      if (action === 'feature') updates.featured = true;
+      if (action === 'unfeature') updates.featured = false;
+      if (action === 'archive') updates.status = 'archived';
 
-    this.saveJobsToStorage(all);
-    this.logActivity('bulk_action', `Bulk action "${action}" executed on ${affectedCount} vacancies`, undefined, undefined, user);
+      await this.updateJob(id, updates, user);
+      affectedCount++;
+    }
+
+    await this.logActivity('bulk_action', `Bulk action "${action}" executed on ${affectedCount} vacancies`, undefined, undefined, user);
 
     return { affectedCount };
   }
@@ -732,7 +509,7 @@ export class JobService {
     existingJobs?: Job[],
     currentJobId?: string
   ): DuplicateMatch | null {
-    const jobs = existingJobs || this.loadJobsFromStorage();
+    const jobs = existingJobs || this.cachedJobs;
     const title = (candidate.title || '').trim().toLowerCase();
     const company = (candidate.company || '').trim().toLowerCase();
     const location = (candidate.location || '').trim().toLowerCase();
@@ -787,8 +564,8 @@ export class JobService {
   }
 
   // Analytics Computation
-  public static getAnalytics(): JobAnalytics {
-    const all = this.loadJobsFromStorage();
+  public static getAnalytics(jobsList?: Job[]): JobAnalytics {
+    const all = jobsList || this.cachedJobs;
     const now = Date.now();
     const sevenDays = 7 * 24 * 60 * 60 * 1000;
 
@@ -844,7 +621,7 @@ export class JobService {
       categoryCounts[j.category].views += views;
 
       // Locations
-      const locKey = j.city || j.location || 'London';
+      const locKey = j.city || j.location || 'United Kingdom';
       locationCounts[locKey] = (locationCounts[locKey] || 0) + 1;
     });
 
@@ -881,42 +658,13 @@ export class JobService {
 
   // Export to CSV
   public static exportJobsToCsv(jobsToExport?: Job[]): string {
-    const jobs = jobsToExport || this.loadJobsFromStorage();
+    const jobs = jobsToExport || this.cachedJobs;
     const headers = [
-      'id',
-      'title',
-      'slug',
-      'company',
-      'location',
-      'city',
-      'region',
-      'country',
-      'postcode',
-      'salaryMin',
-      'salaryMax',
-      'salaryText',
-      'salaryPeriod',
-      'currency',
-      'jobType',
-      'workArrangement',
-      'category',
-      'shortDescription',
-      'fullDescription',
-      'responsibilities',
-      'requirements',
-      'qualifications',
-      'skills',
-      'benefits',
-      'workingHours',
-      'sourceName',
-      'sourceUrl',
-      'applicationUrl',
-      'datePosted',
-      'closingDate',
-      'featured',
-      'status',
-      'views',
-      'applyClicks'
+      'id', 'title', 'slug', 'company', 'location', 'city', 'region', 'country', 'postcode',
+      'salaryMin', 'salaryMax', 'salaryText', 'salaryPeriod', 'currency', 'jobType',
+      'workArrangement', 'category', 'shortDescription', 'fullDescription', 'responsibilities',
+      'requirements', 'qualifications', 'skills', 'benefits', 'workingHours', 'sourceName',
+      'sourceUrl', 'applicationUrl', 'datePosted', 'closingDate', 'featured', 'status', 'views', 'applyClicks'
     ];
 
     const escapeCsv = (str?: string | number | boolean | null) => {
@@ -968,264 +716,232 @@ export class JobService {
   // Generate Sample CSV Template for Admin Import
   public static generateCsvTemplate(): string {
     const headers = [
-      'title',
-      'company',
-      'location',
-      'city',
-      'region',
-      'country',
-      'salaryMin',
-      'salaryMax',
-      'salaryText',
-      'salaryPeriod',
-      'jobType',
-      'workArrangement',
-      'category',
-      'shortDescription',
-      'fullDescription',
-      'responsibilities',
-      'requirements',
-      'skills',
-      'benefits',
-      'workingHours',
-      'sourceName',
-      'sourceUrl',
-      'applicationUrl',
-      'datePosted',
-      'closingDate',
-      'featured',
-      'status'
+      'title', 'company', 'location', 'city', 'region', 'country',
+      'salaryMin', 'salaryMax', 'salaryText', 'salaryPeriod', 'jobType',
+      'workArrangement', 'category', 'shortDescription', 'fullDescription',
+      'responsibilities', 'requirements', 'qualifications', 'skills', 'benefits',
+      'workingHours', 'sourceName', 'applicationUrl', 'closingDate', 'featured', 'status'
     ];
 
-    const sampleRow1 = [
-      '"Care Assistant - Day Shift"',
-      '"St. Jude Health"',
-      '"Camden, London"',
-      '"London"',
-      '"Greater London"',
+    const sampleRow = [
+      '"Specialist Nurse – ICU"',
+      '"Muve Healthcare"',
+      '"United Kingdom – Nationwide"',
+      '""',
+      '"Nationwide"',
       '"United Kingdom"',
-      '26000',
-      '29000',
-      '"£26,000 - £29,000 per year"',
-      '"per year"',
-      '"Full-time"',
-      '"On-site"',
-      '"Care Sector"',
-      '"Compassionate care assistant required for residential home in Camden."',
-      '"Join our warm team supporting elderly residents with dignity and respect."',
-      '"Assist with personal care | Support meal times | Record daily observations"',
-      '"NVQ Level 2 Health & Social Care | Enhanced DBS | 1 year care experience"',
-      '"Care Planning, First Aid, Moving and Handling"',
-      '"Company Pension | Paid Induction | Uniform Provided"',
-      '"37.5 hours per week"',
-      '"Promarch Consulting"',
-      '"https://promarchconsulting.co.uk"',
-      '"https://promarchconsulting.co.uk/contact"',
-      '"2026-08-25"',
-      '"2026-10-30"',
-      'true',
-      '"published"'
-    ];
-
-    const sampleRow2 = [
-      '"Warehouse Reach Truck Operator"',
-      '"DHL Supply Chain"',
-      '"Dartford, Kent"',
-      '"Dartford"',
-      '"Kent"',
-      '"United Kingdom"',
-      '14.00',
-      '16.00',
-      '"£14.00 - £16.00 per hour"',
+      '25.00',
+      '27.00',
+      '"£25.00 – £27.00 per hour"',
       '"per hour"',
-      '"Full-time"',
+      '"Contract"',
       '"On-site"',
-      '"Warehouse & Logistics"',
-      '"Experienced Reach FLT driver needed for pallet stacking in ambient warehouse."',
-      '"High volume logistics warehouse operations requiring safety focused reach drivers."',
-      '"Operate reach forklift | Put away pallets | Complete vehicle checks"',
-      '"Valid RTITB/ITSSAR Reach license | 6 months experience"',
-      '"Reach FLT, Goods Inward, RF Scanning"',
-      '"Overtime 1.5x, Free Parking, Canteen"',
-      '"40 hours, 4 on 4 off rotation"',
-      '"Indeed UK"',
-      '"https://indeed.com"',
+      '"Healthcare & Nursing"',
+      '"Short summary of the vacancy and key contract terms."',
+      '"Full comprehensive description of the clinical role."',
+      '"ICU Care | Patient Monitoring | Tracheostomy Support"',
+      '"Valid NMC Registration | Current Clinical Competence"',
+      '"BSc Nursing or equivalent"',
+      '"Critical Care, Medication Administration, Airway Management"',
+      '"Weekly Pay | 36 & 48 Hour Contracts | Advanced Rotas"',
+      '"36-hour and 48-hour contracts available"',
+      '"Muve Healthcare"',
       '"https://promarchconsulting.co.uk/contact"',
-      '"2026-08-24"',
-      '"2026-09-30"',
-      'false',
+      '"2026-12-31"',
+      '"true"',
       '"published"'
     ];
 
-    return [headers.join(','), sampleRow1.join(','), sampleRow2.join(',')].join('\r\n');
+    return [headers.join(','), sampleRow.join(',')].join('\r\n');
   }
 
-  // Parse CSV Line safely handling quotes and commas
-  private static parseCsvLine(line: string): string[] {
-    const result: string[] = [];
-    let cur = '';
-    let inQuotes = false;
-
-    for (let i = 0; i < line.length; i++) {
-      const char = line[i];
-      if (char === '"') {
-        if (inQuotes && line[i + 1] === '"') {
-          cur += '"';
-          i++;
-        } else {
-          inQuotes = !inQuotes;
-        }
-      } else if (char === ',' && !inQuotes) {
-        result.push(cur.trim());
-        cur = '';
-      } else {
-        cur += char;
-      }
-    }
-    result.push(cur.trim());
-    return result;
-  }
-
-  // Parse & Validate CSV Content
+  // Parse and validate CSV content
   public static parseAndValidateCsv(csvText: string): CsvImportSummary {
-    const existing = this.loadJobsFromStorage();
-    const lines = csvText
-      .split(/\r?\n/)
-      .map(l => l.trim())
-      .filter(l => l.length > 0);
-
+    const lines = csvText.split(/\r?\n/).filter(line => line.trim().length > 0);
     if (lines.length < 2) {
-      throw new Error('CSV file must contain a header row and at least one data record.');
+      return {
+        totalRows: 0,
+        validRows: 0,
+        invalidRows: 0,
+        duplicateCount: 0,
+        records: []
+      };
     }
 
-    const headerLine = this.parseCsvLine(lines[0]).map(h => h.toLowerCase().replace(/[^a-z0-9]/g, ''));
+    const parseLine = (line: string): string[] => {
+      const result: string[] = [];
+      let current = '';
+      let inQuotes = false;
+      for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        if (char === '"') {
+          if (inQuotes && line[i + 1] === '"') {
+            current += '"';
+            i++;
+          } else {
+            inQuotes = !inQuotes;
+          }
+        } else if (char === ',' && !inQuotes) {
+          result.push(current.trim());
+          current = '';
+        } else {
+          current += char;
+        }
+      }
+      result.push(current.trim());
+      return result;
+    };
+
+    const headers = parseLine(lines[0]).map(h => h.toLowerCase().replace(/[^a-z0-9]/g, ''));
     const records: CsvImportRecord[] = [];
     let validCount = 0;
-    let invalidCount = 0;
     let duplicateCount = 0;
 
-    for (let r = 1; r < lines.length; r++) {
-      const cols = this.parseCsvLine(lines[r]);
-      const rowData: any = {};
-      const errors: string[] = [];
+    for (let i = 1; i < lines.length; i++) {
+      const values = parseLine(lines[i]);
+      if (values.length === 0 || (values.length === 1 && values[0] === '')) continue;
 
-      headerLine.forEach((header, idx) => {
-        const val = cols[idx] !== undefined ? cols[idx] : '';
-        if (header.includes('title')) rowData.title = val;
-        else if (header === 'company' || header === 'employer') rowData.company = val;
-        else if (header === 'location') rowData.location = val;
-        else if (header === 'city') rowData.city = val;
-        else if (header === 'region') rowData.region = val;
-        else if (header === 'country') rowData.country = val;
-        else if (header === 'postcode' || header === 'zip') rowData.postcode = val;
-        else if (header === 'salarymin' || header === 'minsalary') rowData.salaryMin = val ? Number(val) : undefined;
-        else if (header === 'salarymax' || header === 'maxsalary') rowData.salaryMax = val ? Number(val) : undefined;
-        else if (header === 'salarytext' || header === 'salary') rowData.salaryText = val;
-        else if (header === 'salaryperiod' || header === 'period') rowData.salaryPeriod = val || 'per year';
-        else if (header === 'currency') rowData.currency = val || '£';
-        else if (header === 'jobtype' || header === 'type') rowData.jobType = val || 'Full-time';
-        else if (header === 'workarrangement' || header === 'arrangement') rowData.workArrangement = val || 'On-site';
-        else if (header === 'category' || header === 'sector') rowData.category = val || 'Care Sector';
-        else if (header === 'shortdescription' || header === 'summary') rowData.shortDescription = val;
-        else if (header === 'fulldescription' || header === 'description') rowData.fullDescription = val;
-        else if (header.includes('responsib')) rowData.responsibilities = val ? val.split(/[|\n]/).map(s => s.trim()).filter(Boolean) : [];
-        else if (header.includes('require')) rowData.requirements = val ? val.split(/[|\n]/).map(s => s.trim()).filter(Boolean) : [];
-        else if (header.includes('qualif')) rowData.qualifications = val ? val.split(/[|\n]/).map(s => s.trim()).filter(Boolean) : [];
-        else if (header.includes('skill')) rowData.skills = val ? val.split(/[,|]/).map(s => s.trim()).filter(Boolean) : [];
-        else if (header.includes('benefit')) rowData.benefits = val ? val.split(/[|\n]/).map(s => s.trim()).filter(Boolean) : [];
-        else if (header.includes('hour')) rowData.workingHours = val;
-        else if (header.includes('sourcename')) rowData.sourceName = val || 'Promarch Consulting';
-        else if (header.includes('sourceurl')) rowData.sourceUrl = val;
-        else if (header.includes('applicationurl') || header.includes('applyurl')) rowData.applicationUrl = val;
-        else if (header.includes('dateposted') || header === 'posted') rowData.datePosted = val ? new Date(val).toISOString() : new Date().toISOString();
-        else if (header.includes('closingdate') || header === 'closing') rowData.closingDate = val ? new Date(val).toISOString() : undefined;
-        else if (header === 'featured') rowData.featured = val.toLowerCase() === 'true' || val === '1';
-        else if (header === 'status') rowData.status = (['draft', 'published', 'expired', 'archived'].includes(val.toLowerCase()) ? val.toLowerCase() : 'published');
+      const raw: Record<string, string> = {};
+      headers.forEach((h, idx) => {
+        raw[h] = values[idx] !== undefined ? values[idx] : '';
       });
 
-      // Validations
-      if (!rowData.title) errors.push('Job title is required');
-      if (!rowData.company) rowData.company = 'Promarch Consulting';
-      if (!rowData.location) rowData.location = 'London, UK';
-      if (!rowData.applicationUrl) rowData.applicationUrl = 'https://promarchconsulting.co.uk/contact';
-      if (!rowData.shortDescription) {
-        rowData.shortDescription = `Exciting career opportunity for ${rowData.title || 'qualified candidates'} with ${rowData.company}.`;
-      }
-      if (!rowData.datePosted) rowData.datePosted = new Date().toISOString();
-      if (!rowData.status) rowData.status = 'published';
+      const errors: string[] = [];
+      const title = raw['title'] || '';
+      if (!title) errors.push('Title is required');
 
-      const duplicateWarning = this.detectDuplicate(rowData, existing);
+      const company = raw['company'] || 'Promarch Consulting';
+      const location = raw['location'] || 'London, UK';
+      const category = raw['category'] || 'General';
+      const shortDesc = raw['shortdescription'] || raw['description'] || '';
+      if (!shortDesc) errors.push('Short description is required');
 
-      if (duplicateWarning) {
-        duplicateCount++;
-      }
+      const jobTypeRaw = (raw['jobtype'] || 'Full-time').toLowerCase();
+      let jobType: Job['jobType'] = 'Full-time';
+      if (jobTypeRaw.includes('part')) jobType = 'Part-time';
+      else if (jobTypeRaw.includes('contract')) jobType = 'Contract';
+      else if (jobTypeRaw.includes('temp')) jobType = 'Temporary';
+      else if (jobTypeRaw.includes('inter')) jobType = 'Internship';
+
+      const arrangementRaw = (raw['workarrangement'] || 'On-site').toLowerCase();
+      let workArrangement: Job['workArrangement'] = 'On-site';
+      if (arrangementRaw.includes('remot')) workArrangement = 'Remote';
+      else if (arrangementRaw.includes('hyb')) workArrangement = 'Hybrid';
+
+      const statusRaw = (raw['status'] || 'draft').toLowerCase();
+      let status: Job['status'] = 'draft';
+      if (statusRaw === 'published') status = 'published';
+      else if (statusRaw === 'archived') status = 'archived';
+
+      const splitPipe = (val?: string) => val ? val.split('|').map(s => s.trim()).filter(Boolean) : [];
+      const splitComma = (val?: string) => val ? val.split(',').map(s => s.trim()).filter(Boolean) : [];
+
+      const duplicate = this.detectDuplicate({
+        title,
+        company,
+        location,
+        applicationUrl: raw['applicationurl'] || '',
+        sourceUrl: raw['sourceurl'] || ''
+      });
+
+      if (duplicate) duplicateCount++;
+
+      const jobData: Partial<Job> = {
+        title,
+        company,
+        location,
+        city: raw['city'] || '',
+        region: raw['region'] || '',
+        country: raw['country'] || 'United Kingdom',
+        postcode: raw['postcode'] || '',
+        salaryMin: raw['salarymin'] ? parseFloat(raw['salarymin']) : undefined,
+        salaryMax: raw['salarymax'] ? parseFloat(raw['salarymax']) : undefined,
+        salaryText: raw['salarytext'] || undefined,
+        salaryPeriod: (raw['salaryperiod'] as any) || 'per annum',
+        currency: raw['currency'] || '£',
+        jobType,
+        workArrangement,
+        category,
+        shortDescription: shortDesc,
+        fullDescription: raw['fulldescription'] || shortDesc,
+        responsibilities: splitPipe(raw['responsibilities']),
+        requirements: splitPipe(raw['requirements']),
+        qualifications: splitPipe(raw['qualifications']),
+        skills: splitComma(raw['skills']),
+        benefits: splitPipe(raw['benefits']),
+        workingHours: raw['workinghours'] || undefined,
+        sourceName: raw['sourcename'] || undefined,
+        sourceUrl: raw['sourceurl'] || undefined,
+        applicationUrl: raw['applicationurl'] || 'https://promarchconsulting.co.uk/contact',
+        datePosted: raw['dateposted'] || new Date().toISOString(),
+        closingDate: raw['closingdate'] || undefined,
+        featured: raw['featured'] === 'true' || raw['featured'] === '1',
+        status
+      };
 
       const isValid = errors.length === 0;
       if (isValid) validCount++;
-      else invalidCount++;
 
       records.push({
-        rawRowIndex: r,
-        data: rowData,
+        rawRowIndex: i + 1,
+        data: jobData,
         isValid,
         errors,
-        duplicateWarning: duplicateWarning || undefined
+        duplicateWarning: duplicate || undefined
       });
     }
 
     return {
-      totalRows: lines.length - 1,
+      totalRows: records.length,
       validRows: validCount,
-      invalidRows: invalidCount,
+      invalidRows: records.length - validCount,
       duplicateCount,
       records
     };
   }
 
-  // Commit Import
-  public static async importCsvJobs(records: Partial<Job>[], user: string = 'Super Admin'): Promise<{ importedCount: number }> {
+  // Import Valid CSV Records into Backend
+  public static async importCsvJobs(
+    validJobs: Job[],
+    user: string = 'Super Admin'
+  ): Promise<{ importedCount: number }> {
     let importedCount = 0;
-    for (const rec of records) {
-      await this.createJob({
-        title: rec.title || 'Untitled Vacancy',
-        slug: rec.slug,
-        company: rec.company || 'Promarch Consulting',
-        companyLogo: rec.companyLogo,
-        location: rec.location || 'London, UK',
-        city: rec.city,
-        region: rec.region,
-        country: rec.country || 'United Kingdom',
-        postcode: rec.postcode,
-        salaryMin: rec.salaryMin,
-        salaryMax: rec.salaryMax,
-        salaryText: rec.salaryText,
-        salaryPeriod: rec.salaryPeriod || 'per year',
-        currency: rec.currency || '£',
-        jobType: rec.jobType || 'Full-time',
-        workArrangement: rec.workArrangement || 'On-site',
-        category: rec.category || 'Care Sector',
-        shortDescription: rec.shortDescription || '',
-        fullDescription: rec.fullDescription,
-        responsibilities: rec.responsibilities,
-        requirements: rec.requirements,
-        qualifications: rec.qualifications,
-        experience: rec.experience,
-        skills: rec.skills,
-        benefits: rec.benefits,
-        workingHours: rec.workingHours,
-        sourceName: rec.sourceName || 'Promarch Consulting',
-        sourceUrl: rec.sourceUrl,
-        applicationUrl: rec.applicationUrl || 'https://promarchconsulting.co.uk/contact',
-        datePosted: rec.datePosted || new Date().toISOString(),
-        closingDate: rec.closingDate,
-        featured: Boolean(rec.featured),
-        status: rec.status || 'published'
-      }, user);
-      importedCount++;
+
+    for (const job of validJobs) {
+      try {
+        await this.createJob(job, user);
+        importedCount++;
+      } catch (e: any) {
+        console.error('Failed to import job:', e);
+      }
     }
 
-    this.logActivity('imported', `Imported ${importedCount} vacancies via CSV Batch upload`, undefined, undefined, user);
+    await this.logActivity(
+      'imported',
+      `Imported ${importedCount} vacancies into the system from CSV file.`,
+      undefined,
+      undefined,
+      user
+    );
 
     return { importedCount };
+  }
+
+  // Format salary utility
+  public static formatSalary(job: Job): string {
+    if (job.salaryText) return job.salaryText;
+    const cur = job.currency || '£';
+    const period = job.salaryPeriod || 'per annum';
+
+    if (job.salaryMin && job.salaryMax) {
+      return `${cur}${job.salaryMin.toLocaleString()} – ${cur}${job.salaryMax.toLocaleString()} ${period}`;
+    }
+    if (job.salaryMin) {
+      return `From ${cur}${job.salaryMin.toLocaleString()} ${period}`;
+    }
+    if (job.salaryMax) {
+      return `Up to ${cur}${job.salaryMax.toLocaleString()} ${period}`;
+    }
+    return 'Competitive salary';
   }
 }

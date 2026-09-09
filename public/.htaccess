@@ -2,30 +2,49 @@
 # Promarch Consulting - Production Apache / Hostinger SPA Routing & Security
 # ==============================================================================
 
+# Prevent directory indexing
+Options -Indexes
+
 # Enable Rewrite Engine
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
 
-  # 1. Force HTTPS (Preserve SSL security)
+  # 1. Force HTTPS (Preserves SSL security on Hostinger)
   RewriteCond %{HTTPS} off
+  RewriteCond %{HTTP:X-Forwarded-Proto} !https
   RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
-  # 2. Never rewrite real existing files, directories, or symlinks
-  # (Ensures images, JS, CSS, fonts, favicon.svg, robots.txt, sitemap.xml load directly)
+  # 2. Preserve Authorization and CSRF headers for PHP scripts
+  RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+  RewriteRule .* - [E=HTTP_X_CSRF_TOKEN:%{HTTP:X-CSRF-Token}]
+
+  # 3. Allow direct access to API directory and PHP scripts without SPA interception
+  RewriteRule ^api/ - [L]
+
+  # 4. Never rewrite real existing files, directories, or symlinks
+  # (Ensures assets, JS, CSS, fonts, favicon.svg, robots.txt load directly)
   RewriteCond %{REQUEST_FILENAME} -f [OR]
   RewriteCond %{REQUEST_FILENAME} -d [OR]
   RewriteCond %{REQUEST_FILENAME} -l
   RewriteRule ^ - [L]
 
-  # 3. Allow direct API / backend script executions if present in /api/ or /public/api/
-  RewriteRule ^api/ - [L]
-
-  # 4. SPA Fallback: Route all frontend paths (e.g. /jobs, /about, /services, /admin) to index.html
+  # 5. SPA Fallback: Route all React BrowserRouter paths (/jobs, /admin, etc.) to index.html
   RewriteRule ^ index.html [L]
 </IfModule>
 
-# Caching & MIME types for high performance and fast clean route loading
+# Block direct web access to sensitive files
+<FilesMatch "(\.(env|sql|log|ini|lock|bak|sh)|config.*\.php|db.*\.php|security\.php|composer\.|package\.)">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order deny,allow
+    Deny from all
+  </IfModule>
+</FilesMatch>
+
+# Caching & MIME types for high performance
 <IfModule mod_expires.c>
   ExpiresActive On
   ExpiresByType image/svg+xml "access plus 1 month"
