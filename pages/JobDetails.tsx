@@ -21,7 +21,9 @@ import {
   Copy, 
   Check, 
   Mail, 
-  MessageCircle 
+  MessageCircle,
+  Info,
+  ArrowRight
 } from 'lucide-react';
 import { Job } from '../types.ts';
 import { JobService } from '../services/jobService.ts';
@@ -286,6 +288,11 @@ export const JobDetails: React.FC = () => {
                       <MapPin size={14} className="text-slate-400" />
                       {job.location}
                     </span>
+                    {job.regionsMentioned && (
+                      <span className="text-[11px] font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">
+                        {job.regionsMentioned}
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -325,6 +332,61 @@ export const JobDetails: React.FC = () => {
                 </div>
               ) : null}
             </div>
+
+            {/* Dedicated Salary & Pay Rates Breakdown */}
+            {job.salaryTiers && job.salaryTiers.length > 0 && (
+              <div className="bg-white rounded-2xl p-6 sm:p-7 border border-blue-100 shadow-xs space-y-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center font-bold">
+                    £
+                  </div>
+                  <div>
+                    <h2 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
+                      Salary & Contract Pay Rates Breakdown
+                    </h2>
+                    <p className="text-xs text-slate-500 font-medium">
+                      Exact hourly rates and contract earnings supplied by {job.company}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                  {job.salaryTiers.map((tier, idx) => (
+                    <div key={idx} className="bg-slate-50/90 rounded-xl p-4 sm:p-5 border border-slate-200/80 space-y-3">
+                      <div className="border-b border-slate-200/60 pb-2">
+                        <span className="text-[10px] font-black uppercase tracking-wider text-blue-600 block">
+                          Role Specification
+                        </span>
+                        <h3 className="text-sm sm:text-base font-black text-slate-900">
+                          {tier.role}
+                        </h3>
+                      </div>
+                      <div className="space-y-2 text-xs">
+                        <div className="flex items-center justify-between p-2 rounded-lg bg-white border border-slate-200/60">
+                          <span className="font-bold text-slate-700">Hourly Rate:</span>
+                          <span className="font-black text-blue-700 text-sm">{tier.hourlyRate}</span>
+                        </div>
+                        <div className="flex items-center justify-between px-2 py-1">
+                          <span className="text-slate-600 font-medium">36-hour contract:</span>
+                          <span className="font-bold text-slate-900">{tier.hours36Yearly}</span>
+                        </div>
+                        <div className="flex items-center justify-between px-2 py-1">
+                          <span className="text-slate-600 font-medium">48-hour contract:</span>
+                          <span className="font-bold text-slate-900">{tier.hours48Yearly}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {job.workingHours && (
+                  <div className="flex items-center gap-2 text-xs text-slate-600 font-medium pt-1">
+                    <Clock size={13} className="text-blue-600 shrink-0" />
+                    <span>Contract Schedules: {job.workingHours}</span>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Role Details Body Card */}
             <div className="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-xs space-y-7">
@@ -462,26 +524,55 @@ export const JobDetails: React.FC = () => {
                 </h3>
               </div>
 
-              {/* Main Apply Button */}
-              <button
-                type="button"
-                disabled={isExpired}
-                onClick={handleApplyClick}
-                className={`w-full py-3.5 px-5 rounded-xl font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-md ${
-                  isExpired
-                    ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                    : 'bg-blue-600 hover:bg-blue-500 text-white hover:scale-[1.01]'
-                }`}
-                id="btn-apply-job"
-              >
-                <span>{isExpired ? 'Vacancy Closed' : 'Apply for this Job'}</span>
-                {!isExpired && <ExternalLink size={14} />}
-              </button>
+              {/* Application Action */}
+              {isExpired ? (
+                <div className="w-full py-3.5 px-5 rounded-xl font-black text-xs uppercase tracking-wider bg-slate-200 text-slate-400 text-center cursor-not-allowed">
+                  Vacancy Closed
+                </div>
+              ) : job.applicationUrl && job.applicationUrl.trim() ? (
+                <button
+                  type="button"
+                  onClick={handleApplyClick}
+                  className="w-full py-3.5 px-5 rounded-xl font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-md bg-blue-600 hover:bg-blue-500 text-white hover:scale-[1.01]"
+                  id="btn-apply-job"
+                >
+                  <span>Apply for this Job</span>
+                  <ExternalLink size={14} />
+                </button>
+              ) : (
+                <div className="space-y-3">
+                  <div className="p-3.5 rounded-xl bg-blue-50/80 border border-blue-200/80 text-blue-950 space-y-1.5">
+                    <div className="flex items-center gap-1.5">
+                      <Info size={14} className="text-blue-700 shrink-0" />
+                      <span className="text-[11px] font-black uppercase tracking-wider text-blue-900">
+                        Application Status
+                      </span>
+                    </div>
+                    <p className="text-xs font-bold text-slate-900">
+                      Application details will be available shortly.
+                    </p>
+                    <p className="text-[11px] text-slate-600 leading-relaxed">
+                      You can register your interest or submit an initial enquiry via Promarch Consulting.
+                    </p>
+                  </div>
+
+                  <Link
+                    to={`/book-consultation?role=${encodeURIComponent(job.title)}`}
+                    className="w-full py-3.5 px-5 rounded-xl font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-md bg-blue-600 hover:bg-blue-500 text-white hover:scale-[1.01]"
+                    id="btn-enquire-consultation"
+                  >
+                    <span>Register Interest via Promarch</span>
+                    <ArrowRight size={14} />
+                  </Link>
+                </div>
+              )}
 
               {/* Trust Notice */}
               <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 text-[11px] text-slate-500 font-medium leading-relaxed">
                 <ShieldCheck size={13} className="text-blue-600 inline mr-1" />
-                Applications are submitted directly to the verified employer or original vacancy recruitment platform.
+                {job.sourceName 
+                  ? job.sourceName 
+                  : 'Recruitment information supplied to Promarch Consulting by verified employers.'}
               </div>
 
               {/* Share Vacancy Section */}

@@ -4,387 +4,234 @@ const STORAGE_KEY = 'promarch_jobs_v2';
 const LOGS_STORAGE_KEY = 'promarch_admin_logs_v1';
 const VIEWS_TRACK_KEY = 'promarch_viewed_jobs';
 
-// Initial high-quality UK job vacancies for Promarch Consulting sectors
+// Identifiers for previous demo/seed vacancies to permanently purge
+const DEMO_JOB_IDS = new Set([
+  'pm-job-001',
+  'pm-job-002',
+  'pm-job-003',
+  'pm-job-004',
+  'pm-job-005',
+  'pm-job-006'
+]);
+
+// Real UK job vacancies supplied by Muve Healthcare to Promarch Consulting
 const SEED_JOBS: Job[] = [
   {
-    id: 'pm-job-001',
-    title: 'Senior Care Assistant (Night Shifts)',
-    slug: 'senior-care-assistant-night-shifts-london',
-    company: 'St. Jude Healthcare Services',
-    companyLogo: 'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&q=80&w=200',
-    location: 'Camden, London, UK',
-    city: 'London',
-    region: 'Greater London',
+    id: 'muve-job-001',
+    title: 'Healthcare Support Worker / Complex Support Worker',
+    slug: 'healthcare-support-worker-complex-support-worker-muve-healthcare',
+    company: 'Muve Healthcare',
+    companyLogo: '',
+    location: 'United Kingdom – Nationwide',
+    city: '',
+    region: 'Nationwide (England, Scotland, Wales and Northern Ireland)',
     country: 'United Kingdom',
-    postcode: 'NW1 8NH',
-    salaryMin: 28500,
-    salaryMax: 32000,
-    salaryText: '£28,500 - £32,000 per year',
-    salaryPeriod: 'per year',
-    currency: '£',
-    jobType: 'Full-time',
-    workArrangement: 'On-site',
-    category: 'Care Sector',
-    shortDescription: 'Experienced Senior Care Assistant needed to lead our dedicated night shift team delivering high standard residential care.',
-    fullDescription: 'St. Jude Healthcare is seeking a compassionate, skilled Senior Care Assistant to join our residential facility in Camden. You will lead the night care team, administer prescribed medications, monitor resident wellbeing, and support residents with dignified, person-centred care.',
-    responsibilities: [
-      'Supervise and support a team of care assistants during waking night shifts',
-      'Safe administration, recording, and storage of resident medications according to CQC guidelines',
-      'Conduct regular welfare checks and update electronic care planning records accurately',
-      'Respond calmly and efficiently to medical emergencies and liaise with on-call GP or NHS 111 services',
-      'Assist residents with personal care, mobility needs, and comfort throughout the night'
-    ],
-    requirements: [
-      'NVQ/QCF Level 3 in Health and Social Care (or Level 2 working towards Level 3)',
-      'Minimum 2 years previous care home or domiciliary care experience in the UK',
-      'Valid Medication Administration training certificate',
-      'Enhanced DBS check (or willingness to obtain via Promarch)',
-      'Strong leadership and compassionate communication skills'
-    ],
-    qualifications: [
-      'NVQ Level 3 in Health and Social Care',
-      'Emergency First Aid at Work certificate',
-      'Moving and Handling Passport (UK)'
-    ],
-    experience: '2+ years in UK adult residential or nursing care settings',
-    skills: ['Medication Administration', 'Person-Centred Care', 'Care Planning', 'First Aid', 'Dementia Care', 'Team Leadership'],
-    benefits: [
-      'Competitive night-rate enhancements',
-      'Comprehensive paid induction & ongoing training',
-      'Company pension contribution',
-      'Uniform provided free of charge',
-      'Employee Assistance Programme with 24/7 mental health support'
-    ],
-    workingHours: '36 hours per week (3 x 12-hour waking nights, 20:00 - 08:00)',
-    sourceName: 'Promarch Consulting',
-    sourceUrl: 'https://promarchconsulting.co.uk',
-    applicationUrl: 'https://promarchconsulting.co.uk/contact',
-    datePosted: '2026-08-20T09:00:00.000Z',
-    closingDate: '2026-09-30T23:59:59.000Z',
-    featured: true,
-    status: 'published',
-    createdAt: '2026-08-20T09:00:00.000Z',
-    updatedAt: '2026-08-20T09:00:00.000Z',
-    createdBy: 'System Seed',
-    views: 142,
-    applyClicks: 28
-  },
-  {
-    id: 'pm-job-002',
-    title: 'Forklift Driver (Reach & Counterbalance)',
-    slug: 'forklift-driver-reach-counterbalance-dartford',
-    company: 'Apex Global Logistics UK',
-    companyLogo: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&q=80&w=200',
-    location: 'Dartford, Kent, UK',
-    city: 'Dartford',
-    region: 'Kent',
-    country: 'United Kingdom',
-    postcode: 'DA1 5FW',
+    postcode: '',
     salaryMin: 14.50,
-    salaryMax: 16.50,
-    salaryText: '£14.50 - £16.50 per hour',
+    salaryMax: 16.00,
+    salaryText: '£14.50 – £16.00 per hour',
     salaryPeriod: 'per hour',
     currency: '£',
-    jobType: 'Full-time',
+    salaryTiers: [
+      {
+        role: 'Support Worker',
+        hourlyRate: '£14.50 / hour',
+        hours36Yearly: '£27,144 / year',
+        hours48Yearly: '£36,192 / year'
+      },
+      {
+        role: 'Complex Support Worker',
+        hourlyRate: '£16.00 / hour',
+        hours36Yearly: '£29,952 / year',
+        hours48Yearly: '£39,936 / year'
+      }
+    ],
+    jobType: 'Contract',
     workArrangement: 'On-site',
-    category: 'Warehouse & Logistics',
-    shortDescription: 'Seeking accredited Forklift Drivers for high-volume distribution warehouse handling goods-in and pallet racking.',
-    fullDescription: 'Apex Global Logistics is expanding operations in Dartford. We require accredited FLT Reach and Counterbalance drivers to safely load/unload articulated trailers, stack high-bay pallet racking, and prepare orders for dispatch.',
+    category: 'Healthcare & Social Care',
+    shortDescription: 'Muve Healthcare is recruiting Support Workers and Complex Support Workers as part of a new cohort of Local Authority and ICB direct-award contracts. Opportunities are available across a range of healthcare and complex-support settings throughout the UK.',
+    fullDescription: `Muve Healthcare is mobilising a new cohort of Local Authority and ICB direct-award contracts and is recruiting healthcare professionals and support staff for opportunities across the United Kingdom.
+
+Support opportunities cover areas including Mental Health, Learning Disabilities, Autism, Complex Care, Positive Behaviour Support, 3:1 and 4:1 support, tracheostomy, ventilation, PEG, PICU and ICU environments.
+
+Available contract options include 36-hour and 48-hour arrangements.`,
     responsibilities: [
-      'Operate Reach and Counterbalance forklift trucks safely in a fast-paced ambient distribution centre',
-      'Offload incoming deliveries, verify freight manifests, and locate stock in high-density racking',
-      'Replenish picking bays and stage outbound pallets at loading docks',
-      'Perform daily pre-use FLT safety and battery inspection checks',
-      'Adhere strictly to warehouse health & safety, PPE, and pedestrian segregation protocols'
+      'Mental Health (MH)',
+      'Learning Disabilities (LD)',
+      'Autism',
+      'Complex Care',
+      'Positive Behaviour Support (PBS)',
+      '3:1 / 4:1 Support',
+      'Tracheostomy',
+      'Ventilation',
+      'PEG',
+      'PICU',
+      'ICU'
     ],
-    requirements: [
-      'Valid RTITB, ITSSAR, or NPORS accredited Forklift Licence (Reach or Counterbalance)',
-      'Minimum 12 months recent warehouse FLT driving experience',
-      'Safety footwear and high-visibility vest required',
-      'Good numerical skills and basic barcode scanner (RF Gun) literacy'
+    skills: [
+      'Mental Health Support',
+      'Learning Disabilities',
+      'Autism Care',
+      'Complex Care',
+      'Positive Behaviour Support (PBS)',
+      '3:1 / 4:1 Support',
+      'Tracheostomy Care',
+      'Ventilation',
+      'PEG Feeding',
+      'PICU',
+      'ICU'
     ],
-    qualifications: [
-      'RTITB / ITSSAR Forklift Accreditation',
-      'Health and Safety in the Workplace Level 2 (preferred)'
-    ],
-    experience: '1+ years operating FLT in high-bay logistics facilities',
-    skills: ['Forklift Reach Truck', 'Counterbalance FLT', 'RF Scanners', 'Stock Replenishment', 'Goods Inward', 'Health & Safety'],
     benefits: [
-      'Overtime paid at 1.5x basic rate',
-      'Subsidised on-site canteen and free parking',
-      'Temp-to-perm opportunity for high performers',
-      'Weekly pay via Promarch payroll'
+      'Weekly pay',
+      'Consistent work opportunities',
+      '36 and 48-hour contracts',
+      'Rotas available up to 6 months in advance',
+      'App-based rota management',
+      'Digital care planning',
+      'Internal training and development',
+      '24/7 MDT support',
+      'Support across CAMHS, RMN/RNLD, PICU, ICU, PBS, Service Management and Quality/Governance'
     ],
-    workingHours: '40 hours per week (4 on / 4 off shift rotation, 06:00 - 18:00)',
-    sourceName: 'Indeed UK',
-    sourceUrl: 'https://www.indeed.com',
-    applicationUrl: 'https://promarchconsulting.co.uk/contact',
-    datePosted: '2026-08-22T11:30:00.000Z',
-    closingDate: '2026-09-25T23:59:59.000Z',
+    workingHours: '36-hour and 48-hour contracts available',
+    regionsMentioned: 'England, Scotland, Wales and Northern Ireland',
+    sourceName: 'Muve Healthcare recruitment information supplied to Promarch Consulting',
+    sourceUrl: '',
+    applicationUrl: '',
+    datePosted: '2026-09-09T09:00:00.000Z',
     featured: true,
     status: 'published',
-    createdAt: '2026-08-22T11:30:00.000Z',
-    updatedAt: '2026-08-22T11:30:00.000Z',
-    createdBy: 'System Seed',
-    views: 98,
-    applyClicks: 19
+    createdAt: '2026-09-09T09:00:00.000Z',
+    updatedAt: '2026-09-09T09:00:00.000Z',
+    createdBy: 'Muve Healthcare',
+    views: 0,
+    applyClicks: 0
   },
   {
-    id: 'pm-job-003',
-    title: 'Commercial Office Cleaning Supervisor',
-    slug: 'commercial-office-cleaning-supervisor-city-of-london',
-    company: 'Prime Clean Facilities Group',
-    companyLogo: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=200',
-    location: 'City of London, UK',
-    city: 'London',
-    region: 'Greater London',
+    id: 'muve-job-002',
+    title: 'Registered Nurse – RGN / RMN / RNLD / ICU / RCN',
+    slug: 'registered-nurse-rgn-rmn-rnld-icu-rcn-muve-healthcare',
+    company: 'Muve Healthcare',
+    companyLogo: '',
+    location: 'United Kingdom – Nationwide',
+    city: '',
+    region: 'Nationwide (England, Scotland, Wales and Northern Ireland)',
     country: 'United Kingdom',
-    postcode: 'EC2M 7PP',
-    salaryMin: 15.00,
-    salaryMax: 17.00,
-    salaryText: '£15.00 - £17.00 per hour',
+    postcode: '',
+    salaryMin: 25.00,
+    salaryMax: 27.00,
+    salaryText: '£25.00 – £27.00 per hour',
     salaryPeriod: 'per hour',
     currency: '£',
-    jobType: 'Permanent',
+    salaryTiers: [
+      {
+        role: 'RGN / RMN / RNLD',
+        hourlyRate: '£25.00 / hour',
+        hours36Yearly: '£46,800 / year',
+        hours48Yearly: '£62,400 / year'
+      },
+      {
+        role: 'ICU / RCN',
+        hourlyRate: '£27.00 / hour',
+        hours36Yearly: '£50,544 / year',
+        hours48Yearly: '£67,392 / year'
+      }
+    ],
+    jobType: 'Contract',
     workArrangement: 'On-site',
-    category: 'Professional Cleaning',
-    shortDescription: 'Dedicated Evening Cleaning Supervisor to oversee cleaning teams across corporate financial headquarters in Central London.',
-    fullDescription: 'Prime Clean Facilities Group provides premium sanitation services for corporate banking institutions in the City of London. We are recruiting an Evening Cleaning Supervisor to manage an 8-person team ensuring prestigious offices, boardrooms, and communal spaces maintain pristine cleanliness.',
+    category: 'Healthcare & Nursing',
+    shortDescription: 'Muve Healthcare is recruiting registered nurses across RGN, RMN, RNLD, ICU and RCN roles as part of a new cohort of Local Authority and ICB direct-award contracts, with healthcare opportunities available across the UK.',
+    fullDescription: `Muve Healthcare is mobilising a new cohort of Local Authority and ICB direct-award contracts and is recruiting qualified nursing professionals across a range of healthcare settings.
+
+Current nursing opportunities include RGN, RMN, RNLD, ICU and RCN roles, with services covering areas including Mental Health, Learning Disabilities, Complex Care, Positive Behaviour Support, PICU and ICU.
+
+Available contract options include 36-hour and 48-hour arrangements.`,
     responsibilities: [
-      'Direct and supervise evening cleaning operatives across 5 commercial office floors',
-      'Conduct daily quality audits and sign off on completed hygiene checklists',
-      'Manage cleaning chemical inventories (COSHH compliant) and replenish equipment stocks',
-      'Train new cleaning recruits on health & safety, colour-coded cleaning techniques, and security procedures',
-      'Liaise with building security and client facilities management teams'
+      'RGN',
+      'RMN',
+      'RNLD',
+      'ICU',
+      'RCN',
+      'Mental Health',
+      'Learning Disabilities',
+      'PICU',
+      'Complex Care',
+      'Positive Behaviour Support'
     ],
-    requirements: [
-      'Prior supervisory or team lead experience in commercial cleaning or facilities services',
-      'Knowledge of British Institute of Cleaning Science (BICSc) standards and COSHH regulations',
-      'Trustworthy with excellent punctuality and clean background check',
-      'Effective English communication skills'
+    skills: [
+      'RGN Nursing',
+      'RMN (Mental Health)',
+      'RNLD (Learning Disabilities)',
+      'ICU Nursing',
+      'RCN (Children\'s Nursing)',
+      'Mental Health Care',
+      'Learning Disabilities Support',
+      'Complex Care',
+      'Positive Behaviour Support (PBS)',
+      'PICU Care'
     ],
-    qualifications: [
-      'BICSc Level 1 or 2 (advantageous)',
-      'COSHH Awareness Training Certificate'
-    ],
-    experience: '2+ years commercial or corporate cleaning with 1+ year supervision',
-    skills: ['Team Supervision', 'COSHH Compliance', 'Quality Auditing', 'BICSc Standards', 'Deep Cleaning', 'Inventory Control'],
     benefits: [
-      'Guaranteed permanent contract with stable evening hours',
-      'Full branded uniform and safety kit',
-      'Access to corporate wellness benefits',
-      'Career progression to Regional Facilities Manager'
+      'Weekly pay',
+      'Consistent work opportunities',
+      '36 and 48-hour contracts',
+      'Rotas available up to 6 months in advance',
+      'App-based rota management',
+      'Digital care planning',
+      'Internal training and development',
+      '24/7 MDT support',
+      'Support across CAMHS, RMN/RNLD, PICU, ICU, PBS, Service Management and Quality/Governance'
     ],
-    workingHours: '25 hours per week (Monday to Friday, 17:30 - 22:30)',
-    sourceName: 'Promarch Consulting',
-    sourceUrl: 'https://promarchconsulting.co.uk',
-    applicationUrl: 'https://promarchconsulting.co.uk/contact',
-    datePosted: '2026-08-18T14:00:00.000Z',
-    closingDate: '2026-09-20T23:59:59.000Z',
-    featured: false,
-    status: 'published',
-    createdAt: '2026-08-18T14:00:00.000Z',
-    updatedAt: '2026-08-18T14:00:00.000Z',
-    createdBy: 'System Seed',
-    views: 74,
-    applyClicks: 12
-  },
-  {
-    id: 'pm-job-004',
-    title: 'Head Chef / Kitchen Manager',
-    slug: 'head-chef-kitchen-manager-west-end-london',
-    company: 'The Connaught Grill & Brasserie',
-    companyLogo: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&q=80&w=200',
-    location: 'West End, London, UK',
-    city: 'London',
-    region: 'Greater London',
-    country: 'United Kingdom',
-    postcode: 'W1K 2AL',
-    salaryMin: 42000,
-    salaryMax: 48000,
-    salaryText: '£42,000 - £48,000 per year + Tronc',
-    salaryPeriod: 'per year',
-    currency: '£',
-    jobType: 'Full-time',
-    workArrangement: 'On-site',
-    category: 'Hospitality & Dining',
-    shortDescription: 'Passionate Head Chef wanted for an established contemporary European restaurant in Mayfair. Excellent package and bonus.',
-    fullDescription: 'An exciting opportunity has arisen for a seasoned Head Chef to direct the kitchen brigade at The Connaught Grill & Brasserie. We serve fresh, seasonal European cuisine to high-profile diners. The successful candidate will oversee menu design, GP margins, staff development, and Food Hygiene Level 5 standards.',
-    responsibilities: [
-      'Lead and inspire a brigade of 10 chefs and kitchen porters during high-volume lunch and dinner services',
-      'Design seasonal menus with strong focus on locally sourced British produce and high profitability (Target 70% GP)',
-      'Enforce exemplary food hygiene, HACCP systems, temperature recording, and allergen controls',
-      'Manage supplier relationships, order ingredients, and maintain strict stock control',
-      'Train junior chefs and foster a collaborative, respectful kitchen culture'
-    ],
-    requirements: [
-      'Proven track record as Head Chef or Senior Sous Chef in a fast-paced premium restaurant',
-      'Level 3 Food Safety & Hygiene in Catering certification',
-      'Strong financial acumen regarding food costs, labour cost management, and stock auditing',
-      'Passion for culinary excellence and plating aesthetics'
-    ],
-    qualifications: [
-      'City & Guilds 706/1 & 706/2 or NVQ Professional Cookery Level 3',
-      'Level 3 Supervising Food Safety in Catering'
-    ],
-    experience: '3+ years in senior kitchen management roles in Central London',
-    skills: ['Kitchen Management', 'Menu Engineering', 'HACCP & Food Safety', 'Cost Control', 'Sous Vide Cooking', 'Team Mentoring'],
-    benefits: [
-      'Generous Tronc service charge distribution (approx. £6,000/yr)',
-      'Performance-based quarterly profitability bonus',
-      'Staff meals on shift and 50% dining discount across the restaurant group',
-      '28 days paid annual leave'
-    ],
-    workingHours: '48 hours per week (5 days out of 7 on rota basis)',
-    sourceName: 'Totaljobs',
-    sourceUrl: 'https://www.totaljobs.com',
-    applicationUrl: 'https://promarchconsulting.co.uk/contact',
-    datePosted: '2026-08-23T16:00:00.000Z',
-    closingDate: '2026-10-15T23:59:59.000Z',
+    workingHours: '36-hour and 48-hour contracts available',
+    regionsMentioned: 'England, Scotland, Wales and Northern Ireland',
+    sourceName: 'Muve Healthcare recruitment information supplied to Promarch Consulting',
+    sourceUrl: '',
+    applicationUrl: '',
+    datePosted: '2026-09-09T09:00:00.000Z',
     featured: true,
     status: 'published',
-    createdAt: '2026-08-23T16:00:00.000Z',
-    updatedAt: '2026-08-23T16:00:00.000Z',
-    createdBy: 'System Seed',
-    views: 115,
-    applyClicks: 22
-  },
-  {
-    id: 'pm-job-005',
-    title: 'Registered General Nurse (RGN) - Complex Care',
-    slug: 'registered-general-nurse-rgn-complex-care-croydon',
-    company: 'Apex Healthcare Trust',
-    companyLogo: 'https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?auto=format&fit=crop&q=80&w=200',
-    location: 'Croydon, Greater London, UK',
-    city: 'Croydon',
-    region: 'Greater London',
-    country: 'United Kingdom',
-    postcode: 'CR0 2YN',
-    salaryMin: 36000,
-    salaryMax: 41000,
-    salaryText: '£36,000 - £41,000 per year',
-    salaryPeriod: 'per year',
-    currency: '£',
-    jobType: 'Full-time',
-    workArrangement: 'On-site',
-    category: 'Nursing & Healthcare',
-    shortDescription: 'Seeking an enthusiastic RGN with active NMC PIN for complex nursing care in modern private clinic environment.',
-    fullDescription: 'Apex Healthcare Trust is recruiting Registered General Nurses (RGNs) for our dedicated complex rehabilitation and nursing unit in Croydon. You will provide individualised nursing care, manage syringe drivers, wound care, and multidisciplinary treatment plans.',
-    responsibilities: [
-      'Assess, plan, implement, and evaluate clinical nursing care plans for complex patients',
-      'Administer intravenous therapies, complex medications, and wound dressings',
-      'Collaborate with doctors, physiotherapists, and occupational therapists to promote recovery',
-      'Act as Named Nurse and lead clinical handovers between shift teams',
-      'Maintain exact nursing documentation compliant with NMC Code of Conduct'
-    ],
-    requirements: [
-      'Current, active NMC Registration (Adult Branch)',
-      'Valid UK PIN with no restrictions',
-      'Minimum 1 year post-registration nursing experience',
-      'Right to work in the United Kingdom'
-    ],
-    qualifications: [
-      'BSc (Hons) in Adult Nursing (or equivalent)',
-      'Active NMC Registration (RGN)'
-    ],
-    experience: '1+ years post-registration nursing experience in NHS or private UK healthcare',
-    skills: ['NMC Registered', 'Clinical Assessment', 'IV Therapy', 'Wound Care', 'Phlebotomy', 'Care Management'],
-    benefits: [
-      'NMC annual registration fee reimbursed',
-      'Funded CPD training and Revalidation assistance',
-      'Generous NHS-matched pension scheme',
-      'Subsidised gym membership and healthcare cash plan'
-    ],
-    workingHours: '37.5 hours per week (Internal rotation between day and night shifts)',
-    sourceName: 'NHS Jobs',
-    sourceUrl: 'https://www.jobs.nhs.uk',
-    applicationUrl: 'https://promarchconsulting.co.uk/contact',
-    datePosted: '2026-08-15T10:00:00.000Z',
-    closingDate: '2026-09-18T23:59:59.000Z',
-    featured: false,
-    status: 'published',
-    createdAt: '2026-08-15T10:00:00.000Z',
-    updatedAt: '2026-08-15T10:00:00.000Z',
-    createdBy: 'System Seed',
-    views: 89,
-    applyClicks: 16
-  },
-  {
-    id: 'pm-job-006',
-    title: 'Logistics Operations Coordinator',
-    slug: 'logistics-operations-coordinator-heathrow',
-    company: 'FreightLink International UK',
-    companyLogo: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&q=80&w=200',
-    location: 'Heathrow / Hounslow, London, UK',
-    city: 'Hounslow',
-    region: 'Greater London',
-    country: 'United Kingdom',
-    postcode: 'TW6 2GW',
-    salaryMin: 30000,
-    salaryMax: 35000,
-    salaryText: '£30,000 - £35,000 per year',
-    salaryPeriod: 'per year',
-    currency: '£',
-    jobType: 'Permanent',
-    workArrangement: 'Hybrid',
-    category: 'Management & Supervision',
-    shortDescription: 'Coordinate air freight and road haulage movements for global supply chain clients near Heathrow Airport.',
-    fullDescription: 'FreightLink International is looking for a proactive Logistics Operations Coordinator to manage day-to-day freight consignments, liaise with road carriers and customs clearance agents, and track cross-border deliveries.',
-    responsibilities: [
-      'Coordinate air freight export/import schedules and overland courier logistics',
-      'Prepare airway bills (AWB), customs declarations, and commercial invoices',
-      'Track shipments in real-time and provide transparent status updates to key corporate clients',
-      'Resolve delivery exceptions and carrier delays proactively',
-      'Audit freight invoices and negotiate spot haulage rates'
-    ],
-    requirements: [
-      'At least 2 years experience in freight forwarding, road haulage, or 3PL operations',
-      'Knowledge of UK customs procedures and Incoterms 2020',
-      'Strong proficiency in logistics TMS/WMS software and Microsoft Excel',
-      'Excellent problem-solving and client relationship skills'
-    ],
-    qualifications: [
-      'Diploma in International Trade / Logistics (preferred)',
-      'Dangerous Goods by Air Awareness (advantageous)'
-    ],
-    experience: '2+ years in UK logistics coordination or freight forwarding',
-    skills: ['Freight Forwarding', 'Customs Declarations', 'TMS Systems', 'Incoterms', 'Client Communication', 'Excel'],
-    benefits: [
-      'Hybrid work model (3 days office / 2 days remote)',
-      'Annual company performance bonus',
-      'Life assurance and private medical coverage',
-      '25 days annual leave + bank holidays'
-    ],
-    workingHours: '40 hours per week (Monday to Friday, 08:30 - 17:30)',
-    sourceName: 'LinkedIn',
-    sourceUrl: 'https://www.linkedin.com',
-    applicationUrl: 'https://promarchconsulting.co.uk/contact',
-    datePosted: '2026-08-21T13:00:00.000Z',
-    closingDate: '2026-09-28T23:59:59.000Z',
-    featured: true,
-    status: 'published',
-    createdAt: '2026-08-21T13:00:00.000Z',
-    updatedAt: '2026-08-21T13:00:00.000Z',
-    createdBy: 'System Seed',
-    views: 104,
-    applyClicks: 18
+    createdAt: '2026-09-09T09:00:00.000Z',
+    updatedAt: '2026-09-09T09:00:00.000Z',
+    createdBy: 'Muve Healthcare',
+    views: 0,
+    applyClicks: 0
   }
 ];
 
 export class JobService {
-  // Read all jobs from storage or fallback to seed
+  // Read all jobs from storage, purge demo jobs, and ensure real vacancies exist
   private static loadJobsFromStorage(): Job[] {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(SEED_JOBS));
-        return [...SEED_JOBS];
+      const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('promarch_jobs_v1');
+      let currentList: Job[] = [];
+
+      if (raw) {
+        try {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) {
+            // Delete all demo/seed jobs and placeholders
+            currentList = parsed.filter(j => !DEMO_JOB_IDS.has(j.id) && j.createdBy !== 'System Seed');
+          }
+        } catch (e) {
+          console.error('Error parsing stored jobs:', e);
+        }
       }
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed;
+
+      // Ensure both Muve Healthcare real vacancies exist in the active collection
+      const existingIds = new Set(currentList.map(j => j.id));
+      let updated = false;
+
+      for (const seed of SEED_JOBS) {
+        if (!existingIds.has(seed.id)) {
+          currentList.push({ ...seed });
+          updated = true;
+        }
       }
-      return [...SEED_JOBS];
+
+      // If any demo jobs were purged or new real vacancies seeded, persist back immediately
+      if (updated || !raw || currentList.length !== (raw ? JSON.parse(raw).length : 0)) {
+        this.saveJobsToStorage(currentList);
+      }
+
+      return currentList;
     } catch (e) {
       console.error('Failed to parse jobs from localStorage:', e);
       return [...SEED_JOBS];

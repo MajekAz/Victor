@@ -45,6 +45,13 @@ export type JobStatus = 'draft' | 'published' | 'expired' | 'archived';
 
 export type SalaryPeriod = 'per year' | 'per hour' | 'per day' | 'per month' | 'competitive';
 
+export interface SalaryTier {
+  role: string;
+  hourlyRate: string;
+  hours36Yearly: string;
+  hours48Yearly: string;
+}
+
 export interface Job {
   id: string;
   title: string;
@@ -60,6 +67,7 @@ export interface Job {
   salaryMax?: number;
   salaryText?: string;
   salaryPeriod?: SalaryPeriod;
+  salaryTiers?: SalaryTier[];
   currency?: string;
   jobType: JobType;
   workArrangement: WorkArrangement;
@@ -73,6 +81,7 @@ export interface Job {
   skills?: string[];
   benefits?: string[];
   workingHours?: string;
+  regionsMentioned?: string;
   sourceName?: string;
   sourceUrl?: string;
   applicationUrl: string;

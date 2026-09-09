@@ -173,14 +173,25 @@ export const JobCard: React.FC<JobCardProps> = ({ job, compact = false }) => {
           </h3>
         </Link>
 
-        {/* 4. Salary Highlight */}
-        <div className="mb-3">
-          <div className="text-sm font-black text-blue-700">
-            {formatSalary()}
+        {/* 4. Salary Highlight & Role Rate Tiers */}
+        {job.salaryTiers && job.salaryTiers.length > 0 ? (
+          <div className="mb-3 p-2.5 rounded-xl bg-slate-50 border border-slate-100 space-y-1">
+            {job.salaryTiers.map((tier, idx) => (
+              <div key={idx} className="flex items-baseline justify-between text-xs">
+                <span className="font-bold text-slate-700 truncate mr-2">{tier.role}:</span>
+                <span className="font-black text-blue-700 shrink-0">{tier.hourlyRate}</span>
+              </div>
+            ))}
           </div>
-        </div>
+        ) : (
+          <div className="mb-3">
+            <div className="text-sm font-black text-blue-700">
+              {formatSalary()}
+            </div>
+          </div>
+        )}
 
-        {/* 5, 6. Badges (Job Type, Work Arrangement, Category) */}
+        {/* 5, 6. Badges (Job Type, Work Arrangement, Category, Contract Hours) */}
         <div className="flex flex-wrap gap-1.5 mb-3">
           <span className="px-2.5 py-0.5 rounded-lg text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200/80">
             {job.jobType}
@@ -188,9 +199,14 @@ export const JobCard: React.FC<JobCardProps> = ({ job, compact = false }) => {
           <span className={`px-2.5 py-0.5 rounded-lg text-[11px] font-bold border ${getWorkArrangementClass(job.workArrangement)}`}>
             {job.workArrangement}
           </span>
-          <span className="px-2.5 py-0.5 rounded-lg text-[11px] font-medium bg-slate-50 text-slate-600 border border-slate-200/60 truncate max-w-[140px]">
+          <span className="px-2.5 py-0.5 rounded-lg text-[11px] font-medium bg-slate-50 text-slate-600 border border-slate-200/60 truncate max-w-[150px]">
             {job.category}
           </span>
+          {job.workingHours && (
+            <span className="px-2.5 py-0.5 rounded-lg text-[11px] font-bold bg-amber-50 text-amber-900 border border-amber-200/80">
+              {job.workingHours}
+            </span>
+          )}
         </div>
 
         {/* 8. Short Description */}
@@ -217,13 +233,13 @@ export const JobCard: React.FC<JobCardProps> = ({ job, compact = false }) => {
               Closes: {formattedClosingDate}
             </span>
           ) : job.sourceName ? (
-            <span className="font-medium text-slate-400 truncate max-w-[120px]" title={`Job source: ${job.sourceName}`}>
+            <span className="font-medium text-slate-400 truncate max-w-[130px]" title={`Job source: ${job.sourceName}`}>
               Source: {job.sourceName}
             </span>
           ) : null}
         </div>
 
-        {/* 9. View Vacancy CTA Button */}
+        {/* 9. View Job CTA Button */}
         <Link
           to={`/jobs/${job.slug}`}
           className={`w-full py-2.5 px-4 rounded-xl font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${
@@ -233,7 +249,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job, compact = false }) => {
           }`}
           id={`btn-view-job-${job.id}`}
         >
-          <span>{isExpired ? 'View Closed Vacancy' : 'View Vacancy'}</span>
+          <span>{isExpired ? 'Vacancy Closed' : 'View Job'}</span>
           <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform" />
         </Link>
       </div>
