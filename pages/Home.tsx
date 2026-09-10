@@ -13,7 +13,7 @@ const Home: React.FC = () => {
   useEffect(() => {
     const fetchLatestJobs = async () => {
       try {
-        const res = await JobService.getJobs({ limit: 3, sortBy: 'newest' });
+        const res = await JobService.getJobs({ limit: 6, sortBy: 'newest' });
         setLatestJobs(res.jobs);
       } catch (e) {
         console.error('Failed to fetch home vacancies:', e);
@@ -134,13 +134,13 @@ const Home: React.FC = () => {
           </div>
 
           {isLoadingJobs ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-              {[1, 2, 3].map((i) => (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8">
+              {[1, 2, 3, 4].map((i) => (
                 <div key={i} className="bg-white rounded-3xl p-7 border border-slate-200 shadow-xs animate-pulse h-96"></div>
               ))}
             </div>
           ) : latestJobs.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8">
               {latestJobs.map((job) => (
                 <JobCard key={job.id} job={job} />
               ))}
