@@ -28,10 +28,11 @@ import {
   Save,
   RotateCcw,
   BarChart3,
-  Key,
   Layers,
   MapPin,
-  Clock
+  Clock,
+  Loader2,
+  ShieldCheck
 } from 'lucide-react';
 import { Job, JobType, WorkArrangement, JobStatus, SalaryPeriod, DuplicateMatch } from '../types.ts';
 import { JobService } from '../services/jobService.ts';
@@ -49,7 +50,9 @@ export const AdminDashboard: React.FC = () => {
 
   // Auth State
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [emailInput, setEmailInput] = useState<string>('info@promarchconsulting.co.uk');
   const [passwordInput, setPasswordInput] = useState<string>('');
+  const [isLoggingIn, setIsLoggingIn] = useState<boolean>(false);
   const [authError, setAuthError] = useState<string>('');
 
   // Active Navigation Tab
@@ -153,10 +156,6 @@ export const AdminDashboard: React.FC = () => {
   const [renewTargetJob, setRenewTargetJob] = useState<Job | null>(null);
   const [renewDays, setRenewDays] = useState<number>(30);
 
-  // Password Change
-  const [newPassword, setNewPassword] = useState<string>('');
-  const [passwordChangeSuccess, setPasswordChangeSuccess] = useState<string>('');
-
   useEffect(() => {
     const initAuth = async () => {
       const session = await AuthService.checkSession();
@@ -200,24 +199,48 @@ export const AdminDashboard: React.FC = () => {
     }
   };
 
-  // Login Handler
+  // Login Handler strictly verifying PHP/MySQL server session
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError('');
-    const res = await AuthService.login(passwordInput);
-    if (res.success) {
-      setIsAuthenticated(true);
-      loadJobsData();
-    } else {
-      setAuthError(res.error || 'Authentication failed.');
+    const cleanEmail = emailInput.trim().toLowerCase();
+    if (!cleanEmail) {
+      setAuthError('Administrator email is required.');
+      return;
+    }
+    if (!passwordInput) {
+      setAuthError('Password is required.');
+      return;
+    }
+
+    setIsLoggingIn(true);
+    try {
+      const res = await AuthService.login(cleanEmail, passwordInput);
+      if (res.success) {
+        const session = await AuthService.checkSession();
+        if (session.isAuthenticated) {
+          setIsAuthenticated(true);
+          setPasswordInput('');
+          loadJobsData();
+        } else {
+          setAuthError('Session validation failed. Please verify that browser cookies are permitted.');
+        }
+      } else {
+        setAuthError(res.error || 'Invalid administrator credentials. Please try again.');
+      }
+    } catch (err: any) {
+      setAuthError(err?.message || 'Authentication service is unavailable. Please try again.');
+    } finally {
+      setIsLoggingIn(false);
     }
   };
 
-  // Logout
+  // Logout invalidating PHP server session
   const handleLogout = async () => {
     await AuthService.logout();
     setIsAuthenticated(false);
     setPasswordInput('');
+    navigate('/admin/login');
   };
 
   // Switch to Create New Job
@@ -528,18 +551,6 @@ export const AdminDashboard: React.FC = () => {
     }
   };
 
-  // Change Password
-  const handleChangePassword = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (AuthService.updateAdminPassword(newPassword)) {
-      setPasswordChangeSuccess('Admin master password updated successfully.');
-      setNewPassword('');
-      setTimeout(() => setPasswordChangeSuccess(''), 4000);
-    } else {
-      alert('Password must be at least 6 characters.');
-    }
-  };
-
   // Filter Table Jobs
   const filteredTableJobs = allJobs.filter(j => {
     if (filterStatus !== 'all') {
@@ -610,7 +621,22 @@ export const AdminDashboard: React.FC = () => {
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
               <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1.5">
-                Admin Master Password
+                Administrator Email
+              </label>
+              <input
+                type="email"
+                value={emailInput}
+                onChange={(e) => setEmailInput(e.target.value)}
+                placeholder="info@promarchconsulting.co.uk"
+                required
+                disabled={isLoggingIn}
+                className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium text-slate-900 outline-none focus:ring-2 focus:ring-blue-600 transition-all disabled:opacity-60"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1.5">
+                Password
               </label>
               <input
                 type="password"
@@ -618,20 +644,28 @@ export const AdminDashboard: React.FC = () => {
                 onChange={(e) => setPasswordInput(e.target.value)}
                 placeholder="Enter password..."
                 required
-                className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium text-slate-900 outline-none focus:ring-2 focus:ring-blue-600 transition-all"
+                disabled={isLoggingIn}
+                className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium text-slate-900 outline-none focus:ring-2 focus:ring-blue-600 transition-all disabled:opacity-60"
               />
-              <span className="text-[10px] text-slate-400 mt-1 block">
-                Default: <code className="text-slate-600 font-mono">promarch2025</code>
-              </span>
             </div>
 
             <button
               type="submit"
-              className="w-full py-4 px-6 rounded-2xl font-black text-xs uppercase tracking-wider text-white shadow-lg transition-all hover:opacity-90 flex items-center justify-center gap-2"
+              disabled={isLoggingIn}
+              className="w-full py-4 px-6 rounded-2xl font-black text-xs uppercase tracking-wider text-white shadow-lg transition-all hover:opacity-90 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
               style={{ backgroundColor: COLORS.primary }}
             >
-              <Unlock size={14} />
-              <span>Authenticate & Enter</span>
+              {isLoggingIn ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" />
+                  <span>Signing In...</span>
+                </>
+              ) : (
+                <>
+                  <Unlock size={14} />
+                  <span>Sign In Securely</span>
+                </>
+              )}
             </button>
           </form>
 
@@ -1573,42 +1607,30 @@ export const AdminDashboard: React.FC = () => {
         {/* TAB 6: Settings & Backup */}
         {activeTab === 'security' && (
           <div className="space-y-6" id="admin-security-view">
-            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xs space-y-6">
+            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xs space-y-5">
               <h3 className="text-base font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
-                <Key size={18} className="text-blue-600" />
-                <span>Security & Admin Access</span>
+                <ShieldCheck size={18} className="text-blue-600" />
+                <span>Security & Administrator Access</span>
               </h3>
 
-              {passwordChangeSuccess && (
-                <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold flex items-center gap-2">
-                  <CheckCircle2 size={16} />
-                  <span>{passwordChangeSuccess}</span>
+              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5 text-xs">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 py-1 border-b border-slate-200/60">
+                  <span className="font-bold text-slate-500">Authorized Administrator:</span>
+                  <span className="font-mono font-bold text-slate-900">info@promarchconsulting.co.uk</span>
                 </div>
-              )}
-
-              <form onSubmit={handleChangePassword} className="max-w-md space-y-4">
-                <div>
-                  <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1.5">
-                    New Master Password (Min 6 chars)
-                  </label>
-                  <input
-                    type="password"
-                    required
-                    minLength={6}
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="Enter new password..."
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-medium text-slate-900 outline-none focus:ring-2 focus:ring-blue-600"
-                  />
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 py-1 border-b border-slate-200/60">
+                  <span className="font-bold text-slate-500">Authentication Authority:</span>
+                  <span className="font-bold text-emerald-700">Hostinger PHP / MySQL Database</span>
                 </div>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 py-1">
+                  <span className="font-bold text-slate-500">Session Security:</span>
+                  <span className="text-slate-600">Strict HTTP-Only Cookie Session & CSRF Token Verification</span>
+                </div>
+              </div>
 
-                <button
-                  type="submit"
-                  className="px-6 py-3 rounded-xl bg-slate-900 hover:bg-blue-600 text-white text-xs font-black uppercase tracking-wider transition-colors"
-                >
-                  Update Master Password
-                </button>
-              </form>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Administrator credentials and password hashes are secured directly in the MySQL database via bcrypt. Administrative authentication is verified exclusively on the PHP server runtime.
+              </p>
             </div>
 
             {/* Backup & Maintenance */}

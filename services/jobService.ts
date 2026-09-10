@@ -8,17 +8,13 @@ export class JobService {
   private static cachedJobs: Job[] = [];
   private static cachedCategories: string[] = [];
 
-  // Fetch headers for authenticated admin API requests
+  // Fetch headers for authenticated admin API requests (PHP session cookie is sent via credentials: 'include')
   private static getAdminHeaders(): HeadersInit {
-    const token = AuthService.getAuthToken();
     const csrfToken = AuthService.getCSRFToken();
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       'Accept': 'application/json'
     };
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
     if (csrfToken) {
       headers['X-CSRF-Token'] = csrfToken;
     }

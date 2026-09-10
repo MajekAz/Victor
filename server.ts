@@ -59,37 +59,54 @@ function writeLogsFile(logs: any[]): void {
   }
 }
 
-const DEFAULT_ADMIN_PASSWORD = 'promarchconsulting2025';
+const PHP_BACKEND_URL = (process.env.PHP_BACKEND_URL || '').replace(/\/+$/, '');
 
-function checkAdminAuth(req: express.Request, res: express.Response, next: express.NextFunction) {
-  const authHeader = req.headers.authorization;
-  const csrf = req.headers['x-csrf-token'];
-
-  // Accept Bearer token or CSRF token
-  if (authHeader && authHeader.startsWith('Bearer ')) {
-    const token = authHeader.substring(7).trim();
-    if (token.startsWith('adm_token_')) {
-      const parts = token.split(':');
-      if (parts.length >= 2) {
-        const timestamp = parseInt(parts[1], 10);
-        if (Date.now() - timestamp < 24 * 60 * 60 * 1000) {
-          return next();
-        }
+// Proxy helper for local development against the authoritative Hostinger PHP backend
+async function proxyToPhpBackend(req: express.Request, res: express.Response): Promise<boolean> {
+  if (!PHP_BACKEND_URL) return false;
+  try {
+    const targetUrl = `${PHP_BACKEND_URL}${req.originalUrl}`;
+    const headers: Record<string, string> = {};
+    for (const [k, v] of Object.entries(req.headers)) {
+      if (k.toLowerCase() !== 'host' && typeof v === 'string') {
+        headers[k] = v;
       }
     }
+    const fetchOptions: RequestInit = {
+      method: req.method,
+      headers
+    };
+    if (['POST', 'PUT', 'PATCH'].includes(req.method) && req.body && Object.keys(req.body).length > 0) {
+      fetchOptions.body = JSON.stringify(req.body);
+    }
+    const upstream = await fetch(targetUrl, fetchOptions);
+    const contentType = upstream.headers.get('content-type') || '';
+    res.status(upstream.status);
+    if (contentType.includes('application/json')) {
+      const json = await upstream.json();
+      res.json(json);
+    } else {
+      const text = await upstream.text();
+      res.send(text);
+    }
+    return true;
+  } catch (err: any) {
+    console.error('[PHP Proxy] Error communicating with upstream PHP server:', err);
+    res.status(502).json({
+      success: false,
+      message: `Failed to proxy request to Hostinger PHP backend: ${err.message}`
+    });
+    return true;
   }
+}
 
-  if (csrf && typeof csrf === 'string' && csrf.length > 10) {
-    return next();
-  }
-
-  // Permissive in local dev container if request comes from local loopback
-  const host = req.headers.host || '';
-  if (host.includes('localhost') || host.includes('run.app')) {
-    return next();
-  }
-
-  return res.status(401).json({ success: false, message: 'Unauthorized: Missing or invalid administrator token.' });
+function checkAdminAuth(req: express.Request, res: express.Response, next: express.NextFunction) {
+  // Direct authentication bypasses (hardcoded tokens, loopback bypasses, arbitrary CSRF) are completely disabled.
+  // Authoritative admin write operations require the Hostinger PHP backend and MySQL database.
+  return res.status(503).json({
+    success: false,
+    message: 'Administrative operations require an active Hostinger PHP session (public/api/admin/auth.php). Standalone Node dev bypass is disabled.'
+  });
 }
 
 async function startServer() {
@@ -98,49 +115,38 @@ async function startServer() {
   app.use(express.json({ limit: '10mb' }));
 
   // ==================== AUTH API ====================
-  app.get(['/api/auth/check', '/api/admin/auth.php'], (req, res) => {
-    const action = req.query.action;
-    const token = `adm_token_${Date.now()}:${Date.now()}`;
-    const csrfToken = 'pm_csrf_' + Math.random().toString(36).substring(2) + Date.now().toString(36);
+  // Check administrative session strictly against PHP backend
+  app.get(['/api/auth/check', '/api/admin/auth.php'], async (req, res) => {
+    if (await proxyToPhpBackend(req, res)) return;
 
+    // In standalone Node development without upstream PHP, session is unauthenticated
     res.json({
       success: true,
       data: {
-        isAuthenticated: true,
-        user: 'admin@promarchconsulting.co.uk',
-        role: 'admin',
-        token,
-        csrfToken
+        isAuthenticated: false,
+        message: 'PHP session authentication required. Direct Node dev authentication bypass is disabled.'
       }
     });
   });
 
-  app.post(['/api/auth/login', '/api/admin/auth.php'], (req, res) => {
-    const { password } = req.body || {};
-    const clean = (password || '').trim();
-    if (!clean) {
-      return res.status(400).json({ success: false, message: 'Password is required' });
+  // Login handler strictly requiring Hostinger PHP backend
+  app.post(['/api/auth/login', '/api/admin/auth.php'], async (req, res) => {
+    const action = req.query.action || req.body?.action;
+    if (action === 'logout') {
+      if (await proxyToPhpBackend(req, res)) return;
+      return res.json({ success: true, message: 'Logged out successfully.' });
     }
 
-    if (clean === DEFAULT_ADMIN_PASSWORD || clean === 'promarch2025') {
-      const token = `adm_token_${Math.random().toString(36).substring(2)}${Math.random().toString(36).substring(2)}:${Date.now()}`;
-      const csrfToken = 'pm_csrf_' + Math.random().toString(36).substring(2);
-      return res.json({
-        success: true,
-        token,
-        data: {
-          token,
-          csrfToken,
-          user: 'admin@promarchconsulting.co.uk',
-          role: 'admin'
-        }
-      });
-    }
+    if (await proxyToPhpBackend(req, res)) return;
 
-    return res.status(401).json({ success: false, message: 'Invalid administrative password.' });
+    return res.status(503).json({
+      success: false,
+      message: 'Authentication must be processed by the Hostinger PHP backend (public/api/admin/auth.php). Direct Node dev password bypass is disabled.'
+    });
   });
 
-  app.post(['/api/auth/logout', '/api/admin/auth.php'], (req, res) => {
+  app.post('/api/auth/logout', async (req, res) => {
+    if (await proxyToPhpBackend(req, res)) return;
     res.json({ success: true, message: 'Logged out successfully.' });
   });
 
