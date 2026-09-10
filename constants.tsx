@@ -34,6 +34,8 @@ export const NAV_LINKS: NavItem[] = [
 export const JOB_CATEGORIES = [
   "Healthcare & Social Care",
   "Healthcare & Nursing",
+  "Digital / Technology",
+  "Accounting & Finance",
   "Care Sector",
   "Warehouse & Logistics",
   "Professional Cleaning",

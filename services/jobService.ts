@@ -33,7 +33,7 @@ export class JobService {
 
   public static async getActivityLogs(): Promise<AdminActivityLog[]> {
     try {
-      const endpoints = ['/api/admin/logs', '/api/admin/logs.php'];
+      const endpoints = ['/api/admin/logs.php', '/api/admin/logs'];
       for (const ep of endpoints) {
         try {
           const res = await fetch(ep, {
@@ -129,7 +129,7 @@ export class JobService {
     const qs = query.toString() ? `?${query.toString()}` : '';
 
     // Primary and fallback endpoints
-    const endpoints = [`/api/jobs${qs}`, `/api/jobs.php${qs}`];
+    const endpoints = [`/api/jobs.php${qs}`, `/api/jobs${qs}`];
     let lastError: any = null;
 
     for (const ep of endpoints) {
@@ -182,8 +182,8 @@ export class JobService {
   // Get single job by slug or ID
   public static async getJobBySlug(slug: string): Promise<Job | null> {
     const endpoints = [
-      `/api/jobs/${encodeURIComponent(slug)}`,
       `/api/jobs.php?slug=${encodeURIComponent(slug)}`,
+      `/api/jobs/${encodeURIComponent(slug)}`,
       `/api/jobs?slug=${encodeURIComponent(slug)}`
     ];
 
@@ -245,8 +245,8 @@ export class JobService {
   // Admin Query (Returns all jobs regardless of status from MySQL)
   public static async getAllAdminJobs(): Promise<Job[]> {
     const endpoints = [
-      '/api/admin/jobs',
-      '/api/admin/jobs.php'
+      '/api/admin/jobs.php',
+      '/api/admin/jobs'
     ];
 
     let lastError: any = null;
@@ -297,7 +297,11 @@ export class JobService {
       updatedBy: user
     };
 
-    const endpoints = ['/api/admin/jobs', '/api/admin/jobs.php'];
+    const endpoints = [
+      '/api/admin/jobs.php?action=create',
+      '/api/admin/jobs.php',
+      '/api/admin/jobs'
+    ];
     let lastError: any = null;
 
     for (const ep of endpoints) {
@@ -345,9 +349,9 @@ export class JobService {
     };
 
     const endpoints = [
-      `/api/admin/jobs/${encodeURIComponent(id)}`,
       `/api/admin/jobs.php?id=${encodeURIComponent(id)}`,
-      '/api/admin/jobs.php'
+      '/api/admin/jobs.php',
+      `/api/admin/jobs/${encodeURIComponent(id)}`
     ];
 
     let lastError: any = null;
@@ -388,8 +392,9 @@ export class JobService {
   public static async deleteJob(id: string, user: string = 'Super Admin'): Promise<boolean> {
     const existing = this.cachedJobs.find(j => j.id === id);
     const endpoints = [
-      `/api/admin/jobs/${encodeURIComponent(id)}`,
-      `/api/admin/jobs.php?id=${encodeURIComponent(id)}`
+      `/api/admin/jobs.php?id=${encodeURIComponent(id)}`,
+      '/api/admin/jobs.php',
+      `/api/admin/jobs/${encodeURIComponent(id)}`
     ];
 
     let lastError: any = null;

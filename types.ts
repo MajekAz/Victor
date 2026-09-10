@@ -50,6 +50,7 @@ export interface SalaryTier {
   hourlyRate: string;
   hours36Yearly: string;
   hours48Yearly: string;
+  notes?: string;
 }
 
 export interface Job {

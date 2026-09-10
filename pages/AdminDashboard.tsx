@@ -34,7 +34,7 @@ import {
   Loader2,
   ShieldCheck
 } from 'lucide-react';
-import { Job, JobType, WorkArrangement, JobStatus, SalaryPeriod, DuplicateMatch } from '../types.ts';
+import { Job, JobType, WorkArrangement, JobStatus, SalaryPeriod, DuplicateMatch, SalaryTier } from '../types.ts';
 import { JobService } from '../services/jobService.ts';
 import { AuthService } from '../services/authService.ts';
 import { AnalyticsOverview } from '../components/admin/AnalyticsOverview.tsx';
@@ -83,11 +83,13 @@ export const AdminDashboard: React.FC = () => {
     region: string;
     country: string;
     postcode: string;
+    regionsMentioned: string;
     salaryMin: string;
     salaryMax: string;
     salaryText: string;
     salaryPeriod: SalaryPeriod;
     currency: string;
+    salaryTiers: SalaryTier[];
     jobType: JobType;
     workArrangement: WorkArrangement;
     category: string;
@@ -102,6 +104,7 @@ export const AdminDashboard: React.FC = () => {
     workingHours: string;
     sourceName: string;
     sourceUrl: string;
+    applicationMethod: 'promarch' | 'external';
     applicationUrl: string;
     datePosted: string;
     closingDate: string;
@@ -117,11 +120,13 @@ export const AdminDashboard: React.FC = () => {
     region: 'Greater London',
     country: 'United Kingdom',
     postcode: '',
+    regionsMentioned: '',
     salaryMin: '',
     salaryMax: '',
     salaryText: '',
     salaryPeriod: 'per year',
     currency: '£',
+    salaryTiers: [],
     jobType: 'Full-time',
     workArrangement: 'On-site',
     category: 'Care Sector',
@@ -136,7 +141,8 @@ export const AdminDashboard: React.FC = () => {
     workingHours: '',
     sourceName: 'Promarch Consulting',
     sourceUrl: 'https://promarchconsulting.co.uk',
-    applicationUrl: 'https://promarchconsulting.co.uk/contact',
+    applicationMethod: 'promarch',
+    applicationUrl: '',
     datePosted: new Date().toISOString().split('T')[0],
     closingDate: '',
     featured: false,
@@ -256,11 +262,13 @@ export const AdminDashboard: React.FC = () => {
       region: 'Greater London',
       country: 'United Kingdom',
       postcode: '',
+      regionsMentioned: '',
       salaryMin: '',
       salaryMax: '',
       salaryText: '',
       salaryPeriod: 'per year',
       currency: '£',
+      salaryTiers: [],
       jobType: 'Full-time',
       workArrangement: 'On-site',
       category: 'Care Sector',
@@ -275,7 +283,8 @@ export const AdminDashboard: React.FC = () => {
       workingHours: '',
       sourceName: 'Promarch Consulting',
       sourceUrl: 'https://promarchconsulting.co.uk',
-      applicationUrl: 'https://promarchconsulting.co.uk/contact',
+      applicationMethod: 'promarch',
+      applicationUrl: '',
       datePosted: new Date().toISOString().split('T')[0],
       closingDate: '',
       featured: false,
@@ -287,9 +296,42 @@ export const AdminDashboard: React.FC = () => {
     setActiveTab('create');
   };
 
+  // Salary Tier State Handlers
+  const handleAddSalaryTier = () => {
+    setFormData(prev => ({
+      ...prev,
+      salaryTiers: [
+        ...prev.salaryTiers,
+        {
+          role: '',
+          hourlyRate: '',
+          hours36Yearly: '',
+          hours48Yearly: '',
+          notes: ''
+        }
+      ]
+    }));
+  };
+
+  const handleRemoveSalaryTier = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      salaryTiers: prev.salaryTiers.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleUpdateSalaryTier = (index: number, field: keyof SalaryTier, val: string) => {
+    setFormData(prev => {
+      const copy = [...prev.salaryTiers];
+      copy[index] = { ...copy[index], [field]: val };
+      return { ...prev, salaryTiers: copy };
+    });
+  };
+
   // Switch to Edit Existing Job
   const handleStartEditJob = (job: Job) => {
     setEditingJobId(job.id);
+    const hasExternalUrl = Boolean(job.applicationUrl && job.applicationUrl.trim() && !job.applicationUrl.includes('/contact'));
     setFormData({
       title: job.title,
       slug: job.slug,
@@ -300,11 +342,13 @@ export const AdminDashboard: React.FC = () => {
       region: job.region || '',
       country: job.country || 'United Kingdom',
       postcode: job.postcode || '',
+      regionsMentioned: job.regionsMentioned || '',
       salaryMin: job.salaryMin ? String(job.salaryMin) : '',
       salaryMax: job.salaryMax ? String(job.salaryMax) : '',
       salaryText: job.salaryText || '',
       salaryPeriod: job.salaryPeriod || 'per year',
       currency: job.currency || '£',
+      salaryTiers: job.salaryTiers ? job.salaryTiers.map(t => ({ ...t })) : [],
       jobType: job.jobType,
       workArrangement: job.workArrangement,
       category: job.category,
@@ -319,7 +363,8 @@ export const AdminDashboard: React.FC = () => {
       workingHours: job.workingHours || '',
       sourceName: job.sourceName || 'Promarch Consulting',
       sourceUrl: job.sourceUrl || '',
-      applicationUrl: job.applicationUrl || 'https://promarchconsulting.co.uk/contact',
+      applicationMethod: hasExternalUrl ? 'external' : 'promarch',
+      applicationUrl: job.applicationUrl || '',
       datePosted: job.datePosted ? job.datePosted.split('T')[0] : new Date().toISOString().split('T')[0],
       closingDate: job.closingDate ? job.closingDate.split('T')[0] : '',
       featured: job.featured,
@@ -466,9 +511,17 @@ export const AdminDashboard: React.FC = () => {
       setFormError('Location is required.');
       return;
     }
-    if (!formData.applicationUrl.trim()) {
-      setFormError('Application URL is required.');
-      return;
+
+    let finalApplicationUrl = '';
+    if (formData.applicationMethod === 'external') {
+      if (!formData.applicationUrl.trim()) {
+        setFormError('Application URL is required when Direct External Application is selected.');
+        return;
+      }
+      finalApplicationUrl = formData.applicationUrl.trim();
+    } else {
+      // Register Interest via Promarch Consulting
+      finalApplicationUrl = '';
     }
 
     try {
@@ -497,6 +550,16 @@ export const AdminDashboard: React.FC = () => {
         .map(s => s.trim())
         .filter(Boolean);
 
+      const cleanedSalaryTiers = formData.salaryTiers
+        .filter(t => t.role && t.role.trim())
+        .map(t => ({
+          role: t.role.trim(),
+          hourlyRate: t.hourlyRate?.trim() || '',
+          hours36Yearly: t.hours36Yearly?.trim() || '',
+          hours48Yearly: t.hours48Yearly?.trim() || '',
+          notes: t.notes?.trim() || ''
+        }));
+
       const jobPayload: any = {
         title: formData.title.trim(),
         slug: formData.slug.trim() || undefined,
@@ -507,11 +570,13 @@ export const AdminDashboard: React.FC = () => {
         region: formData.region.trim() || undefined,
         country: formData.country.trim() || 'United Kingdom',
         postcode: formData.postcode.trim() || undefined,
+        regionsMentioned: formData.regionsMentioned.trim() || undefined,
         salaryMin: formData.salaryMin ? Number(formData.salaryMin) : undefined,
         salaryMax: formData.salaryMax ? Number(formData.salaryMax) : undefined,
         salaryText: formData.salaryText.trim() || undefined,
         salaryPeriod: formData.salaryPeriod,
         currency: formData.currency,
+        salaryTiers: cleanedSalaryTiers.length > 0 ? cleanedSalaryTiers : undefined,
         jobType: formData.jobType,
         workArrangement: formData.workArrangement,
         category: formData.category,
@@ -526,7 +591,7 @@ export const AdminDashboard: React.FC = () => {
         workingHours: formData.workingHours.trim() || undefined,
         sourceName: formData.sourceName.trim() || 'Promarch Consulting',
         sourceUrl: formData.sourceUrl.trim() || undefined,
-        applicationUrl: formData.applicationUrl.trim(),
+        applicationUrl: finalApplicationUrl,
         datePosted: formData.datePosted ? new Date(formData.datePosted).toISOString() : new Date().toISOString(),
         closingDate: formData.closingDate ? new Date(formData.closingDate).toISOString() : undefined,
         featured: formData.featured,
@@ -1290,6 +1355,48 @@ export const AdminDashboard: React.FC = () => {
                       className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs sm:text-sm text-slate-900 outline-none focus:ring-2 focus:ring-blue-600"
                     />
                   </div>
+
+                  {/* Region / County */}
+                  <div>
+                    <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1.5">
+                      Region / County
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.region}
+                      onChange={(e) => setFormData({ ...formData, region: e.target.value })}
+                      placeholder="e.g. Greater London"
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs sm:text-sm text-slate-900 outline-none focus:ring-2 focus:ring-blue-600"
+                    />
+                  </div>
+
+                  {/* Postcode */}
+                  <div>
+                    <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1.5">
+                      Postcode / Area Code
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.postcode}
+                      onChange={(e) => setFormData({ ...formData, postcode: e.target.value })}
+                      placeholder="e.g. EC2V 6AU or N15 3TH"
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs sm:text-sm text-slate-900 outline-none focus:ring-2 focus:ring-blue-600"
+                    />
+                  </div>
+
+                  {/* Specific Boroughs / Regions Mentioned */}
+                  <div className="md:col-span-2">
+                    <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1.5">
+                      Boroughs / Target Locations Mentioned (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.regionsMentioned}
+                      onChange={(e) => setFormData({ ...formData, regionsMentioned: e.target.value })}
+                      placeholder="e.g. Haringey, Greater London or City of London, Greater London"
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs sm:text-sm text-slate-900 outline-none focus:ring-2 focus:ring-blue-600"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -1348,50 +1455,207 @@ export const AdminDashboard: React.FC = () => {
                       ))}
                     </select>
                   </div>
+
+                  {/* Working Hours */}
+                  <div className="sm:col-span-3">
+                    <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1.5">
+                      Working Hours / Shift Schedule
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.workingHours}
+                      onChange={(e) => setFormData({ ...formData, workingHours: e.target.value })}
+                      placeholder="e.g. 40 hours per week (12-month Fixed Term Contract) or Full-time, Permanent (37.5 hours)"
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs sm:text-sm font-semibold text-slate-900 outline-none focus:ring-2 focus:ring-blue-600"
+                    />
+                  </div>
                 </div>
 
                 {/* Salary Details */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-slate-100">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 pt-4 border-t border-slate-100">
                   <div>
                     <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1.5">
-                      Salary Minimum (£)
+                      Currency
+                    </label>
+                    <select
+                      value={formData.currency}
+                      onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs sm:text-sm font-bold text-slate-800 outline-none focus:ring-2 focus:ring-blue-600"
+                    >
+                      <option value="£">£ (GBP)</option>
+                      <option value="$">$ (USD)</option>
+                      <option value="€">€ (EUR)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1.5">
+                      Salary Period
+                    </label>
+                    <select
+                      value={formData.salaryPeriod}
+                      onChange={(e) => setFormData({ ...formData, salaryPeriod: e.target.value as SalaryPeriod })}
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs sm:text-sm font-bold text-slate-800 outline-none focus:ring-2 focus:ring-blue-600"
+                    >
+                      <option value="per year">per year</option>
+                      <option value="per hour">per hour</option>
+                      <option value="per day">per day</option>
+                      <option value="per month">per month</option>
+                      <option value="competitive">competitive</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1.5">
+                      Salary Minimum
                     </label>
                     <input
                       type="number"
                       step="any"
                       value={formData.salaryMin}
                       onChange={(e) => setFormData({ ...formData, salaryMin: e.target.value })}
-                      placeholder="e.g. 28000"
+                      placeholder="e.g. 50000"
                       className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs sm:text-sm font-semibold text-slate-900 outline-none focus:ring-2 focus:ring-blue-600"
                     />
                   </div>
 
                   <div>
                     <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1.5">
-                      Salary Maximum (£)
+                      Salary Maximum
                     </label>
                     <input
                       type="number"
                       step="any"
                       value={formData.salaryMax}
                       onChange={(e) => setFormData({ ...formData, salaryMax: e.target.value })}
-                      placeholder="e.g. 32000"
+                      placeholder="e.g. 55000"
                       className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs sm:text-sm font-semibold text-slate-900 outline-none focus:ring-2 focus:ring-blue-600"
                     />
                   </div>
 
                   <div>
                     <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1.5">
-                      Salary Display String
+                      Salary Display Text
                     </label>
                     <input
                       type="text"
                       value={formData.salaryText}
                       onChange={(e) => setFormData({ ...formData, salaryText: e.target.value })}
-                      placeholder="e.g. £28,000 - £32,000 per year"
+                      placeholder="e.g. £50,000 - £55,000 per year"
                       className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs sm:text-sm font-semibold text-slate-900 outline-none focus:ring-2 focus:ring-blue-600"
                     />
                   </div>
+                </div>
+
+                {/* Structured Salary Tiers / Pay Bands */}
+                <div className="pt-6 border-t border-slate-100 space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                      <h4 className="text-xs font-black uppercase tracking-wider text-slate-900 flex items-center gap-2">
+                        <span>Structured Pay Tiers / Shift Bands</span>
+                        <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
+                          {formData.salaryTiers.length} added
+                        </span>
+                      </h4>
+                      <p className="text-[11px] text-slate-500 mt-0.5">
+                        Define role-specific rates, night/weekend premiums, or structured annual bands (36h / 48h equivalents).
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleAddSalaryTier}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-bold rounded-xl transition-colors self-start sm:self-auto"
+                    >
+                      <Plus size={14} />
+                      <span>Add Salary Tier</span>
+                    </button>
+                  </div>
+
+                  {formData.salaryTiers.length === 0 ? (
+                    <div className="bg-slate-50 rounded-2xl border border-dashed border-slate-200 p-6 text-center">
+                      <p className="text-xs text-slate-500 font-medium">No structured salary tiers added. Click &quot;Add Salary Tier&quot; if this position has multi-level pay rates or hourly shift options.</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {formData.salaryTiers.map((tier, idx) => (
+                        <div key={idx} className="bg-slate-50 rounded-2xl p-4 border border-slate-200 space-y-3">
+                          <div className="flex items-center justify-between pb-2 border-b border-slate-200/80">
+                            <span className="text-xs font-bold text-slate-700">Salary Tier #{idx + 1}</span>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveSalaryTier(idx)}
+                              className="text-red-500 hover:text-red-700 text-xs flex items-center gap-1 font-bold"
+                            >
+                              <Trash2 size={13} />
+                              <span>Remove Tier</span>
+                            </button>
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                            <div className="sm:col-span-2">
+                              <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                                Role / Shift Label *
+                              </label>
+                              <input
+                                type="text"
+                                value={tier.role}
+                                onChange={(e) => handleUpdateSalaryTier(idx, 'role', e.target.value)}
+                                placeholder="e.g. Healthcare Support Worker (Day)"
+                                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:ring-1 focus:ring-blue-600"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                                Hourly / Base Rate
+                              </label>
+                              <input
+                                type="text"
+                                value={tier.hourlyRate}
+                                onChange={(e) => handleUpdateSalaryTier(idx, 'hourlyRate', e.target.value)}
+                                placeholder="e.g. £13.50 / hour"
+                                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 outline-none focus:ring-1 focus:ring-blue-600"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                                Annual (36 hrs/wk)
+                              </label>
+                              <input
+                                type="text"
+                                value={tier.hours36Yearly}
+                                onChange={(e) => handleUpdateSalaryTier(idx, 'hours36Yearly', e.target.value)}
+                                placeholder="e.g. £25,272"
+                                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 outline-none focus:ring-1 focus:ring-blue-600"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                                Annual (48 hrs/wk)
+                              </label>
+                              <input
+                                type="text"
+                                value={tier.hours48Yearly}
+                                onChange={(e) => handleUpdateSalaryTier(idx, 'hours48Yearly', e.target.value)}
+                                placeholder="e.g. £33,696"
+                                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 outline-none focus:ring-1 focus:ring-blue-600"
+                              />
+                            </div>
+                            <div className="sm:col-span-2 md:col-span-3">
+                              <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                                Tier Notes / Benefits (Optional)
+                              </label>
+                              <input
+                                type="text"
+                                value={tier.notes || ''}
+                                onChange={(e) => handleUpdateSalaryTier(idx, 'notes', e.target.value)}
+                                placeholder="e.g. Enhanced pension contribution and performance bonus"
+                                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 outline-none focus:ring-1 focus:ring-blue-600"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -1491,33 +1755,105 @@ export const AdminDashboard: React.FC = () => {
                   <span>4. Application Routing & Publishing</span>
                 </h3>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                {/* Application Method Selection */}
+                <div className="space-y-3">
+                  <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500">
+                    Candidate Application / Interest Method *
+                  </label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, applicationMethod: 'promarch', applicationUrl: '' }))}
+                      className={`p-4 rounded-2xl border text-left transition-all ${
+                        formData.applicationMethod === 'promarch'
+                          ? 'border-blue-600 bg-blue-50/50 ring-1 ring-blue-600'
+                          : 'border-slate-200 bg-slate-50 hover:bg-slate-100/70'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-black text-slate-900">Register Interest via Promarch</span>
+                        <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                          formData.applicationMethod === 'promarch' ? 'border-blue-600' : 'border-slate-300'
+                        }`}>
+                          {formData.applicationMethod === 'promarch' && <span className="w-2 h-2 rounded-full bg-blue-600" />}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 mt-1 font-medium">
+                        Candidates register interest directly through Promarch Consulting (e.g. healthcare, managed staffing roles).
+                      </p>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, applicationMethod: 'external' }))}
+                      className={`p-4 rounded-2xl border text-left transition-all ${
+                        formData.applicationMethod === 'external'
+                          ? 'border-blue-600 bg-blue-50/50 ring-1 ring-blue-600'
+                          : 'border-slate-200 bg-slate-50 hover:bg-slate-100/70'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-black text-slate-900">Direct External Application URL</span>
+                        <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                          formData.applicationMethod === 'external' ? 'border-blue-600' : 'border-slate-300'
+                        }`}>
+                          {formData.applicationMethod === 'external' && <span className="w-2 h-2 rounded-full bg-blue-600" />}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 mt-1 font-medium">
+                        Directs candidate to client portal, ATS, or corporate application page (e.g. Veolia, corporate clients).
+                      </p>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 pt-2">
+                  {formData.applicationMethod === 'external' ? (
+                    <div className="md:col-span-2">
+                      <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1.5">
+                        External Application URL (Destination for Apply Button) *
+                      </label>
+                      <input
+                        type="url"
+                        required={formData.applicationMethod === 'external'}
+                        value={formData.applicationUrl}
+                        onChange={(e) => {
+                          setFormData({ ...formData, applicationUrl: e.target.value });
+                          handleTitleOrUrlChange(formData.title, e.target.value);
+                        }}
+                        placeholder="https://client.careers.com/job/12345"
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-semibold text-slate-900 outline-none focus:ring-2 focus:ring-blue-600"
+                      />
+                    </div>
+                  ) : (
+                    <div className="md:col-span-2 p-3.5 bg-blue-50/50 border border-blue-100 rounded-2xl flex items-center gap-2.5 text-xs text-blue-900 font-medium">
+                      <CheckCircle2 size={16} className="text-blue-600 shrink-0" />
+                      <span>Candidates clicking &quot;Register Interest&quot; will be guided to submit their details directly to the Promarch recruitment team.</span>
+                    </div>
+                  )}
+
                   <div>
                     <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1.5">
-                      Application URL (Destination for Apply Button) *
+                      Source / Client Name
                     </label>
                     <input
-                      type="url"
-                      required
-                      value={formData.applicationUrl}
-                      onChange={(e) => {
-                        setFormData({ ...formData, applicationUrl: e.target.value });
-                        handleTitleOrUrlChange(formData.title, e.target.value);
-                      }}
-                      placeholder="https://promarchconsulting.co.uk/contact"
+                      type="text"
+                      value={formData.sourceName}
+                      onChange={(e) => setFormData({ ...formData, sourceName: e.target.value })}
+                      placeholder="e.g. Promarch Consulting, Veolia UK, or Alderstone"
                       className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-semibold text-slate-900 outline-none focus:ring-2 focus:ring-blue-600"
                     />
                   </div>
 
                   <div>
                     <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1.5">
-                      Source Name
+                      Source / Posting Reference URL (Optional)
                     </label>
                     <input
-                      type="text"
-                      value={formData.sourceName}
-                      onChange={(e) => setFormData({ ...formData, sourceName: e.target.value })}
-                      placeholder="e.g. Promarch Consulting or Indeed"
+                      type="url"
+                      value={formData.sourceUrl}
+                      onChange={(e) => setFormData({ ...formData, sourceUrl: e.target.value })}
+                      placeholder="https://example.com/original-posting"
                       className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-semibold text-slate-900 outline-none focus:ring-2 focus:ring-blue-600"
                     />
                   </div>
@@ -1535,9 +1871,20 @@ export const AdminDashboard: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1.5">
-                      Closing Date (Optional)
-                    </label>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                        Closing Date (Optional)
+                      </label>
+                      {formData.closingDate && (
+                        <button
+                          type="button"
+                          onClick={() => setFormData({ ...formData, closingDate: '' })}
+                          className="text-[10px] font-bold text-blue-600 hover:text-blue-800"
+                        >
+                          Clear (Ongoing)
+                        </button>
+                      )}
+                    </div>
                     <input
                       type="date"
                       value={formData.closingDate}
@@ -1548,7 +1895,7 @@ export const AdminDashboard: React.FC = () => {
                 </div>
 
                 {/* Status & Featured Toggles */}
-                <div className="pt-4 border-t border-slate-100 flex flex-wrap items-center gap-6">
+                <div className="pt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-4">
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="checkbox"
@@ -1558,6 +1905,19 @@ export const AdminDashboard: React.FC = () => {
                     />
                     <span className="text-xs font-bold text-slate-800">Feature this Vacancy on Homepage & Top of Search</span>
                   </label>
+
+                  <div className="flex items-center gap-2">
+                    <label className="text-[10px] font-black uppercase tracking-wider text-slate-500">Default Status:</label>
+                    <select
+                      value={formData.status}
+                      onChange={(e) => setFormData({ ...formData, status: e.target.value as JobStatus })}
+                      className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 outline-none"
+                    >
+                      <option value="published">Published</option>
+                      <option value="draft">Draft</option>
+                      <option value="archived">Archived</option>
+                    </select>
+                  </div>
                 </div>
               </div>
 

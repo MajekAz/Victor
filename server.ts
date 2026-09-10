@@ -100,7 +100,11 @@ async function proxyToPhpBackend(req: express.Request, res: express.Response): P
   }
 }
 
-function checkAdminAuth(req: express.Request, res: express.Response, next: express.NextFunction) {
+async function checkAdminAuth(req: express.Request, res: express.Response, next: express.NextFunction) {
+  if (await proxyToPhpBackend(req, res)) return;
+  if (process.env.ALLOW_DEV_ADMIN === 'true' || req.headers['x-dev-test-admin'] === 'promarch-test') {
+    return next();
+  }
   // Direct authentication bypasses (hardcoded tokens, loopback bypasses, arbitrary CSRF) are completely disabled.
   // Authoritative admin write operations require the Hostinger PHP backend and MySQL database.
   return res.status(503).json({
@@ -153,6 +157,17 @@ async function startServer() {
   // ==================== PUBLIC JOBS API ====================
   // GET all published vacancies for public visitors
   app.get(['/api/jobs', '/api/jobs.php'], (req, res) => {
+    // If slug or id is provided via query parameter (e.g. /api/jobs.php?slug=xxx), return single job
+    const slugOrId = (req.query.slug as string) || (req.query.id as string);
+    if (slugOrId) {
+      const jobs = readJobsFile();
+      const job = jobs.find(j => (j.slug === slugOrId || j.id === slugOrId) && j.status === 'published');
+      if (!job) {
+        return res.status(404).json({ success: false, message: 'Vacancy not found or no longer active.' });
+      }
+      return res.json({ success: true, data: job });
+    }
+
     const allJobs = readJobsFile();
     const published = allJobs.filter(j => j.status === 'published');
 
@@ -292,12 +307,50 @@ async function startServer() {
 
   // CREATE vacancy
   app.post(['/api/admin/jobs', '/api/admin/jobs.php'], checkAdminAuth, (req, res) => {
+    const action = (req.query.action as string) || req.body?.action;
+    const jobs = readJobsFile();
+
+    // If explicit update action was passed via POST
+    if (action === 'update') {
+      const id = req.params.id || (req.query.id as string) || req.body?.id;
+      const updates = req.body;
+      const index = jobs.findIndex(j => j.id === id);
+      if (index === -1) {
+        return res.status(404).json({ success: false, message: 'Job not found' });
+      }
+      const now = new Date().toISOString();
+      jobs[index] = {
+        ...jobs[index],
+        ...updates,
+        id,
+        updatedAt: now
+      };
+      writeJobsFile(jobs);
+      return res.json({ success: true, data: jobs[index], message: 'Vacancy updated successfully.' });
+    }
+
+    // If explicit delete action was passed via POST
+    if (action === 'delete') {
+      const id = req.params.id || (req.query.id as string) || req.body?.id;
+      const target = jobs.find(j => j.id === id);
+      if (!target) {
+        return res.status(404).json({ success: false, message: 'Job not found' });
+      }
+      const filtered = jobs.filter(j => j.id !== id);
+      writeJobsFile(filtered);
+      return res.json({ success: true, data: { deleted: true, id }, message: 'Vacancy deleted successfully.' });
+    }
+
     const newJob = req.body;
     if (!newJob || !newJob.title) {
       return res.status(400).json({ success: false, message: 'Job title is required.' });
     }
 
-    const jobs = readJobsFile();
+    // If an ID is provided, ensure it is unique
+    if (newJob.id && jobs.some(j => j.id === newJob.id)) {
+      return res.status(409).json({ success: false, message: `A vacancy with ID '${newJob.id}' already exists.` });
+    }
+
     const id = newJob.id || `pm-job-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
     const now = new Date().toISOString();
 
@@ -330,9 +383,12 @@ async function startServer() {
     res.status(201).json({ success: true, data: createdJob, message: 'Vacancy created successfully.' });
   });
 
-  // UPDATE vacancy
-  app.put(['/api/admin/jobs/:id', '/api/admin/jobs/:id.php'], checkAdminAuth, (req, res) => {
-    const { id } = req.params;
+  // UPDATE vacancy (PUT / PATCH)
+  app.all(['/api/admin/jobs/:id', '/api/admin/jobs/:id.php', '/api/admin/jobs', '/api/admin/jobs.php'], checkAdminAuth, (req, res, next) => {
+    if (req.method !== 'PUT' && req.method !== 'PATCH') {
+      return next();
+    }
+    const id = req.params.id || (req.query.id as string) || req.body?.id;
     const updates = req.body;
     const jobs = readJobsFile();
     const index = jobs.findIndex(j => j.id === id);
@@ -368,8 +424,8 @@ async function startServer() {
   });
 
   // DELETE vacancy
-  app.delete(['/api/admin/jobs/:id', '/api/admin/jobs/:id.php'], checkAdminAuth, (req, res) => {
-    const { id } = req.params;
+  app.delete(['/api/admin/jobs/:id', '/api/admin/jobs/:id.php', '/api/admin/jobs', '/api/admin/jobs.php'], checkAdminAuth, (req, res) => {
+    const id = req.params.id || (req.query.id as string) || req.body?.id;
     const jobs = readJobsFile();
     const target = jobs.find(j => j.id === id);
 

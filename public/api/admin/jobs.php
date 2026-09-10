@@ -185,6 +185,9 @@ if ($method === 'GET') {
 // ------------------------------------------------------------------------------
 $rawInput = file_get_contents('php://input');
 $data = json_decode($rawInput, true) ?? [];
+if (empty($action) && !empty($data['action'])) {
+    $action = $data['action'];
+}
 
 // Helper to sanitize array of strings
 function sanitizeJsonArray($items): string {
@@ -218,13 +221,24 @@ if ($method === 'DELETE' || $action === 'delete') {
 }
 
 // 2. CREATE JOB
-if ($action === 'create' || ($method === 'POST' && empty($action) && empty($data['id']))) {
+if ($action === 'create' || ($method === 'POST' && empty($action))) {
     $title = sanitizeString($data['title'] ?? '');
     if (empty($title)) {
         sendResponse(false, null, 'Job title is required.', 400);
     }
 
-    $id = !empty($data['id']) ? sanitizeString($data['id']) : 'pm-job-' . time() . '-' . rand(100, 999);
+    $id = !empty($data['id']) ? sanitizeString($data['id']) : '';
+    if (!empty($id)) {
+        // Safe duplicate check: ensure supplied ID does not already exist
+        $idCheck = $pdo->prepare("SELECT id FROM jobs WHERE id = :id LIMIT 1");
+        $idCheck->execute([':id' => $id]);
+        if ($idCheck->fetch()) {
+            sendResponse(false, null, "A vacancy with ID '{$id}' already exists.", 409);
+        }
+    } else {
+        $id = 'pm-job-' . time() . '-' . rand(100, 999);
+    }
+
     $slug = !empty($data['slug']) ? sanitizeSlug($data['slug']) : sanitizeSlug($title . '-' . ($data['company'] ?? 'promarch'));
 
     // Check slug uniqueness
@@ -322,7 +336,7 @@ if ($action === 'create' || ($method === 'POST' && empty($action) && empty($data
 }
 
 // 3. UPDATE JOB
-if ($action === 'update' || ($method === 'PUT') || ($method === 'POST' && !empty($data['id']) && $action !== 'status' && $action !== 'feature' && $action !== 'duplicate' && $action !== 'renew' && $action !== 'bulk')) {
+if ($action === 'update' || $method === 'PUT' || $method === 'PATCH') {
     $id = $_GET['id'] ?? $data['id'] ?? '';
     if (empty($id)) {
         sendResponse(false, null, 'Job ID is required for update.', 400);
