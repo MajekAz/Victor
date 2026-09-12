@@ -593,7 +593,7 @@ export const AdminDashboard: React.FC = () => {
         skills: skills.length > 0 ? skills : undefined,
         benefits: benefits.length > 0 ? benefits : undefined,
         workingHours: formData.workingHours.trim() || undefined,
-        jobCardCaption: formData.jobCardCaption.trim() || undefined,
+        jobCardCaption: formData.jobCardCaption?.trim() || null,
         sourceName: formData.sourceName.trim() || 'Promarch Consulting',
         sourceUrl: formData.sourceUrl.trim() || undefined,
         applicationUrl: finalApplicationUrl,
@@ -1488,7 +1488,7 @@ export const AdminDashboard: React.FC = () => {
                     <input
                       id="admin-job-card-caption"
                       type="text"
-                      value={formData.jobCardCaption}
+                      value={formData.jobCardCaption || ''}
                       onChange={(e) => setFormData({ ...formData, jobCardCaption: e.target.value })}
                       placeholder="e.g. 36-hour and 48-hour contracts available"
                       className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs sm:text-sm font-semibold text-slate-900 outline-none focus:ring-2 focus:ring-blue-600"

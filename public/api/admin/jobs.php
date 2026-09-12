@@ -37,17 +37,8 @@ function logAdminActivity(PDO $pdo, string $action, ?string $jobId, ?string $job
     }
 }
 
-// Fetch single job helper with tiers
-function fetchAdminJob(PDO $pdo, string $id): ?array {
-    $stmt = $pdo->prepare("SELECT * FROM jobs WHERE id = :id LIMIT 1");
-    $stmt->execute([':id' => $id]);
-    $row = $stmt->fetch();
-    if (!$row) return null;
-
-    $tierStmt = $pdo->prepare("SELECT * FROM job_salary_tiers WHERE job_id = :id ORDER BY display_order ASC, id ASC");
-    $tierStmt->execute([':id' => $id]);
-    $tiers = $tierStmt->fetchAll();
-
+// Format single admin job row helper
+function formatAdminJobRow(array $row, array $tiers = []): array {
     return [
         'id'               => $row['id'],
         'title'            => $row['title'],
@@ -76,7 +67,7 @@ function fetchAdminJob(PDO $pdo, string $id): ?array {
         'skills'           => !empty($row['skills']) ? json_decode($row['skills'], true) : [],
         'benefits'         => !empty($row['benefits']) ? json_decode($row['benefits'], true) : [],
         'workingHours'     => $row['working_hours'] ?? '',
-        'jobCardCaption'   => $row['job_card_caption'] ?? '',
+        'jobCardCaption'   => !empty($row['job_card_caption']) ? $row['job_card_caption'] : null,
         'regionsMentioned' => $row['regions_mentioned'] ?? '',
         'sourceName'       => $row['source_name'] ?? '',
         'sourceUrl'        => $row['source_url'] ?? '',
@@ -103,6 +94,20 @@ function fetchAdminJob(PDO $pdo, string $id): ?array {
     ];
 }
 
+// Fetch single job helper with tiers
+function fetchAdminJob(PDO $pdo, string $id): ?array {
+    $stmt = $pdo->prepare("SELECT * FROM jobs WHERE id = :id LIMIT 1");
+    $stmt->execute([':id' => $id]);
+    $row = $stmt->fetch();
+    if (!$row) return null;
+
+    $tierStmt = $pdo->prepare("SELECT * FROM job_salary_tiers WHERE job_id = :id ORDER BY display_order ASC, id ASC");
+    $tierStmt->execute([':id' => $id]);
+    $tiers = $tierStmt->fetchAll();
+
+    return formatAdminJobRow($row, $tiers);
+}
+
 // ------------------------------------------------------------------------------
 // GET: Fetch all jobs for Admin Dashboard
 // ------------------------------------------------------------------------------
@@ -124,59 +129,7 @@ if ($method === 'GET') {
     $jobs = [];
     foreach ($jobRows as $row) {
         $tiers = $allTiers[$row['id']] ?? [];
-        $jobs[] = [
-            'id'               => $row['id'],
-            'title'            => $row['title'],
-            'slug'             => $row['slug'],
-            'company'          => $row['company'],
-            'companyLogo'      => $row['company_logo'] ?? '',
-            'location'         => $row['location'],
-            'city'             => $row['city'] ?? '',
-            'region'           => $row['region'] ?? '',
-            'country'          => $row['country'] ?? 'United Kingdom',
-            'postcode'         => $row['postcode'] ?? '',
-            'salaryMin'        => $row['salary_min'] !== null ? (float)$row['salary_min'] : null,
-            'salaryMax'        => $row['salary_max'] !== null ? (float)$row['salary_max'] : null,
-            'salaryText'       => $row['salary_text'] ?? '',
-            'salaryPeriod'     => $row['salary_period'] ?? 'per hour',
-            'currency'         => $row['currency'] ?? '£',
-            'jobType'          => $row['job_type'] ?? 'Contract',
-            'workArrangement'  => $row['work_arrangement'] ?? 'On-site',
-            'category'         => $row['category'],
-            'shortDescription' => $row['short_description'],
-            'fullDescription'  => $row['full_description'] ?? '',
-            'responsibilities' => !empty($row['responsibilities']) ? json_decode($row['responsibilities'], true) : [],
-            'requirements'     => !empty($row['requirements']) ? json_decode($row['requirements'], true) : [],
-            'qualifications'   => !empty($row['qualifications']) ? json_decode($row['qualifications'], true) : [],
-            'experience'       => $row['experience'] ?? '',
-            'skills'           => !empty($row['skills']) ? json_decode($row['skills'], true) : [],
-            'benefits'         => !empty($row['benefits']) ? json_decode($row['benefits'], true) : [],
-            'workingHours'     => $row['working_hours'] ?? '',
-            'jobCardCaption'   => $row['job_card_caption'] ?? '',
-            'regionsMentioned' => $row['regions_mentioned'] ?? '',
-            'sourceName'       => $row['source_name'] ?? '',
-            'sourceUrl'        => $row['source_url'] ?? '',
-            'applicationUrl'   => $row['application_url'] ?? '',
-            'datePosted'       => $row['date_posted'] ?? $row['created_at'],
-            'closingDate'      => $row['closing_date'] ?? null,
-            'featured'         => (bool)$row['featured'],
-            'status'           => $row['status'],
-            'createdAt'        => $row['created_at'],
-            'updatedAt'        => $row['updated_at'],
-            'createdBy'        => $row['created_by'] ?? '',
-            'updatedBy'        => $row['updated_by'] ?? '',
-            'views'            => (int)($row['views'] ?? 0),
-            'applyClicks'      => (int)($row['apply_clicks'] ?? 0),
-            'salaryTiers'      => array_map(function($t) {
-                return [
-                    'role'          => $t['role_label'],
-                    'hourlyRate'    => $t['hourly_rate'],
-                    'hours36Yearly' => $t['annual_36_hours'] ?? '',
-                    'hours48Yearly' => $t['annual_48_hours'] ?? '',
-                    'notes'         => $t['salary_notes'] ?? ''
-                ];
-            }, $tiers)
-        ];
+        $jobs[] = formatAdminJobRow($row, $tiers);
     }
 
     sendResponse(true, $jobs);
@@ -253,6 +206,14 @@ if ($action === 'create' || ($method === 'POST' && empty($action))) {
     $now = date('Y-m-d H:i:s');
     $closing = !empty($data['closingDate']) ? date('Y-m-d H:i:s', strtotime($data['closingDate'])) : null;
 
+    $jobCardCaption = isset($data['jobCardCaption'])
+        ? trim((string)$data['jobCardCaption'])
+        : null;
+
+    if ($jobCardCaption === '') {
+        $jobCardCaption = null;
+    }
+
     $stmt = $pdo->prepare("
         INSERT INTO jobs (
             id, title, slug, company, company_logo, location, city, region, postcode, country,
@@ -299,7 +260,7 @@ if ($action === 'create' || ($method === 'POST' && empty($action))) {
         ':skills'            => sanitizeJsonArray($data['skills'] ?? []),
         ':benefits'          => sanitizeJsonArray($data['benefits'] ?? []),
         ':working_hours'     => sanitizeString($data['workingHours'] ?? ''),
-        ':job_card_caption'  => sanitizeString($data['jobCardCaption'] ?? ''),
+        ':job_card_caption'  => $jobCardCaption,
         ':regions_mentioned' => sanitizeString($data['regionsMentioned'] ?? ''),
         ':source_name'       => sanitizeString($data['sourceName'] ?? ''),
         ':source_url'        => sanitizeString($data['sourceUrl'] ?? ''),
@@ -394,6 +355,16 @@ if ($action === 'update' || $method === 'PUT' || $method === 'PATCH') {
         WHERE id = :id
     ");
 
+    // Determine job_card_caption (supports setting, changing, and clearing back to NULL)
+    if (array_key_exists('jobCardCaption', $data)) {
+        $jobCardCaption = $data['jobCardCaption'] !== null ? trim((string)$data['jobCardCaption']) : null;
+        if ($jobCardCaption === '') {
+            $jobCardCaption = null;
+        }
+    } else {
+        $jobCardCaption = !empty($existing['jobCardCaption']) ? $existing['jobCardCaption'] : null;
+    }
+
     $stmt->execute([
         ':id'                => $id,
         ':title'             => $title,
@@ -422,7 +393,7 @@ if ($action === 'update' || $method === 'PUT' || $method === 'PATCH') {
         ':skills'            => isset($data['skills']) ? sanitizeJsonArray($data['skills']) : json_encode($existing['skills']),
         ':benefits'          => isset($data['benefits']) ? sanitizeJsonArray($data['benefits']) : json_encode($existing['benefits']),
         ':working_hours'     => sanitizeString($data['workingHours'] ?? $existing['workingHours']),
-        ':job_card_caption'  => isset($data['jobCardCaption']) ? sanitizeString($data['jobCardCaption']) : ($existing['jobCardCaption'] ?? ''),
+        ':job_card_caption'  => $jobCardCaption,
         ':regions_mentioned' => sanitizeString($data['regionsMentioned'] ?? $existing['regionsMentioned']),
         ':source_name'       => sanitizeString($data['sourceName'] ?? $existing['sourceName']),
         ':source_url'        => sanitizeString($data['sourceUrl'] ?? $existing['sourceUrl']),
@@ -546,7 +517,7 @@ if ($action === 'duplicate') {
         ':skills'            => json_encode($existing['skills']),
         ':benefits'          => json_encode($existing['benefits']),
         ':working_hours'     => $existing['workingHours'],
-        ':job_card_caption'  => $existing['jobCardCaption'] ?? '',
+        ':job_card_caption'  => !empty($existing['jobCardCaption']) ? $existing['jobCardCaption'] : null,
         ':regions_mentioned' => $existing['regionsMentioned'],
         ':source_name'       => $existing['sourceName'],
         ':source_url'        => $existing['sourceUrl'],
