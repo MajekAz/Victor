@@ -54,6 +54,7 @@ CREATE TABLE IF NOT EXISTS `jobs` (
   `skills` LONGTEXT NULL COMMENT 'Stored as JSON array',
   `benefits` LONGTEXT NULL COMMENT 'Stored as JSON array',
   `working_hours` VARCHAR(255) NULL,
+  `job_card_caption` VARCHAR(255) NULL COMMENT 'Optional highlight badge displayed on public job card',
   `regions_mentioned` VARCHAR(255) NULL,
   `source_name` VARCHAR(255) NULL,
   `source_url` VARCHAR(500) NULL,

@@ -664,7 +664,7 @@ export class JobService {
       'id', 'title', 'slug', 'company', 'location', 'city', 'region', 'country', 'postcode',
       'salaryMin', 'salaryMax', 'salaryText', 'salaryPeriod', 'currency', 'jobType',
       'workArrangement', 'category', 'shortDescription', 'fullDescription', 'responsibilities',
-      'requirements', 'qualifications', 'skills', 'benefits', 'workingHours', 'sourceName',
+      'requirements', 'qualifications', 'skills', 'benefits', 'workingHours', 'jobCardCaption', 'sourceName',
       'sourceUrl', 'applicationUrl', 'datePosted', 'closingDate', 'featured', 'status', 'views', 'applyClicks'
     ];
 
@@ -700,6 +700,7 @@ export class JobService {
       escapeCsv(j.skills ? j.skills.join(', ') : ''),
       escapeCsv(j.benefits ? j.benefits.join(' | ') : ''),
       escapeCsv(j.workingHours),
+      escapeCsv(j.jobCardCaption),
       escapeCsv(j.sourceName),
       escapeCsv(j.sourceUrl),
       escapeCsv(j.applicationUrl),
@@ -721,7 +722,7 @@ export class JobService {
       'salaryMin', 'salaryMax', 'salaryText', 'salaryPeriod', 'jobType',
       'workArrangement', 'category', 'shortDescription', 'fullDescription',
       'responsibilities', 'requirements', 'qualifications', 'skills', 'benefits',
-      'workingHours', 'sourceName', 'applicationUrl', 'closingDate', 'featured', 'status'
+      'workingHours', 'jobCardCaption', 'sourceName', 'applicationUrl', 'closingDate', 'featured', 'status'
     ];
 
     const sampleRow = [
@@ -745,6 +746,7 @@ export class JobService {
       '"BSc Nursing or equivalent"',
       '"Critical Care, Medication Administration, Airway Management"',
       '"Weekly Pay | 36 & 48 Hour Contracts | Advanced Rotas"',
+      '"36 or 48 hours per week across flexible day/night shifts"',
       '"36-hour and 48-hour contracts available"',
       '"Muve Healthcare"',
       '"https://promarchconsulting.co.uk/contact"',
@@ -871,6 +873,7 @@ export class JobService {
         skills: splitComma(raw['skills']),
         benefits: splitPipe(raw['benefits']),
         workingHours: raw['workinghours'] || undefined,
+        jobCardCaption: raw['jobcardcaption'] || raw['contractcaption'] || raw['caption'] || undefined,
         sourceName: raw['sourcename'] || undefined,
         sourceUrl: raw['sourceurl'] || undefined,
         applicationUrl: raw['applicationurl'] || 'https://promarchconsulting.co.uk/contact',

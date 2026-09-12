@@ -185,8 +185,8 @@ export const JobCard: React.FC<JobCardProps> = ({ job, compact = false }) => {
           )}
         </div>
 
-        {/* 5, 6. Badges (Job Type, Work Arrangement, Category, Contract Hours) */}
-        <div className="flex flex-wrap gap-1.5 mb-3">
+        {/* 5, 6. Badges (Job Type, Work Arrangement, Category) */}
+        <div className="flex flex-wrap gap-1.5 mb-2.5">
           <span className="px-2.5 py-0.5 rounded-lg text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200/80">
             {job.jobType}
           </span>
@@ -196,12 +196,16 @@ export const JobCard: React.FC<JobCardProps> = ({ job, compact = false }) => {
           <span className="px-2.5 py-0.5 rounded-lg text-[11px] font-medium bg-slate-50 text-slate-600 border border-slate-200/60 truncate max-w-[150px]">
             {job.category}
           </span>
-          {job.workingHours && (
-            <span className="px-2.5 py-0.5 rounded-lg text-[11px] font-bold bg-amber-50 text-amber-900 border border-amber-200/80">
-              {job.workingHours}
-            </span>
-          )}
         </div>
+
+        {/* Highlighted Job Card Caption / Contract Badge */}
+        {Boolean(job.jobCardCaption && job.jobCardCaption.trim()) && (
+          <div className="mb-3">
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-lg text-[11px] font-bold bg-amber-50 text-amber-900 border border-amber-200/80">
+              {job.jobCardCaption!.trim()}
+            </span>
+          </div>
+        )}
 
         {/* 8. Short Description */}
         <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed mb-4 font-normal">

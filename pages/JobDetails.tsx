@@ -319,6 +319,15 @@ export const JobDetails: React.FC = () => {
                 </div>
               </div>
 
+              {/* Highlighted Contract Caption Badge */}
+              {Boolean(job.jobCardCaption && job.jobCardCaption.trim()) && (
+                <div className="mt-3.5 flex items-center gap-2">
+                  <span className="inline-flex items-center px-3 py-1 rounded-xl text-xs font-bold bg-amber-50 text-amber-900 border border-amber-200/80">
+                    {job.jobCardCaption!.trim()}
+                  </span>
+                </div>
+              )}
+
               {/* Status Warning / Closing Date Notice */}
               {isExpired ? (
                 <div className="mt-4 p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 flex items-center gap-2.5 text-xs font-semibold">

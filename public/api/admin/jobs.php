@@ -76,6 +76,7 @@ function fetchAdminJob(PDO $pdo, string $id): ?array {
         'skills'           => !empty($row['skills']) ? json_decode($row['skills'], true) : [],
         'benefits'         => !empty($row['benefits']) ? json_decode($row['benefits'], true) : [],
         'workingHours'     => $row['working_hours'] ?? '',
+        'jobCardCaption'   => $row['job_card_caption'] ?? '',
         'regionsMentioned' => $row['regions_mentioned'] ?? '',
         'sourceName'       => $row['source_name'] ?? '',
         'sourceUrl'        => $row['source_url'] ?? '',
@@ -151,6 +152,7 @@ if ($method === 'GET') {
             'skills'           => !empty($row['skills']) ? json_decode($row['skills'], true) : [],
             'benefits'         => !empty($row['benefits']) ? json_decode($row['benefits'], true) : [],
             'workingHours'     => $row['working_hours'] ?? '',
+            'jobCardCaption'   => $row['job_card_caption'] ?? '',
             'regionsMentioned' => $row['regions_mentioned'] ?? '',
             'sourceName'       => $row['source_name'] ?? '',
             'sourceUrl'        => $row['source_url'] ?? '',
@@ -256,14 +258,14 @@ if ($action === 'create' || ($method === 'POST' && empty($action))) {
             id, title, slug, company, company_logo, location, city, region, postcode, country,
             salary_min, salary_max, salary_text, salary_period, currency, job_type, work_arrangement,
             category, short_description, full_description, responsibilities, requirements, qualifications,
-            experience, skills, benefits, working_hours, regions_mentioned, source_name, source_url,
+            experience, skills, benefits, working_hours, job_card_caption, regions_mentioned, source_name, source_url,
             application_url, date_posted, closing_date, featured, status, created_at, updated_at,
             created_by, updated_by
         ) VALUES (
             :id, :title, :slug, :company, :company_logo, :location, :city, :region, :postcode, :country,
             :salary_min, :salary_max, :salary_text, :salary_period, :currency, :job_type, :work_arrangement,
             :category, :short_description, :full_description, :responsibilities, :requirements, :qualifications,
-            :experience, :skills, :benefits, :working_hours, :regions_mentioned, :source_name, :source_url,
+            :experience, :skills, :benefits, :working_hours, :job_card_caption, :regions_mentioned, :source_name, :source_url,
             :application_url, :date_posted, :closing_date, :featured, :status, :created_at, :updated_at,
             :created_by, :updated_by
         )
@@ -297,6 +299,7 @@ if ($action === 'create' || ($method === 'POST' && empty($action))) {
         ':skills'            => sanitizeJsonArray($data['skills'] ?? []),
         ':benefits'          => sanitizeJsonArray($data['benefits'] ?? []),
         ':working_hours'     => sanitizeString($data['workingHours'] ?? ''),
+        ':job_card_caption'  => sanitizeString($data['jobCardCaption'] ?? ''),
         ':regions_mentioned' => sanitizeString($data['regionsMentioned'] ?? ''),
         ':source_name'       => sanitizeString($data['sourceName'] ?? ''),
         ':source_url'        => sanitizeString($data['sourceUrl'] ?? ''),
@@ -378,6 +381,7 @@ if ($action === 'update' || $method === 'PUT' || $method === 'PATCH') {
             skills = :skills,
             benefits = :benefits,
             working_hours = :working_hours,
+            job_card_caption = :job_card_caption,
             regions_mentioned = :regions_mentioned,
             source_name = :source_name,
             source_url = :source_url,
@@ -418,6 +422,7 @@ if ($action === 'update' || $method === 'PUT' || $method === 'PATCH') {
         ':skills'            => isset($data['skills']) ? sanitizeJsonArray($data['skills']) : json_encode($existing['skills']),
         ':benefits'          => isset($data['benefits']) ? sanitizeJsonArray($data['benefits']) : json_encode($existing['benefits']),
         ':working_hours'     => sanitizeString($data['workingHours'] ?? $existing['workingHours']),
+        ':job_card_caption'  => isset($data['jobCardCaption']) ? sanitizeString($data['jobCardCaption']) : ($existing['jobCardCaption'] ?? ''),
         ':regions_mentioned' => sanitizeString($data['regionsMentioned'] ?? $existing['regionsMentioned']),
         ':source_name'       => sanitizeString($data['sourceName'] ?? $existing['sourceName']),
         ':source_url'        => sanitizeString($data['sourceUrl'] ?? $existing['sourceUrl']),
@@ -501,14 +506,14 @@ if ($action === 'duplicate') {
             id, title, slug, company, company_logo, location, city, region, postcode, country,
             salary_min, salary_max, salary_text, salary_period, currency, job_type, work_arrangement,
             category, short_description, full_description, responsibilities, requirements, qualifications,
-            experience, skills, benefits, working_hours, regions_mentioned, source_name, source_url,
+            experience, skills, benefits, working_hours, job_card_caption, regions_mentioned, source_name, source_url,
             application_url, date_posted, closing_date, featured, status, created_at, updated_at,
             created_by, updated_by
         ) VALUES (
             :id, :title, :slug, :company, :company_logo, :location, :city, :region, :postcode, :country,
             :salary_min, :salary_max, :salary_text, :salary_period, :currency, :job_type, :work_arrangement,
             :category, :short_description, :full_description, :responsibilities, :requirements, :qualifications,
-            :experience, :skills, :benefits, :working_hours, :regions_mentioned, :source_name, :source_url,
+            :experience, :skills, :benefits, :working_hours, :job_card_caption, :regions_mentioned, :source_name, :source_url,
             :application_url, :date_posted, :closing_date, :featured, :status, :created_at, :updated_at,
             :created_by, :updated_by
         )
@@ -541,6 +546,7 @@ if ($action === 'duplicate') {
         ':skills'            => json_encode($existing['skills']),
         ':benefits'          => json_encode($existing['benefits']),
         ':working_hours'     => $existing['workingHours'],
+        ':job_card_caption'  => $existing['jobCardCaption'] ?? '',
         ':regions_mentioned' => $existing['regionsMentioned'],
         ':source_name'       => $existing['sourceName'],
         ':source_url'        => $existing['sourceUrl'],

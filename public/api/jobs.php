@@ -40,6 +40,7 @@ function formatJobRow(array $row, array $tiers = []): array {
         'skills'           => !empty($row['skills']) ? json_decode($row['skills'], true) : [],
         'benefits'         => !empty($row['benefits']) ? json_decode($row['benefits'], true) : [],
         'workingHours'     => $row['working_hours'] ?? '',
+        'jobCardCaption'   => $row['job_card_caption'] ?? '',
         'regionsMentioned' => $row['regions_mentioned'] ?? '',
         'sourceName'       => $row['source_name'] ?? '',
         'sourceUrl'        => $row['source_url'] ?? '',

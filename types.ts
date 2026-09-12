@@ -82,6 +82,7 @@ export interface Job {
   skills?: string[];
   benefits?: string[];
   workingHours?: string;
+  jobCardCaption?: string;
   regionsMentioned?: string;
   sourceName?: string;
   sourceUrl?: string;

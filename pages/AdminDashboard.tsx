@@ -102,6 +102,7 @@ export const AdminDashboard: React.FC = () => {
     skillsText: string;
     benefitsText: string;
     workingHours: string;
+    jobCardCaption: string;
     sourceName: string;
     sourceUrl: string;
     applicationMethod: 'promarch' | 'external';
@@ -139,6 +140,7 @@ export const AdminDashboard: React.FC = () => {
     skillsText: '',
     benefitsText: '',
     workingHours: '',
+    jobCardCaption: '',
     sourceName: 'Promarch Consulting',
     sourceUrl: 'https://promarchconsulting.co.uk',
     applicationMethod: 'promarch',
@@ -281,6 +283,7 @@ export const AdminDashboard: React.FC = () => {
       skillsText: '',
       benefitsText: '',
       workingHours: '',
+      jobCardCaption: '',
       sourceName: 'Promarch Consulting',
       sourceUrl: 'https://promarchconsulting.co.uk',
       applicationMethod: 'promarch',
@@ -361,6 +364,7 @@ export const AdminDashboard: React.FC = () => {
       skillsText: job.skills ? job.skills.join(', ') : '',
       benefitsText: job.benefits ? job.benefits.join('\n') : '',
       workingHours: job.workingHours || '',
+      jobCardCaption: job.jobCardCaption || '',
       sourceName: job.sourceName || 'Promarch Consulting',
       sourceUrl: job.sourceUrl || '',
       applicationMethod: hasExternalUrl ? 'external' : 'promarch',
@@ -589,6 +593,7 @@ export const AdminDashboard: React.FC = () => {
         skills: skills.length > 0 ? skills : undefined,
         benefits: benefits.length > 0 ? benefits : undefined,
         workingHours: formData.workingHours.trim() || undefined,
+        jobCardCaption: formData.jobCardCaption.trim() || undefined,
         sourceName: formData.sourceName.trim() || 'Promarch Consulting',
         sourceUrl: formData.sourceUrl.trim() || undefined,
         applicationUrl: finalApplicationUrl,
@@ -1468,6 +1473,29 @@ export const AdminDashboard: React.FC = () => {
                       placeholder="e.g. 40 hours per week (12-month Fixed Term Contract) or Full-time, Permanent (37.5 hours)"
                       className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs sm:text-sm font-semibold text-slate-900 outline-none focus:ring-2 focus:ring-blue-600"
                     />
+                  </div>
+
+                  {/* Job Card Highlight / Contract Caption */}
+                  <div className="sm:col-span-3">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500" htmlFor="admin-job-card-caption">
+                        JOB CARD HIGHLIGHT / CONTRACT CAPTION (OPTIONAL)
+                      </label>
+                      <span className="text-[10px] text-amber-800 font-bold bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/80">
+                        Card Highlight Badge
+                      </span>
+                    </div>
+                    <input
+                      id="admin-job-card-caption"
+                      type="text"
+                      value={formData.jobCardCaption}
+                      onChange={(e) => setFormData({ ...formData, jobCardCaption: e.target.value })}
+                      placeholder="e.g. 36-hour and 48-hour contracts available"
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs sm:text-sm font-semibold text-slate-900 outline-none focus:ring-2 focus:ring-blue-600"
+                    />
+                    <p className="text-[11px] text-slate-500 mt-1.5">
+                      Optional short message displayed as a highlighted badge on the public vacancy card.
+                    </p>
                   </div>
                 </div>
 
