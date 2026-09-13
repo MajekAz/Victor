@@ -12,37 +12,44 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 // Helper to format a database row into standard Job schema
 function formatJobRow(array $row, array $tiers = []): array {
+    $cleanArray = function($val) {
+        if (empty($val)) return [];
+        $decoded = is_string($val) ? json_decode($val, true) : $val;
+        if (!is_array($decoded)) return [];
+        return array_values(array_map('sanitizeString', array_filter($decoded)));
+    };
+
     return [
         'id'               => $row['id'],
-        'title'            => $row['title'],
+        'title'            => sanitizeString($row['title']),
         'slug'             => $row['slug'],
-        'company'          => $row['company'],
+        'company'          => sanitizeString($row['company']),
         'companyLogo'      => $row['company_logo'] ?? '',
-        'location'         => $row['location'],
-        'city'             => $row['city'] ?? '',
-        'region'           => $row['region'] ?? '',
-        'country'          => $row['country'] ?? 'United Kingdom',
-        'postcode'         => $row['postcode'] ?? '',
+        'location'         => sanitizeString($row['location']),
+        'city'             => sanitizeString($row['city'] ?? ''),
+        'region'           => sanitizeString($row['region'] ?? ''),
+        'country'          => sanitizeString($row['country'] ?? 'United Kingdom'),
+        'postcode'         => sanitizeString($row['postcode'] ?? ''),
         'salaryMin'        => $row['salary_min'] !== null ? (float)$row['salary_min'] : null,
         'salaryMax'        => $row['salary_max'] !== null ? (float)$row['salary_max'] : null,
-        'salaryText'       => $row['salary_text'] ?? '',
+        'salaryText'       => sanitizeString($row['salary_text'] ?? ''),
         'salaryPeriod'     => $row['salary_period'] ?? 'per hour',
         'currency'         => $row['currency'] ?? '£',
-        'jobType'          => $row['job_type'] ?? 'Contract',
-        'workArrangement'  => $row['work_arrangement'] ?? 'On-site',
-        'category'         => $row['category'],
-        'shortDescription' => $row['short_description'],
-        'fullDescription'  => $row['full_description'] ?? '',
-        'responsibilities' => !empty($row['responsibilities']) ? json_decode($row['responsibilities'], true) : [],
-        'requirements'     => !empty($row['requirements']) ? json_decode($row['requirements'], true) : [],
-        'qualifications'   => !empty($row['qualifications']) ? json_decode($row['qualifications'], true) : [],
-        'experience'       => $row['experience'] ?? '',
-        'skills'           => !empty($row['skills']) ? json_decode($row['skills'], true) : [],
-        'benefits'         => !empty($row['benefits']) ? json_decode($row['benefits'], true) : [],
-        'workingHours'     => $row['working_hours'] ?? '',
-        'jobCardCaption'   => !empty($row['job_card_caption']) ? $row['job_card_caption'] : null,
-        'regionsMentioned' => $row['regions_mentioned'] ?? '',
-        'sourceName'       => $row['source_name'] ?? '',
+        'jobType'          => sanitizeString($row['job_type'] ?? 'Contract'),
+        'workArrangement'  => sanitizeString($row['work_arrangement'] ?? 'On-site'),
+        'category'         => sanitizeString($row['category']),
+        'shortDescription' => sanitizeString($row['short_description']),
+        'fullDescription'  => sanitizeString($row['full_description'] ?? ''),
+        'responsibilities' => $cleanArray($row['responsibilities'] ?? []),
+        'requirements'     => $cleanArray($row['requirements'] ?? []),
+        'qualifications'   => $cleanArray($row['qualifications'] ?? []),
+        'experience'       => sanitizeString($row['experience'] ?? ''),
+        'skills'           => $cleanArray($row['skills'] ?? []),
+        'benefits'         => $cleanArray($row['benefits'] ?? []),
+        'workingHours'     => sanitizeString($row['working_hours'] ?? ''),
+        'jobCardCaption'   => !empty($row['job_card_caption']) ? sanitizeString($row['job_card_caption']) : null,
+        'regionsMentioned' => sanitizeString($row['regions_mentioned'] ?? ''),
+        'sourceName'       => sanitizeString($row['source_name'] ?? ''),
         'sourceUrl'        => $row['source_url'] ?? '',
         'applicationUrl'   => $row['application_url'] ?? '',
         'datePosted'       => $row['date_posted'] ?? $row['created_at'],
@@ -55,11 +62,11 @@ function formatJobRow(array $row, array $tiers = []): array {
         'applyClicks'      => (int)($row['apply_clicks'] ?? 0),
         'salaryTiers'      => array_map(function($t) {
             return [
-                'role'          => $t['role_label'],
+                'role'          => sanitizeString($t['role_label']),
                 'hourlyRate'    => $t['hourly_rate'],
                 'hours36Yearly' => $t['annual_36_hours'] ?? '',
                 'hours48Yearly' => $t['annual_48_hours'] ?? '',
-                'notes'         => $t['salary_notes'] ?? ''
+                'notes'         => sanitizeString($t['salary_notes'] ?? '')
             ];
         }, $tiers)
     ];
@@ -167,10 +174,13 @@ try {
         $params[':arrangement'] = $arrangementFilter;
     }
 
-    // Category filter
+    // Category filter (support clean category or legacy encoded variant)
     if ($categoryFilter !== '' && $categoryFilter !== 'all') {
-        $where[] = "category = :category";
-        $params[':category'] = $categoryFilter;
+        $cleanCat = sanitizeString($categoryFilter);
+        $where[] = "(category = :category OR category = :cat_encoded OR category LIKE :cat_fuzzy)";
+        $params[':category'] = $cleanCat;
+        $params[':cat_encoded'] = str_replace('&', '&amp;', $cleanCat);
+        $params[':cat_fuzzy'] = '%' . str_replace('&', '%', $cleanCat) . '%';
     }
 
     // Minimum Salary filter
@@ -198,9 +208,18 @@ try {
     $countStmt->execute($params);
     $total = (int)$countStmt->fetchColumn();
 
-    // 2. Get distinct categories for filter bar
+    // 2. Get distinct categories for filter bar (cleaned of any legacy encoded entities)
     $catStmt = $pdo->query("SELECT DISTINCT category FROM jobs WHERE status = 'published' AND category != '' ORDER BY category ASC");
-    $categories = $catStmt->fetchAll(PDO::FETCH_COLUMN);
+    $rawCategories = $catStmt->fetchAll(PDO::FETCH_COLUMN);
+    $cleanCategories = [];
+    foreach ($rawCategories as $c) {
+        $clean = sanitizeString($c);
+        if ($clean !== '' && !in_array($clean, $cleanCategories, true)) {
+            $cleanCategories[] = $clean;
+        }
+    }
+    sort($cleanCategories);
+    $categories = $cleanCategories;
 
     // 3. Fetch jobs page
     $sql = "SELECT * FROM jobs WHERE {$whereClause} ORDER BY {$orderBy} LIMIT {$limit} OFFSET {$offset}";

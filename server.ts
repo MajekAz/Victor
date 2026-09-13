@@ -17,13 +17,50 @@ if (!fs.existsSync(DATA_DIR)) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
 }
 
+function cleanString(str: any): string {
+  if (!str) return '';
+  let result = String(str);
+  let prev = '';
+  let iterations = 0;
+  while (result.includes('&') && result !== prev && iterations < 10) {
+    prev = result;
+    result = result
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#039;/g, "'")
+      .replace(/&#39;/g, "'")
+      .replace(/&apos;/g, "'");
+    iterations++;
+  }
+  return result;
+}
+
+function normalizeJobObject(j: any): any {
+  if (!j) return j;
+  return {
+    ...j,
+    title: cleanString(j.title),
+    company: cleanString(j.company),
+    location: cleanString(j.location),
+    category: cleanString(j.category),
+    jobType: cleanString(j.jobType),
+    workArrangement: cleanString(j.workArrangement),
+    jobCardCaption: j.jobCardCaption ? cleanString(j.jobCardCaption) : j.jobCardCaption,
+    shortDescription: cleanString(j.shortDescription),
+    fullDescription: cleanString(j.fullDescription),
+  };
+}
+
 function readJobsFile(): any[] {
   try {
     if (!fs.existsSync(JOBS_FILE)) {
       return [];
     }
     const raw = fs.readFileSync(JOBS_FILE, 'utf-8');
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed.map(normalizeJobObject) : [];
   } catch (err) {
     console.error('Error reading jobs file:', err);
     return [];

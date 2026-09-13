@@ -13,20 +13,8 @@ import {
   ExternalLink
 } from 'lucide-react';
 import { Job } from '../types.ts';
-import { JobService } from '../services/jobService.ts';
+import { JobService, decodeHtml } from '../services/jobService.ts';
 import { COLORS } from '../constants.tsx';
-
-// Decode HTML entities if text contains encoded entities like &amp;
-const decodeHtml = (str?: string | null): string => {
-  if (!str) return '';
-  return str
-    .replace(/&amp;/g, '&')
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#039;/g, "'");
-};
 
 interface JobCardProps {
   job: Job;

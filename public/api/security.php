@@ -207,7 +207,19 @@ function clearFailedLogins(PDO $pdo, string $ip): void {
 // ------------------------------------------------------------------------------
 function sanitizeString(?string $str): string {
     if ($str === null) return '';
-    return trim(htmlspecialchars(strip_tags($str), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'));
+    $clean = trim(strip_tags((string)$str));
+    // Decode any pre-existing or multiply-nested HTML entities (e.g. &amp;amp;amp; -> &)
+    // Repeat up to 10 iterations until all nested entities are fully unescaped to clean plain text
+    $iterations = 0;
+    while (strpos($clean, '&') !== false && $iterations < 10) {
+        $decoded = html_entity_decode($clean, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        if ($decoded === $clean) {
+            break;
+        }
+        $clean = $decoded;
+        $iterations++;
+    }
+    return $clean;
 }
 
 function sanitizeSlug(string $slug): string {

@@ -36,7 +36,7 @@ import {
   Tag
 } from 'lucide-react';
 import { Job, JobType, WorkArrangement, JobStatus, SalaryPeriod, DuplicateMatch, SalaryTier } from '../types.ts';
-import { JobService } from '../services/jobService.ts';
+import { JobService, decodeHtml } from '../services/jobService.ts';
 import { AuthService } from '../services/authService.ts';
 import { AnalyticsOverview } from '../components/admin/AnalyticsOverview.tsx';
 import { CsvImportView } from '../components/admin/CsvImportView.tsx';
@@ -1107,7 +1107,7 @@ export const AdminDashboard: React.FC = () => {
                             <div className="space-y-1.5">
                               <div className="flex items-center gap-1.5">
                                 <span className="font-black text-slate-900 hover:text-blue-600 transition-colors cursor-pointer" onClick={() => handleStartEditJob(job)}>
-                                  {job.title}
+                                  {decodeHtml(job.title)}
                                 </span>
                                 {job.featured && (
                                   <span className="p-0.5 rounded bg-blue-100 text-blue-700" title="Featured Vacancy">
@@ -1116,7 +1116,7 @@ export const AdminDashboard: React.FC = () => {
                                 )}
                               </div>
                               <span className="text-[10px] font-bold text-slate-400 block uppercase tracking-wider">
-                                {job.category}
+                                {decodeHtml(job.category)}
                               </span>
 
                               {/* Job Card Caption Badge / Quick Action */}

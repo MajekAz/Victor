@@ -26,7 +26,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { Job } from '../types.ts';
-import { JobService } from '../services/jobService.ts';
+import { JobService, decodeHtml } from '../services/jobService.ts';
 import { JobCard } from '../components/JobCard.tsx';
 import { COLORS, COMPANY_NAME } from '../constants.tsx';
 
@@ -274,10 +274,10 @@ export const JobDetails: React.FC = () => {
 
                 <div className="space-y-1 flex-1 min-w-0">
                   <span className="text-xs font-black uppercase tracking-widest text-blue-600 block">
-                    {job.category}
+                    {decodeHtml(job.category)}
                   </span>
                   <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 tracking-tight leading-snug">
-                    {job.title}
+                    {decodeHtml(job.title)}
                   </h1>
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs sm:text-sm font-semibold text-slate-600 pt-1">
                     <span className="flex items-center gap-1 text-slate-900">
@@ -664,7 +664,7 @@ export const JobDetails: React.FC = () => {
               <div className="text-[11px] text-slate-600 space-y-1.5 pt-2 border-t border-slate-100">
                 <div className="flex justify-between">
                   <span className="text-slate-400">Sector:</span>
-                  <span className="font-bold text-slate-800">{job.category}</span>
+                  <span className="font-bold text-slate-800">{decodeHtml(job.category)}</span>
                 </div>
                 {job.closingDate && (
                   <div className="flex justify-between">
@@ -677,7 +677,7 @@ export const JobDetails: React.FC = () => {
                 {job.sourceName && (
                   <div className="flex justify-between">
                     <span className="text-slate-400">Origin / Source:</span>
-                    <span className="font-bold text-slate-800">{job.sourceName}</span>
+                    <span className="font-bold text-slate-800">{decodeHtml(job.sourceName)}</span>
                   </div>
                 )}
               </div>
@@ -694,11 +694,11 @@ export const JobDetails: React.FC = () => {
                   Explore More Roles
                 </span>
                 <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                  Similar Opportunities in {job.category}
+                  Similar Opportunities in {decodeHtml(job.category)}
                 </h3>
               </div>
               <Link
-                to={`/jobs?category=${encodeURIComponent(job.category)}`}
+                to={`/jobs?category=${encodeURIComponent(decodeHtml(job.category))}`}
                 className="text-xs font-black uppercase tracking-wider text-blue-600 hover:text-blue-700 flex items-center gap-1"
               >
                 <span>View All In Sector</span>

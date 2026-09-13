@@ -15,7 +15,7 @@ import {
   Check
 } from 'lucide-react';
 import { Job } from '../types.ts';
-import { JobService } from '../services/jobService.ts';
+import { JobService, decodeHtml } from '../services/jobService.ts';
 import { JobCard } from '../components/JobCard.tsx';
 import { JOB_TYPES, WORK_ARRANGEMENTS, COLORS } from '../constants.tsx';
 
@@ -360,7 +360,7 @@ export const Jobs: React.FC = () => {
               >
                 <option value="all">All Sectors</option>
                 {categories.map((c) => (
-                  <option key={c} value={c}>{c}</option>
+                  <option key={c} value={c}>{decodeHtml(c)}</option>
                 ))}
               </select>
             </div>
@@ -436,7 +436,7 @@ export const Jobs: React.FC = () => {
               )}
               {selectedCategory !== 'all' && (
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white border border-blue-200 text-blue-800 font-bold">
-                  Sector: {selectedCategory}
+                  Sector: {decodeHtml(selectedCategory)}
                   <button 
                     type="button"
                     onClick={() => {

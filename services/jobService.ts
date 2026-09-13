@@ -3,6 +3,72 @@ import { AuthService } from './authService.ts';
 
 const VIEWS_TRACK_KEY = 'promarch_viewed_jobs';
 
+/**
+ * Decodes multiply-nested HTML entities (e.g. &amp;amp;amp; -> &)
+ * Prevents recursive encoding bugs like "Office &amp;amp;amp; Administration"
+ */
+export function decodeHtml(str?: string | null): string {
+  if (!str) return '';
+  let result = String(str);
+  let prev = '';
+  let iterations = 0;
+  while (result.includes('&') && result !== prev && iterations < 12) {
+    prev = result;
+    result = result
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#039;/g, "'")
+      .replace(/&#39;/g, "'")
+      .replace(/&apos;/g, "'")
+      .replace(/&#x27;/g, "'")
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&ndash;/g, '–')
+      .replace(/&#8211;/g, '–')
+      .replace(/&mdash;/g, '—')
+      .replace(/&#8212;/g, '—')
+      .replace(/&pound;/g, '£')
+      .replace(/&#163;/g, '£');
+    iterations++;
+  }
+  return result;
+}
+
+/**
+ * Normalizes all text properties on a Job object to guarantee clean,
+ * entity-free display strings throughout the entire UI.
+ */
+export function normalizeJob(job: Job): Job {
+  if (!job) return job;
+  return {
+    ...job,
+    title: decodeHtml(job.title),
+    company: decodeHtml(job.company),
+    location: decodeHtml(job.location),
+    city: job.city ? decodeHtml(job.city) : job.city,
+    region: job.region ? decodeHtml(job.region) : job.region,
+    country: job.country ? decodeHtml(job.country) : job.country,
+    category: decodeHtml(job.category),
+    jobType: decodeHtml(job.jobType) as any,
+    workArrangement: decodeHtml(job.workArrangement) as any,
+    salaryText: decodeHtml(job.salaryText),
+    jobCardCaption: job.jobCardCaption ? decodeHtml(job.jobCardCaption) : job.jobCardCaption,
+    shortDescription: decodeHtml(job.shortDescription),
+    fullDescription: decodeHtml(job.fullDescription),
+    responsibilities: Array.isArray(job.responsibilities) ? job.responsibilities.map(decodeHtml) : job.responsibilities,
+    requirements: Array.isArray(job.requirements) ? job.requirements.map(decodeHtml) : job.requirements,
+    qualifications: Array.isArray(job.qualifications) ? job.qualifications.map(decodeHtml) : job.qualifications,
+    skills: Array.isArray(job.skills) ? job.skills.map(decodeHtml) : job.skills,
+    benefits: Array.isArray(job.benefits) ? job.benefits.map(decodeHtml) : job.benefits,
+    workingHours: job.workingHours ? decodeHtml(job.workingHours) : job.workingHours,
+    regionsMentioned: job.regionsMentioned ? decodeHtml(job.regionsMentioned) : job.regionsMentioned,
+    sourceName: job.sourceName ? decodeHtml(job.sourceName) : job.sourceName,
+    sourceUrl: job.sourceUrl ? decodeHtml(job.sourceUrl) : job.sourceUrl,
+    applicationUrl: job.applicationUrl ? decodeHtml(job.applicationUrl) : job.applicationUrl,
+  };
+}
+
 export class JobService {
   // In-memory cache of currently loaded jobs for fast client-side calculations (analytics, duplicate detection)
   private static cachedJobs: Job[] = [];
@@ -142,22 +208,33 @@ export class JobService {
           const json = await res.json();
           // Check standard envelope { success: true, data: { jobs, total, categories } }
           if (json.data && Array.isArray(json.data.jobs)) {
-            this.cachedJobs = json.data.jobs;
-            this.cachedCategories = json.data.categories || [];
+            const cleanJobs = json.data.jobs.map(normalizeJob);
+            const cleanCategories = Array.from(
+              new Set(
+                (json.data.categories || [])
+                  .map(decodeHtml)
+                  .concat(cleanJobs.map((j: Job) => j.category))
+                  .filter(Boolean)
+              )
+            ).sort() as string[];
+
+            this.cachedJobs = cleanJobs;
+            this.cachedCategories = cleanCategories;
             return {
-              jobs: json.data.jobs,
-              total: json.data.total ?? json.data.jobs.length,
-              categories: json.data.categories || []
+              jobs: cleanJobs,
+              total: json.data.total ?? cleanJobs.length,
+              categories: cleanCategories
             };
           }
           // Check if root array
           if (Array.isArray(json)) {
-            this.cachedJobs = json;
-            const categories = Array.from(new Set(json.map((j: Job) => j.category).filter(Boolean))).sort() as string[];
+            const cleanJobs = json.map(normalizeJob);
+            const categories = Array.from(new Set(cleanJobs.map((j: Job) => j.category).filter(Boolean))).sort() as string[];
+            this.cachedJobs = cleanJobs;
             this.cachedCategories = categories;
             return {
-              jobs: json,
-              total: json.length,
+              jobs: cleanJobs,
+              total: cleanJobs.length,
               categories
             };
           }
@@ -196,8 +273,9 @@ export class JobService {
           const json = await res.json();
           const job: Job | null = json.data || json;
           if (job && job.id) {
-            this.incrementJobView(job.id);
-            return job;
+            const cleanJob = normalizeJob(job);
+            this.incrementJobView(cleanJob.id);
+            return cleanJob;
           }
         }
       } catch {
@@ -208,8 +286,9 @@ export class JobService {
     // Check memory cache
     const cached = this.cachedJobs.find(j => j.slug === slug || j.id === slug);
     if (cached) {
-      this.incrementJobView(cached.id);
-      return cached;
+      const cleanJob = normalizeJob(cached);
+      this.incrementJobView(cleanJob.id);
+      return cleanJob;
     }
 
     return null;
@@ -261,8 +340,9 @@ export class JobService {
           const json = await res.json();
           const remoteAdminJobs = json.data || json;
           if (Array.isArray(remoteAdminJobs)) {
-            this.cachedJobs = remoteAdminJobs;
-            return remoteAdminJobs;
+            const cleanJobs = remoteAdminJobs.map(normalizeJob);
+            this.cachedJobs = cleanJobs;
+            return cleanJobs;
           }
         } else if (res.status === 401 || res.status === 403) {
           throw new Error('Administrative session expired. Please sign in again.');
@@ -273,7 +353,7 @@ export class JobService {
     }
 
     if (this.cachedJobs.length > 0) {
-      return this.cachedJobs;
+      return this.cachedJobs.map(normalizeJob);
     }
 
     throw new Error(lastError?.message || 'Failed to load administrative vacancies from server.');
@@ -285,7 +365,7 @@ export class JobService {
     const nowIso = new Date().toISOString();
     const slug = jobData.slug || this.generateSlug(jobData.title, jobData.company);
 
-    const newJob: Job = {
+    const newJob: Job = normalizeJob({
       ...jobData,
       id: newId,
       slug,
@@ -295,7 +375,7 @@ export class JobService {
       updatedAt: nowIso,
       createdBy: user,
       updatedBy: user
-    };
+    });
 
     const endpoints = [
       '/api/admin/jobs.php?action=create',
@@ -315,7 +395,7 @@ export class JobService {
 
         if (res.ok) {
           const json = await res.json();
-          const saved: Job = json.data || json;
+          const saved: Job = normalizeJob(json.data || json || newJob);
           this.cachedJobs.unshift(saved);
           await this.logActivity('created', `Created vacancy "${saved.title}" at ${saved.company}`, saved.id, saved.title, user);
           return saved;
@@ -367,7 +447,7 @@ export class JobService {
 
         if (res.ok) {
           const json = await res.json();
-          const saved: Job = json.data || json;
+          const saved: Job = normalizeJob(json.data || json || { ...existing, ...payload } as Job);
           const idx = this.cachedJobs.findIndex(j => j.id === id);
           if (idx !== -1) {
             this.cachedJobs[idx] = saved;
