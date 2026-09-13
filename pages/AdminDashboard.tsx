@@ -32,7 +32,8 @@ import {
   MapPin,
   Clock,
   Loader2,
-  ShieldCheck
+  ShieldCheck,
+  Tag
 } from 'lucide-react';
 import { Job, JobType, WorkArrangement, JobStatus, SalaryPeriod, DuplicateMatch, SalaryTier } from '../types.ts';
 import { JobService } from '../services/jobService.ts';
@@ -163,6 +164,12 @@ export const AdminDashboard: React.FC = () => {
   // Renew Modal
   const [renewTargetJob, setRenewTargetJob] = useState<Job | null>(null);
   const [renewDays, setRenewDays] = useState<number>(30);
+
+  // Quick Caption Modal
+  const [captionModalJob, setCaptionModalJob] = useState<Job | null>(null);
+  const [captionInput, setCaptionInput] = useState<string>('');
+  const [isSavingCaption, setIsSavingCaption] = useState<boolean>(false);
+  const [captionSaveMessage, setCaptionSaveMessage] = useState<string>('');
 
   useEffect(() => {
     const initAuth = async () => {
@@ -472,6 +479,36 @@ export const AdminDashboard: React.FC = () => {
       await loadJobsData();
     } catch (e: any) {
       alert(e.message);
+    }
+  };
+
+  // Quick Caption Modal Handlers
+  const handleOpenCaptionModal = (job: Job) => {
+    setCaptionModalJob(job);
+    setCaptionInput(job.jobCardCaption || '');
+    setCaptionSaveMessage('');
+  };
+
+  const handleSaveCaptionModal = async (overrideValue?: string) => {
+    if (!captionModalJob) return;
+    setIsSavingCaption(true);
+    setCaptionSaveMessage('');
+    try {
+      const val = overrideValue !== undefined ? overrideValue : captionInput.trim();
+      const payloadCaption = val && val.length > 0 ? val : null;
+      await JobService.updateJob(captionModalJob.id, {
+        jobCardCaption: payloadCaption
+      });
+      setCaptionSaveMessage(payloadCaption ? 'Caption saved successfully!' : 'Caption removed.');
+      await loadJobsData();
+      setTimeout(() => {
+        setCaptionModalJob(null);
+        setIsSavingCaption(false);
+        setCaptionSaveMessage('');
+      }, 600);
+    } catch (e: any) {
+      alert(e.message || 'Failed to update caption.');
+      setIsSavingCaption(false);
     }
   };
 
@@ -1067,7 +1104,7 @@ export const AdminDashboard: React.FC = () => {
 
                           {/* Title & Category */}
                           <td className="py-4 px-4">
-                            <div className="space-y-1">
+                            <div className="space-y-1.5">
                               <div className="flex items-center gap-1.5">
                                 <span className="font-black text-slate-900 hover:text-blue-600 transition-colors cursor-pointer" onClick={() => handleStartEditJob(job)}>
                                   {job.title}
@@ -1081,6 +1118,34 @@ export const AdminDashboard: React.FC = () => {
                               <span className="text-[10px] font-bold text-slate-400 block uppercase tracking-wider">
                                 {job.category}
                               </span>
+
+                              {/* Job Card Caption Badge / Quick Action */}
+                              {Boolean(job.jobCardCaption && job.jobCardCaption.trim()) ? (
+                                <div className="flex items-center gap-1.5 pt-0.5">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleOpenCaptionModal(job)}
+                                    className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 text-amber-900 border border-amber-200/90 hover:bg-amber-100 hover:border-amber-300 transition-colors text-left group shadow-2xs"
+                                    title="Click to edit job card caption badge"
+                                  >
+                                    <Tag size={10} className="text-amber-600 shrink-0" />
+                                    <span className="truncate max-w-[220px]">{job.jobCardCaption!.trim()}</span>
+                                    <Edit size={9} className="text-amber-700 opacity-60 group-hover:opacity-100 ml-0.5 shrink-0" />
+                                  </button>
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-1 pt-0.5">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleOpenCaptionModal(job)}
+                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold text-slate-400 hover:text-amber-800 hover:bg-amber-50 hover:border-amber-300 border border-dashed border-slate-200 transition-colors"
+                                    title="Add a highlighted caption badge to this vacancy card"
+                                  >
+                                    <Tag size={10} className="text-slate-400" />
+                                    <span>+ Add Card Caption</span>
+                                  </button>
+                                </div>
+                              )}
                             </div>
                           </td>
 
@@ -1164,6 +1229,16 @@ export const AdminDashboard: React.FC = () => {
                                 title="Edit Vacancy"
                               >
                                 <Edit size={14} />
+                              </button>
+
+                              {/* Edit Card Caption */}
+                              <button
+                                type="button"
+                                onClick={() => handleOpenCaptionModal(job)}
+                                className="p-1.5 rounded-lg text-slate-400 hover:text-amber-700 hover:bg-amber-50 transition-colors"
+                                title={job.jobCardCaption ? `Edit Card Caption: "${job.jobCardCaption}"` : "Set Card Caption Badge"}
+                              >
+                                <Tag size={14} />
                               </button>
 
                               {/* Duplicate */}
@@ -1287,9 +1362,20 @@ export const AdminDashboard: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   {/* Title */}
                   <div className="md:col-span-2">
-                    <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1.5">
-                      Job Title *
-                    </label>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500">
+                        Job Title *
+                      </label>
+                      <a 
+                        href="#admin-job-card-caption-section"
+                        className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 px-2 py-0.5 rounded-md border border-amber-200/80 transition-colors"
+                        title="Jump down to the Job Card Caption box"
+                      >
+                        <Tag size={10} className="text-amber-600" />
+                        <span>Card Caption Badge:</span>
+                        <span className="font-semibold">{formData.jobCardCaption ? `"${formData.jobCardCaption.substring(0, 24)}${formData.jobCardCaption.length > 24 ? '...' : ''}"` : 'None (Click to set)'}</span>
+                      </a>
+                    </div>
                     <input
                       type="text"
                       required
@@ -1475,27 +1561,94 @@ export const AdminDashboard: React.FC = () => {
                     />
                   </div>
 
-                  {/* Job Card Highlight / Contract Caption */}
-                  <div className="sm:col-span-3">
-                    <div className="flex items-center justify-between mb-1.5">
-                      <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500" htmlFor="admin-job-card-caption">
-                        JOB CARD HIGHLIGHT / CONTRACT CAPTION (OPTIONAL)
-                      </label>
-                      <span className="text-[10px] text-amber-800 font-bold bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/80">
-                        Card Highlight Badge
+                  {/* Job Card Caption / Highlight Badge - Highlighted Section */}
+                  <div className="sm:col-span-3 bg-linear-to-r from-amber-50/80 via-orange-50/40 to-amber-50/80 border-2 border-amber-200/90 rounded-2xl p-5 shadow-2xs space-y-3" id="admin-job-card-caption-section">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <Tag size={16} className="text-amber-700 shrink-0" />
+                        <label className="block text-xs font-black uppercase tracking-wider text-amber-950" htmlFor="admin-job-card-caption">
+                          JOB CARD CAPTION / HIGHLIGHT BADGE (OPTIONAL)
+                        </label>
+                      </div>
+                      <span className="text-[10px] text-amber-900 font-bold bg-white/95 px-2.5 py-0.5 rounded-full border border-amber-300 shadow-2xs">
+                        Appears Directly on Public Card
                       </span>
                     </div>
-                    <input
-                      id="admin-job-card-caption"
-                      type="text"
-                      value={formData.jobCardCaption || ''}
-                      onChange={(e) => setFormData({ ...formData, jobCardCaption: e.target.value })}
-                      placeholder="e.g. 36-hour and 48-hour contracts available"
-                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs sm:text-sm font-semibold text-slate-900 outline-none focus:ring-2 focus:ring-blue-600"
-                    />
-                    <p className="text-[11px] text-slate-500 mt-1.5">
-                      Optional short message displayed as a highlighted badge on the public vacancy card.
+
+                    <p className="text-xs text-amber-900/80 leading-relaxed font-medium">
+                      Enter a brief highlight or contract note to appear in the prominent yellow highlight badge on the public vacancy card (e.g. <em>"36-hour and 48-hour contracts available"</em>, <em>"12-month Fixed Term Contract"</em>, or <em>"Immediate Start Available"</em>). Leave blank if no badge is required.
                     </p>
+
+                    <div className="relative">
+                      <input
+                        id="admin-job-card-caption"
+                        type="text"
+                        value={formData.jobCardCaption || ''}
+                        onChange={(e) => setFormData({ ...formData, jobCardCaption: e.target.value })}
+                        placeholder="e.g. 36-hour and 48-hour contracts available"
+                        className="w-full px-4 py-3 bg-white border border-amber-300 rounded-xl text-xs sm:text-sm font-bold text-slate-900 outline-none focus:ring-2 focus:ring-amber-500 pr-10 shadow-2xs"
+                      />
+                      {formData.jobCardCaption && (
+                        <button
+                          type="button"
+                          onClick={() => setFormData({ ...formData, jobCardCaption: '' })}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-amber-700 hover:text-amber-900 p-1"
+                          title="Clear caption"
+                        >
+                          <XCircle size={15} />
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Quick Preset Buttons */}
+                    <div className="pt-1">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-amber-900/70 block mb-1.5">
+                        Quick Presets (Click to insert):
+                      </span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {[
+                          '36-hour and 48-hour contracts available',
+                          '12-month Fixed Term Contract',
+                          'Immediate Start Available',
+                          'Hybrid Working Option',
+                          'Bonus Scheme & Pension'
+                        ].map((preset) => (
+                          <button
+                            key={preset}
+                            type="button"
+                            onClick={() => setFormData({ ...formData, jobCardCaption: preset })}
+                            className="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-white/90 hover:bg-amber-100 hover:text-amber-950 border border-amber-200/90 text-amber-900 shadow-2xs transition-colors"
+                          >
+                            {preset}
+                          </button>
+                        ))}
+                        {formData.jobCardCaption && (
+                          <button
+                            type="button"
+                            onClick={() => setFormData({ ...formData, jobCardCaption: '' })}
+                            className="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-white/60 hover:bg-red-50 hover:text-red-700 border border-slate-200 text-slate-500 transition-colors"
+                          >
+                            Clear
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Live Card Preview */}
+                    <div className="pt-3 border-t border-amber-200/70 flex flex-wrap items-center gap-2.5">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-amber-900">
+                        Public Card Badge Live Preview:
+                      </span>
+                      {formData.jobCardCaption && formData.jobCardCaption.trim() ? (
+                        <span className="inline-flex items-center px-3 py-1 rounded-lg text-xs font-bold bg-amber-50 text-amber-900 border border-amber-300 shadow-2xs">
+                          {formData.jobCardCaption.trim()}
+                        </span>
+                      ) : (
+                        <span className="text-xs italic text-slate-400 font-normal">
+                          (No badge will appear on the public vacancy card)
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -2150,6 +2303,169 @@ export const AdminDashboard: React.FC = () => {
               >
                 Extend & Publish
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Quick Caption Edit Modal */}
+      {captionModalJob && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl border border-slate-200 space-y-5">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center border border-amber-200">
+                  <Tag size={20} />
+                </div>
+                <div>
+                  <h4 className="text-base font-black text-slate-900">Job Card Caption</h4>
+                  <p className="text-[11px] text-slate-500 font-medium">Highlight badge on public vacancy card</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setCaptionModalJob(null)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+              >
+                <XCircle size={18} />
+              </button>
+            </div>
+
+            <div>
+              <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block mb-1">Target Vacancy</span>
+              <p className="text-sm font-bold text-slate-900 truncate">
+                {captionModalJob.title}
+              </p>
+              <p className="text-xs text-slate-500">{captionModalJob.company} • {captionModalJob.location}</p>
+            </div>
+
+            {/* Live Badge Preview */}
+            <div className="bg-slate-50 rounded-2xl p-3.5 border border-slate-200/80">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                  Public Card Preview:
+                </span>
+                <span className="text-[10px] text-amber-800 font-semibold">Live Badge Display</span>
+              </div>
+              <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-2xs flex items-center min-h-[44px]">
+                {captionInput.trim() ? (
+                  <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-50 text-amber-900 border border-amber-200/90 shadow-2xs">
+                    {captionInput.trim()}
+                  </span>
+                ) : (
+                  <span className="text-xs italic text-slate-400">
+                    No caption badge will be displayed on this vacancy card
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Caption Input */}
+            <div>
+              <label className="block text-[10px] font-black uppercase tracking-wider text-slate-700 mb-1.5" htmlFor="quick-caption-input">
+                Card Caption Text
+              </label>
+              <div className="relative">
+                <input
+                  id="quick-caption-input"
+                  type="text"
+                  value={captionInput}
+                  onChange={(e) => setCaptionInput(e.target.value)}
+                  placeholder="e.g. 36-hour and 48-hour contracts available"
+                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-xs sm:text-sm font-semibold text-slate-900 outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 pr-10"
+                  autoFocus
+                />
+                {captionInput && (
+                  <button
+                    type="button"
+                    onClick={() => setCaptionInput('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1"
+                    title="Clear input"
+                  >
+                    <XCircle size={14} />
+                  </button>
+                )}
+              </div>
+              <p className="text-[11px] text-slate-500 mt-1.5">
+                This short text is displayed as a prominent yellow highlight pill on the vacancy card.
+              </p>
+            </div>
+
+            {/* Quick Presets */}
+            <div>
+              <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 block mb-1.5">
+                Quick Presets (Click to insert):
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                {[
+                  '36-hour and 48-hour contracts available',
+                  '12-month Fixed Term Contract',
+                  'Immediate Start Available',
+                  'Hybrid Working Option',
+                  'Bonus Scheme & Pension'
+                ].map((preset) => (
+                  <button
+                    key={preset}
+                    type="button"
+                    onClick={() => setCaptionInput(preset)}
+                    className="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-amber-50 hover:text-amber-900 hover:border-amber-200 border border-slate-200 text-slate-700 transition-colors"
+                  >
+                    {preset}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {captionSaveMessage && (
+              <div className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold flex items-center gap-2">
+                <CheckCircle2 size={14} className="text-emerald-600" />
+                <span>{captionSaveMessage}</span>
+              </div>
+            )}
+
+            {/* Actions */}
+            <div className="flex items-center justify-between pt-2">
+              <div>
+                {captionModalJob.jobCardCaption && (
+                  <button
+                    type="button"
+                    disabled={isSavingCaption}
+                    onClick={() => handleSaveCaptionModal('')}
+                    className="text-xs font-bold text-red-600 hover:text-red-700 hover:underline p-1"
+                  >
+                    Remove Caption
+                  </button>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  disabled={isSavingCaption}
+                  onClick={() => setCaptionModalJob(null)}
+                  className="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 text-xs font-black uppercase tracking-wider hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  disabled={isSavingCaption}
+                  onClick={() => handleSaveCaptionModal()}
+                  className="px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-black uppercase tracking-wider shadow-sm flex items-center gap-1.5"
+                >
+                  {isSavingCaption ? (
+                    <>
+                      <Loader2 size={13} className="animate-spin" />
+                      <span>Saving...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Save size={13} />
+                      <span>Save Caption</span>
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>

@@ -16,6 +16,18 @@ import { Job } from '../types.ts';
 import { JobService } from '../services/jobService.ts';
 import { COLORS } from '../constants.tsx';
 
+// Decode HTML entities if text contains encoded entities like &amp;
+const decodeHtml = (str?: string | null): string => {
+  if (!str) return '';
+  return str
+    .replace(/&amp;/g, '&')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#039;/g, "'");
+};
+
 interface JobCardProps {
   job: Job;
   compact?: boolean;
@@ -131,11 +143,11 @@ export const JobCard: React.FC<JobCardProps> = ({ job, compact = false }) => {
 
             <div className="min-w-0">
               <span className="text-xs font-black uppercase tracking-wider text-slate-500 truncate block">
-                {job.company}
+                {decodeHtml(job.company)}
               </span>
               <div className="flex items-center gap-1 text-xs text-slate-600 font-medium mt-0.5">
                 <MapPin size={12} className="text-slate-400 shrink-0" />
-                <span className="truncate">{job.location}</span>
+                <span className="truncate">{decodeHtml(job.location)}</span>
               </div>
             </div>
           </div>
@@ -169,7 +181,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job, compact = false }) => {
           aria-label={`View vacancy details for ${job.title} at ${job.company}`}
         >
           <h3 className="text-base sm:text-lg font-black text-slate-900 leading-snug line-clamp-2 tracking-tight mb-2">
-            {job.title}
+            {decodeHtml(job.title)}
           </h3>
         </Link>
 
@@ -193,8 +205,8 @@ export const JobCard: React.FC<JobCardProps> = ({ job, compact = false }) => {
           <span className={`px-2.5 py-0.5 rounded-lg text-[11px] font-bold border ${getWorkArrangementClass(job.workArrangement)}`}>
             {job.workArrangement}
           </span>
-          <span className="px-2.5 py-0.5 rounded-lg text-[11px] font-medium bg-slate-50 text-slate-600 border border-slate-200/60 truncate max-w-[150px]">
-            {job.category}
+          <span className="px-2.5 py-0.5 rounded-lg text-[11px] font-medium bg-slate-50 text-slate-600 border border-slate-200/60 truncate max-w-[150px]" title={decodeHtml(job.category)}>
+            {decodeHtml(job.category)}
           </span>
         </div>
 
@@ -202,7 +214,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job, compact = false }) => {
         {Boolean(job.jobCardCaption && job.jobCardCaption.trim()) && (
           <div className="mb-3">
             <span className="inline-flex items-center px-2.5 py-0.5 rounded-lg text-[11px] font-bold bg-amber-50 text-amber-900 border border-amber-200/80">
-              {job.jobCardCaption!.trim()}
+              {decodeHtml(job.jobCardCaption!.trim())}
             </span>
           </div>
         )}
